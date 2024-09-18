@@ -7,6 +7,8 @@ import { auth, firebase, storage, database } from '../../firebase'
 import { ref as ref_d, set, get, onValue } from 'firebase/database'
 
 const RechercheFormationsScreen = (props, { route }) => {
+
+  // const { userDta, role } = route.params;
   const [formations, setFormations] = useState([]);
   const [filteredFormations, setFilteredFormations] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -20,6 +22,7 @@ const RechercheFormationsScreen = (props, { route }) => {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [showFilters, setShowFilters] = useState(false);
   const filterHeight = useState(new Animated.Value(0))[0];
+  const [userDemandes, setUserDemandes] = useState({});
 
   const [categoryOptions, setCategoryOptions] = useState([]);
   const [lieuOptions, setLieuOptions] = useState([]);
@@ -27,8 +30,14 @@ const RechercheFormationsScreen = (props, { route }) => {
 
   const navigation = useNavigation();
 
+  // useEffect(() => {
+  //   console.log(route)
+  // }, [route?.params]);
+
   useEffect(() => {
     fetchFormations();
+    fetchUserDemandes();
+    console.log(auth.currentUser?.uid)
   }, []);
   useEffect(() => {
     applyFilters(activeTab)
@@ -133,6 +142,16 @@ const RechercheFormationsScreen = (props, { route }) => {
     }).start();
   };
 
+  const fetchUserDemandes = () => {
+    const demandesRef = ref_d(database, `demandes/${auth.currentUser.uid}`);
+    onValue(demandesRef, (snapshot) => {
+      const data = snapshot.val();
+      if (data) {
+        setUserDemandes(data);
+      }
+    });
+  };
+
   const applyFilters = (tab) => {
     let filtered = formations;
     if (categoryFilter) {
@@ -146,7 +165,7 @@ const RechercheFormationsScreen = (props, { route }) => {
     }
 
     if (tab === "J'y suis inscrit") {
-      filtered = filtered.filter(f => (f.status === 'inscrit'));
+      filtered = filtered.filter(f => userDemandes.hasOwnProperty(f.id));
     } else if (tab === 'Je propose') {
       filtered = filtered.filter(f => (f.status === 'propose'));
     } else if (tab === 'Cachées') {
@@ -199,11 +218,13 @@ const RechercheFormationsScreen = (props, { route }) => {
           <Text style={styles.formationTitle}>{item.title}</Text>
           <Text>Date: {item.date}</Text>
           <Text>Lieu: {item.lieu}</Text>
-          {/* <Text>Horaires: {item.heureDebut} - {item.heureFin}</Text> */}
-          {/* <Text>Nature: {item.nature}</Text> */}
-          {/* <Text>Année conseillée: {item.anneeConseillee}</Text> */}
           <Text>Tarif étudiant DIU: {item.tarifEtudiant} €</Text>
           <Text>Tarif médecin: {item.tarifMedecin} €</Text>
+          {userDemandes[item.id] && (
+            <Text style={styles.validationStatus}>
+              Inscription: {userDemandes[item.id].admin}
+            </Text>
+          )}
         </View>
       </View>
     </TouchableOpacity>
@@ -469,7 +490,11 @@ const styles = StyleSheet.create({
   filterButtonTextSelected: {
     color: 'white',
   },
-
+  validationStatus: {
+    marginTop: 5,
+    fontWeight: 'bold',
+    color: '#1a53ff',
+  },
   // formationItem: {
   //   marginBottom: 20,
   //   padding: 15,

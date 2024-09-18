@@ -5,21 +5,12 @@ import { getDownloadURL, list, ref } from 'firebase/storage'
 import React, { useEffect, useState } from 'react';
 import { View, Text, Image, TouchableOpacity, TextInput, Button, StyleSheet, ActivityIndicator } from 'react-native';
 import { signInWithEmailAndPassword } from 'firebase/auth';
-// import { auth, database } from '../../firebase';
 import { ref as ref_d, onValue } from 'firebase/database';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 
 const LoginScreen = ({ navigation }) => {
-  const renderButton = (title, phase, phaseName, onPress) => (
-    <TouchableOpacity
-      style={[styles.button, styles.buttonShadow]}
-      onPress={onPress}
-    >
-      <Text style={styles.buttonTitle}>{title}</Text>
-      <Text style={styles.buttonPhase}>{` ${phase} `}</Text>
-    </TouchableOpacity>
-  );
+
    const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(true);
@@ -102,13 +93,27 @@ const LoginScreen = ({ navigation }) => {
     }
   };
 
+  const renderButton = (title, onPress, primary = false) => (
+    <TouchableOpacity
+      style={[
+        styles.button,
+        styles.buttonShadow,
+        primary ? styles.primaryButton : styles.secondaryButton
+      ]}
+      onPress={onPress}
+    >
+      <Text style={primary ? styles.primaryButtonText : styles.secondaryButtonText}>{title}</Text>
+    </TouchableOpacity>
+  );
+
   if (loading) {
     return (
       <View style={styles.container}>
-        <ActivityIndicator size="large" color="#0000ff" />
+        <ActivityIndicator size="large" color="#FFFFFF" />
       </View>
     );
   }
+
   return (
     <View style={styles.container}>
       <Image source={require('../../assets/images/logoEsculappl.png')} style={styles.logo} />
@@ -117,67 +122,30 @@ const LoginScreen = ({ navigation }) => {
         <Text style={styles.appSlogan}>Appli de Formations de Médecine Manuelle</Text>
       </View>
       <Text style={styles.versionText}>Version « premieres images »</Text>
-      <View style={styles.buttonContainer}>
-        <View style={styles.buttonRow}>
-        {/* {renderButton(
-            "Vos formations",
-            "",
-            "Phase Etudiante",
-            () => navigation.navigate('RestrainedTabs')
-          )} */}
-          {renderButton(
-            "Accès Admin",
-            "",
-            "Phase Universitaire",
-            () => navigation.navigate('AdminTabs')
-          )}
 
-        </View>
-        {renderButton(
-          "Partenaires",
-          "",
-          "",
-          () => navigation.navigate('OrganizationsPartenaires')
-        )}
-        {/* {renderButton(
-          "Accès Etudiant",
-          "Phase 2",
-          "Phase Etudiante",
-          () => navigation.navigate('UserTabs')
-        )}
+      <View style={styles.formContainer}>
+        <TextInput
+          style={styles.input}
+          placeholder="Email"
+          value={email}
+          onChangeText={setEmail}
+          keyboardType="email-address"
+        />
+        <TextInput
+          style={styles.input}
+          placeholder="Mot de passe"
+          value={password}
+          onChangeText={setPassword}
+          secureTextEntry
+        />
+        {renderButton("Se connecter", handleLogin, true)}
+        {renderButton("Créer un compte", () => navigation.navigate('Signup'))}
+        {renderButton("Mot de passe oublié", () => navigation.navigate('PasswordReset'))}
+      </View>
 
-
-        <View style={styles.buttonRow}>
-        {renderButton(
-          "Accès Formateur",
-          "Phase 3",
-          "Phase Formateurs connus",
-          () => navigation.navigate('FormateurTabs')
-        )}
-        {renderButton(
-          "Exemple d'Inscription de Formateur",
-          "Phase 4",
-          "Phase Formateurs inconnus",
-          () => navigation.navigate('NewUserTabs')
-        )} */}
-      <TextInput
-        style={styles.input}
-        placeholder="Email"
-        value={email}
-        onChangeText={setEmail}
-        keyboardType="email-address"
-      />
-      <TextInput
-        style={styles.input}
-        placeholder="Password"
-        value={password}
-        onChangeText={setPassword}
-        secureTextEntry
-      />
-      <Button title="Login" onPress={handleLogin} />
-      <Button title="Sign Up" onPress={() => navigation.navigate('Signup')} />
-      <Button title="Reset Password" onPress={() => navigation.navigate('PasswordReset')} />
-      <Button title="Background Info" onPress={() => navigation.navigate('BackgroundInfo')} />
+      <View style={styles.additionalButtonsContainer}>
+        {renderButton("Accès Admin", () => navigation.navigate('AdminTabs'))}
+        {renderButton("Partenaires", () => navigation.navigate('OrganizationsPartenaires'), true)}
       </View>
     </View>
   );
@@ -186,7 +154,7 @@ const LoginScreen = ({ navigation }) => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#00008B', // Dark blue background
+    backgroundColor: '#00008B',
     alignItems: 'center',
     justifyContent: 'center',
     padding: 20,
@@ -195,8 +163,7 @@ const styles = StyleSheet.create({
     width: 150,
     height: 250,
     marginBottom: 20,
-    marginTop:20,
-    borderRadius:30,
+    borderRadius: 30,
   },
   titleContainer: {
     alignItems: 'center',
@@ -216,50 +183,54 @@ const styles = StyleSheet.create({
     fontSize: 16,
     marginBottom: 30,
   },
-  buttonContainer: {
+  formContainer: {
     width: '100%',
-    alignItems: 'flex-start'
+    marginBottom: 20,
   },
-  buttonRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    marginBottom: 5,
+  input: {
+    height: 40,
+    borderColor: 'gray',
+    borderWidth: 1,
+    marginBottom: 10,
+    paddingHorizontal: 10,
+    backgroundColor: 'white',
+    borderRadius: 5,
   },
   button: {
-    backgroundColor: '#FFFFFF',//#EAE0AE
-    padding: 10,
+    padding: 15,
     marginBottom: 10,
-    marginLeft: 10,
-    borderRadius: 30,
-    alignItems: 'center',
-    width: '48%',
+    borderRadius: 5,
+    alignItems: 'baseline',
+    width: '40%',
   },
   buttonShadow: {
     shadowColor: '#000',
-    shadowOffset: {
-      width: 0,
-      height: 2,
-    },
+    shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.25,
     shadowRadius: 3.84,
     elevation: 5,
   },
-  buttonTitle: {
+  primaryButton: {
+    backgroundColor: '#4CAF50',
+  },
+  secondaryButton: {
+    backgroundColor: '#FFFFFF',
+  },
+  primaryButtonText: {
+    color: '#FFFFFF',
+    fontWeight: 'bold',
+    fontSize: 16,
+  },
+  secondaryButtonText: {
     color: '#00008B',
     fontWeight: 'bold',
     fontSize: 16,
-    marginBottom: 5,
   },
-  buttonPhase: {
-    color: '#343432',
-    fontSize: 14,
-    fontStyle: "italic",
+  additionalButtonsContainer: {
+    width: '100%',
+    flexDirection: 'row',
+    justifyContent: 'space-between',
   },
 });
 
 export default LoginScreen;
-
-
-
-
-
