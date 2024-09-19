@@ -27,6 +27,7 @@ import OrganizationsPartenairesScreen from './screens/OrganizationsPartenairesSc
 import InscriptionFormationScreen from './screens/InscriptionFormationScreen';
 import ValidationProfilScreen from './screens/ValidationProfilScreen';
 import AjoutFormateurScreen from './screens/AjoutFormateurScreen';
+import RGPDScreen from './screens/RGPDScreen';
 const Stack = createStackNavigator();
 const Tab = createBottomTabNavigator();
 
@@ -87,8 +88,8 @@ function AdminTabs() {
         // You can return any component that you like here!
         return <Ionicons name={iconName} size={size} color={color} />;
       },
-      tabBarActiveTintColor: 'black',
-      tabBarInactiveTintColor: 'white',
+      tabBarActiveTintColor: 'white',
+      tabBarInactiveTintColor: 'black',
     })}>
       <Tab.Screen name="RechercheFormations" component={RechercheFormationsScreen} initialParams={{spoofLoggedIn: false, spoofFormateur: true, spoofAdmin: true, spoofValidated: true}} />
       <Tab.Screen name="Notifications" component={NotifsScreen} />
@@ -149,8 +150,8 @@ function App() {
           // You can return any component that you like here!
           return <Ionicons name={iconName} size={size} color={color} />;
         },
-        tabBarActiveTintColor: 'black',
-        tabBarInactiveTintColor: 'white',
+        tabBarActiveTintColor: 'white',
+        tabBarInactiveTintColor: 'black',
       })}>
         <Tab.Screen name="RechercheFormations" component={RechercheFormationsScreen} initialParams={{spoofLoggedIn: true, spoofFormateur: false, spoofAdmin: false, spoofValidated: true}}/>
         <Tab.Screen name="Notifications" component={NotifsScreen} initialParams={{"gameFileContext": gameFileContext}}/>
@@ -178,8 +179,8 @@ function App() {
           // You can return any component that you like here!
           return <Ionicons name={iconName} size={size} color={color} />;
         },
-        tabBarActiveTintColor: 'black',
-        tabBarInactiveTintColor: 'white',
+        tabBarActiveTintColor: 'white',
+        tabBarInactiveTintColor: 'black',
       })}>
         <Tab.Screen name="RechercheFormations" component={RechercheFormationsScreen} initialParams={{spoofLoggedIn: false, spoofFormateur: false, spoofAdmin: false, spoofValidated: true}}/>
         {/* <Tab.Screen name="Notifications" component={NotifsScreen} initialParams={{"gameFileContext": gameFileContext}}/> */}
@@ -207,8 +208,8 @@ function App() {
           // You can return any component that you like here!
           return <Ionicons name={iconName} size={size} color={color} />;
         },
-        tabBarActiveTintColor: 'black',
-        tabBarInactiveTintColor: 'white',
+        tabBarActiveTintColor: 'white',
+        tabBarInactiveTintColor: 'black',
       })}>
         <Tab.Screen name="RechercheFormations" component={RechercheFormationsScreen} initialParams={{spoofLoggedIn: true, spoofFormateur: true, spoofAdmin: false, spoofValidated: true}}/>
         <Tab.Screen name="Notifications" component={NotifsScreen} initialParams={{"gameFileContext": gameFileContext}}/>
@@ -236,7 +237,10 @@ function App() {
         <Stack.Screen name="Signup"         component={SignupScreen} />
         <Stack.Screen name="PasswordReset"  component={PasswordResetScreen} />
         <Stack.Screen name="OrganizationsPartenaires" component={OrganizationsPartenairesScreen} />
+        <Stack.Screen name="RGPD" component={RGPDScreen} />
 
+
+        
 
         
         <Stack.Screen name="AjoutFormation"       component={AjoutFormationScreen} />

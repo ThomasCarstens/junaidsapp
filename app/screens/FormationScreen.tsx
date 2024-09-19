@@ -5,8 +5,9 @@ import { ref as ref_d, set, get, onValue } from 'firebase/database';
 
 const FormationScreen = ({ route, navigation }) => {
   const { formationId, role } = route.params;
-  console.log(role)
   const [formation, setFormation] = useState(null);
+  const [isInscrit, setIsInscrit] = useState(false);
+  const [hasConsent, setHasConsent] = useState(false);
 
   useEffect(() => {
     const formationRef = ref_d(database, `/formations/${formationId}`);
@@ -20,11 +21,62 @@ const FormationScreen = ({ route, navigation }) => {
       }
     });
 
+    // Vérifier si l'utilisateur est déjà inscrit
+    const checkInscription = async () => {
+      const user = auth.currentUser;
+      if (user) {
+        const demandeRef = ref_d(database, `/demandes/${user.uid}/${formationId}`);
+        const snapshot = await get(demandeRef);
+        setIsInscrit(snapshot.exists());
+      }
+    };
+
+    // Vérifier le consentement RGPD
+    const checkConsent = async () => {
+      const user = auth.currentUser;
+      if (user) {
+        const consentRef = ref_d(database, `/consent/${user.uid}`);
+        const snapshot = await get(consentRef);
+        setHasConsent(snapshot.val() === true);
+      }
+    };
+
+    checkInscription();
+    checkConsent();
+
     return () => unsubscribe();
   }, [formationId]);
 
+  const handleSignUp = async () => {
+    const user = auth.currentUser;
+    if (!user) {
+      Alert.alert("Erreur", "Vous devez être connecté pour vous inscrire.");
+      return;
+    }
+
+    if (isInscrit) {
+      Alert.alert("Information", "Vous êtes déjà inscrit à cette formation.");
+      return;
+    }
+
+    if (!hasConsent) {
+      Alert.alert(
+        "Consentement RGPD requis",
+        "Vous devez donner votre consentement RGPD pour vous inscrire à cette formation.",
+        [
+          { text: "Annuler", style: "cancel" },
+          { text: "Donner mon consentement", onPress: () => navigation.push('RGPD') }
+        ]
+      );
+      return;
+    }
+
+    // Procéder à l'inscription
+    navigation.navigate('InscriptionFormation', { formationId: formation.id, formationTitle: formation.title });
+  };
+
   const handleDelete = () => {
-    let toggleAction = (formation.active)?"Désactiver":"Réactiver"
+    let toggleAction = (formation.active) ? "Désactiver" : "Réactiver";
     Alert.alert(
       "Confirmation",
       `Êtes-vous sûr de vouloir ${toggleAction} cette formation ?`,
@@ -34,12 +86,11 @@ const FormationScreen = ({ route, navigation }) => {
           const formationRef = ref_d(database, `/formations/${formationId}`);
           set(formationRef, { ...formation, active: !(formation.active) })
             .then(() => {
-              Alert.alert("Succès", `La formation a été ${toggleAction}`);
-              console.log(formation.active)
+              Alert.alert("Succès", `La formation a été ${toggleAction.toLowerCase()}`);
               navigation.goBack();
             })
             .catch((error) => {
-              Alert.alert("Erreur", "Impossible de désactiver la formation");
+              Alert.alert("Erreur", "Impossible de modifier la formation");
             });
         }}
       ]
@@ -53,19 +104,21 @@ const FormationScreen = ({ route, navigation }) => {
       </View>
     );
   }
+
   return (
     <ScrollView style={styles.container}>
       <Image source={{ uri: formation.image }} style={styles.image} />
       <Text style={styles.title}>{formation.title}</Text>
-      {(role.isAdmin===true) ? (
+      {(role.isAdmin === true) ? (
         <View style={styles.buttonContainer}>
-          {(formation.active)?
-          <TouchableOpacity 
-            style={styles.signUpButton}
-            onPress={() => navigation.navigate('InscriptionFormation', { formationId: formation.id, formationTitle: formation.title })}
-          >
-            <Text style={styles.signUpButtonText}>S'inscrire</Text>
-          </TouchableOpacity>:(<View></View>)}
+          {(formation.active) ? (
+            <TouchableOpacity 
+              style={styles.signUpButton}
+              onPress={handleSignUp}
+            >
+              <Text style={styles.signUpButtonText}>S'inscrire</Text>
+            </TouchableOpacity>
+          ) : (<View></View>)}
           <TouchableOpacity 
             style={styles.modifyButton}
             onPress={() => navigation.navigate('AjoutFormation', { formation: formation, role: role })}
@@ -76,17 +129,19 @@ const FormationScreen = ({ route, navigation }) => {
             style={styles.deleteButton}
             onPress={handleDelete}
           >
-            <Text style={styles.buttonText}>{(formation.active)?"Désactiver":"Réactiver"}</Text>
+            <Text style={styles.buttonText}>{(formation.active) ? "Désactiver" : "Réactiver"}</Text>
           </TouchableOpacity>
         </View>
       ) : (
         <View style={styles.buttonContainer}>
-          {(formation.active)?<TouchableOpacity 
-            style={styles.signUpButton}
-            onPress={() => navigation.navigate('InscriptionFormation', { formationId: formation.id, formationTitle: formation.title })}
-          >
-            <Text style={styles.signUpButtonText}>S'inscrire</Text>
-          </TouchableOpacity>:(<View></View>)}
+          {(formation.active) ? (
+            <TouchableOpacity 
+              style={styles.signUpButton}
+              onPress={handleSignUp}
+            >
+              <Text style={styles.signUpButtonText}>S'inscrire</Text>
+            </TouchableOpacity>
+          ) : (<View></View>)}
         </View>
       )}
       <Text style={styles.info}>Date: {formation.date}</Text>

@@ -31,7 +31,8 @@ const SignupScreen = ({ navigation }) => {
           isFormateur: false
         })
         // NewUserTabs since isValidated=false
-        navigation.navigate('NewUserTabs')
+        navigation.navigate('UserTabs')
+        navigation.push('RGPD', { userRoles: data, formateur: true, validated: 'true' });
     
     }).catch(error => alert(error.message))
 

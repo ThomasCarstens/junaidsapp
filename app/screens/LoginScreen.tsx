@@ -65,8 +65,15 @@ const LoginScreen = ({ navigation }) => {
       const data = snapshot.val();
       if (data) {
         console.log('Userdata downloaded:', data);
-        setUserRoles(data);
-        navigation.navigate('UserTabs', { userRoles: data, formateur: true, validated: 'true' });
+
+        // Tabs According to Roles -- pre-app split.
+        if (data.isAdmin === true){
+          navigation.navigate('AdminTabs', { userRoles: data, formateur: true, validated: 'true' });
+        } else {
+          navigation.navigate('UserTabs', { userRoles: data, formateur: true, validated: 'true' });
+          
+        }
+        
       } else {
         // No user data found, log out and show login screen
         handleLogout();
