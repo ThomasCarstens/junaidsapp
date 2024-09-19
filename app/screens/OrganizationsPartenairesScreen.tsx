@@ -1,5 +1,6 @@
 import React from 'react';
 import { View, Text, TouchableOpacity, StyleSheet, FlatList, Image } from 'react-native';
+import { database, auth } from '../../firebase';
 
 const organizations = [
   { id: '1', name: 'SOFMMOOM', image: require('../../assets/images/partenaires/sofMOMMO.png'), description: 'Société Française de Médecine Manuelle Orthopédique et Ostéopathique Médicale' },
@@ -32,7 +33,7 @@ const OrganizationItem = ({ name, description, image }) => (
 const OrganizationsPartenairesScreen = () => {
   return (
     <View style={styles.container}>
-      <Text style={styles.title}> Liens directs vers les organisations partenaires.`` </Text>
+      <Text style={styles.title}> Liens directs vers les organisations partenaires. </Text>
       <FlatList
         data={organizations}
         renderItem={({ item }) => (
@@ -44,6 +45,9 @@ const OrganizationsPartenairesScreen = () => {
         )}
         keyExtractor={item => item.id}
       />
+      {auth.currentUser?<Text style={styles.title}> Gestion de mon compte </Text> : <View></View>}
+      
+      {/* <Text style={styles.title}> Gestion des comptes </Text> */}
     </View>
   );
 };

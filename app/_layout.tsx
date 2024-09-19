@@ -143,8 +143,8 @@ function App() {
             iconName = focused ? 'search' : 'search';
           } else if (route.name === 'Notifications') {
             iconName = focused ? 'notifications-outline' : 'notifications-outline';
-          } else if (route.name === 'Profil') {
-            iconName = focused ? 'person' : 'person';
+          } else if (route.name === 'OrganizationsPartenaires') {
+            iconName = focused ? 'cog' : 'cog';
           }
           // You can return any component that you like here!
           return <Ionicons name={iconName} size={size} color={color} />;
@@ -154,7 +154,7 @@ function App() {
       })}>
         <Tab.Screen name="RechercheFormations" component={RechercheFormationsScreen} initialParams={{spoofLoggedIn: true, spoofFormateur: false, spoofAdmin: false, spoofValidated: true}}/>
         <Tab.Screen name="Notifications" component={NotifsScreen} initialParams={{"gameFileContext": gameFileContext}}/>
-        {/* <Tab.Screen name="Profil" component={ProfilScreen} initialParams={{"gameFileContext": gameFileContext}}/> */}
+        <Tab.Screen name="OrganizationsPartenaires" component={OrganizationsPartenairesScreen} initialParams={{"gameFileContext": gameFileContext}}/>
       </Tab.Navigator>
     );
   }

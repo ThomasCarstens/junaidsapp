@@ -5,6 +5,7 @@ import { Ionicons } from '@expo/vector-icons';
 
 import { auth, firebase, storage, database } from '../../firebase'
 import { ref as ref_d, set, get, onValue } from 'firebase/database'
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const RechercheFormationsScreen = (props, { route }) => {
 
@@ -54,9 +55,9 @@ const RechercheFormationsScreen = (props, { route }) => {
       headerTitleStyle: {
         fontWeight: 'bold',
       },
-      headerLeft: () => (
-        <TouchableOpacity onPress={() => navigation.navigate('Login')}>
-          <Text style={styles.headerButton}>{'< Retour'}</Text>
+      headerRight: () => (
+        <TouchableOpacity onPress={()=>handleLogout()} style={styles.logoutButton}>
+          <Text style={styles.logoutButtonText}>Se déconnecter</Text>
         </TouchableOpacity>
       ),
     });
@@ -79,6 +80,20 @@ const RechercheFormationsScreen = (props, { route }) => {
       setIsLoggedIn(props.route.params.spoofLoggedIn);
     }
   }, [props.route.params?.spoofLoggedIn]);
+
+  const handleLogout = async () => {
+    try {
+      await auth.signOut();
+      await AsyncStorage.removeItem('userUid');
+      navigation.navigate('Login');
+      // navigation.
+      // setLoading(false);
+      
+    } catch (error) {
+      console.error('Error logging out:', error);
+      // setLoading(false);
+    }
+  };
 
   const fetchFormations = () => {
     setLoading(true);
@@ -449,11 +464,7 @@ const styles = StyleSheet.create({
   //   marginBottom: 10,
   //   borderRadius: 5,
   // },
-  headerButton: {
-    color: 'white',
-    fontSize: 16,
-    marginLeft: 10,
-  },
+
   
   filterToggleButton: {
     flexDirection: 'row',
@@ -495,20 +506,13 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     color: '#1a53ff',
   },
-  // formationItem: {
-  //   marginBottom: 20,
-  //   padding: 15,
-  //   backgroundColor: '#d5dcf0',
-  //   borderRadius: 10,
-  //   shadowColor: "orange",
-  //   shadowOffset: {
-  //     width: 0,
-  //     height: 2,
-  //   },
-  //   shadowOpacity: 0.23,
-  //   shadowRadius: 2.62,
-  //   elevation: 4,
-  // },
+  logoutButton: {
+    marginRight: 10,
+  },
+  logoutButtonText: {
+    color: '#fff',
+    fontSize: 16,
+  },
 
 });
 
