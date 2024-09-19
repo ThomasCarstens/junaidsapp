@@ -62,7 +62,7 @@ const FormationScreen = ({ route, navigation }) => {
           {(formation.active)?
           <TouchableOpacity 
             style={styles.signUpButton}
-            onPress={() => navigation.navigate('InscriptionFormation', { formationId: formation.id })}
+            onPress={() => navigation.navigate('InscriptionFormation', { formationId: formation.id, formationTitle: formation.title })}
           >
             <Text style={styles.signUpButtonText}>S'inscrire</Text>
           </TouchableOpacity>:(<View></View>)}
@@ -83,7 +83,7 @@ const FormationScreen = ({ route, navigation }) => {
         <View style={styles.buttonContainer}>
           {(formation.active)?<TouchableOpacity 
             style={styles.signUpButton}
-            onPress={() => navigation.navigate('InscriptionFormation', { formationId: formation.id })}
+            onPress={() => navigation.navigate('InscriptionFormation', { formationId: formation.id, formationTitle: formation.title })}
           >
             <Text style={styles.signUpButtonText}>S'inscrire</Text>
           </TouchableOpacity>:(<View></View>)}

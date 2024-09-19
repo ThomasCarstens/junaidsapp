@@ -32,8 +32,17 @@ const LoginScreen = ({ navigation }) => {
         const user = auth.currentUser;
 
         if (user && user.uid === cachedUid) {
-          // User is still logged in
+          // Previous user is still logged in
           fetchUserRolesAndNavigate(cachedUid);
+        } else if (user) {
+            // Some other user is still logged in
+            try {
+              await auth.signOut();
+              await AsyncStorage.removeItem('userUid');
+              setLoading(false); 
+            } catch (error) {
+              console.error('Error logging out:', error);
+            }
         } else {
           // Cached UID is no longer valid
           await AsyncStorage.removeItem('userUid');

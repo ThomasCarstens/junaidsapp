@@ -1,11 +1,12 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { View, Text, StyleSheet, ScrollView, TextInput, TouchableOpacity, Switch, Alert } from 'react-native';
 import { Picker } from '@react-native-picker/picker';
 import { useNavigation } from '@react-navigation/native';
 import { ref as ref_d, set } from 'firebase/database';
-import { database } from '../../firebase';
+// import { database } from '../../firebase';
+import { database, auth } from '../../firebase';
 
-const InscriptionFormationScreen = ({ route }) => {
+const InscriptionFormationScreen = ({ route, navigation }) => {
   const [nom, setNom] = useState('');
   const [prenom, setPrenom] = useState('');
   const [medecinDiplome, setMedecinDiplome] = useState(false);
@@ -17,12 +18,18 @@ const InscriptionFormationScreen = ({ route }) => {
   const [etudiantDIU, setEtudiantDIU] = useState(false);
   const [anneeDIU, setAnneeDIU] = useState('');
   const [formationId, setFormationId] = useState(route.params.formationId);
+  const [formationTitle, setFormationTitle] = useState(route.params.formationTitle);
 
-  const navigation = useNavigation();
+  // const navigation = useNavigation();
+  // useEffect(() => {
+  //   console.log("title: ", route.params.formationId)
+  //   console.log("title: ", route.params)
+  // }, [route.params.formationTitle]);
 
   const handleSubmit = async () => {
     const formData = {
       admin: 'en attente', //isAdmin should avoid this.
+      formationTitle,
       nom,
       prenom,
       medecinDiplome,
@@ -37,10 +44,12 @@ const InscriptionFormationScreen = ({ route }) => {
     };
 
     // TODO: Replace this with the actual user's UID from authentication
-    const userUID = 'UKpwHEnNP6enoIhI4lhBpIdoEfR2';
+    const userUID = auth.currentUser?.uid;
+    
 
     try {
       const userRef = ref_d(database, `demandes/${userUID}/${formationId}`);
+      
       await set(userRef, formData);
       Alert.alert('Succès', 'Votre inscription a été enregistrée avec succès!');
       navigation.goBack();
@@ -52,7 +61,7 @@ const InscriptionFormationScreen = ({ route }) => {
 
   return (
     <ScrollView style={styles.container}>
-      <Text style={styles.title}>Inscription à la Formation</Text>
+      <Text style={styles.title}>Inscription à la Formation {formationTitle}</Text>
 
       <View style={styles.nameContainer}>
         <View style={styles.nameField}>

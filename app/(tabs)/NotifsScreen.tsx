@@ -10,6 +10,7 @@ const NotificationList = ({ isAdmin, isFormateur }) => {
   const [notifications, setNotifications] = useState([]);
   const [isSubscribed, setIsSubscribed] = useState(true);
   const [showFilters, setShowFilters] = useState(false);
+  // const [id, setId] = useState('');
   const filterHeight = useState(new Animated.Value(0))[0];
 
   const navigation = useNavigation();
@@ -29,8 +30,10 @@ const NotificationList = ({ isAdmin, isFormateur }) => {
           })
           .map(([id, notification]) => ({
             id,
+
             ...notification,
-            formationId: notification.body.match(/\d+/)?.[0] || null,
+            // formationId: notification.body.match(/\d+/)?.[0] || null,
+            formationId: notification.id,
           }))
           .sort((a, b) => b.timestamp - a.timestamp);
         setNotifications(filteredNotifications);
@@ -76,7 +79,13 @@ const NotificationList = ({ isAdmin, isFormateur }) => {
         formationId: item.formationId,
         role: { isAdmin, isFormateur },
       });
+    } else if (item.id) {
+      navigation.navigate('Formation', {
+        formationId: item.formationId,
+        role: { isAdmin, isFormateur },
+      });
     }
+
   };
 
   const toggleFilters = () => {
