@@ -93,16 +93,12 @@ const LoginScreen = ({ navigation }) => {
     }
   };
 
-  const renderButton = (title, onPress, primary = false) => (
+  const renderButton = (title, onPress, buttonStyle, textStyle) => (
     <TouchableOpacity
-      style={[
-        styles.button,
-        styles.buttonShadow,
-        primary ? styles.primaryButton : styles.secondaryButton
-      ]}
+      style={[styles.button, styles.buttonShadow, buttonStyle]}
       onPress={onPress}
     >
-      <Text style={primary ? styles.primaryButtonText : styles.secondaryButtonText}>{title}</Text>
+      <Text style={[styles.buttonText, textStyle]}>{title}</Text>
     </TouchableOpacity>
   );
 
@@ -121,7 +117,7 @@ const LoginScreen = ({ navigation }) => {
         <Text style={styles.appTitle}>Esculappl</Text>
         <Text style={styles.appSlogan}>Appli de Formations de Médecine Manuelle</Text>
       </View>
-      <Text style={styles.versionText}>Version « Phase 2: Premier retour »</Text>
+      <Text style={styles.versionText}>Version « Phase 2: 20 septembre 24 »</Text>
 
       <View style={styles.formContainer}>
         <TextInput
@@ -138,14 +134,18 @@ const LoginScreen = ({ navigation }) => {
           onChangeText={setPassword}
           secureTextEntry
         />
-        {renderButton("Se connecter", handleLogin, true)}
-        {renderButton("Créer un compte", () => navigation.navigate('Signup'))}
-        {renderButton("Mot de passe oublié", () => navigation.navigate('PasswordReset'))}
+        <View style={styles.buttonRow}>
+          {renderButton("Se connecter", handleLogin, styles.primaryButton, styles.primaryButtonText)}
+          {renderButton("Partenaires", () => navigation.navigate('OrganizationsPartenaires'), styles.primaryButton, styles.primaryButtonText)}
+        </View>
+        <View style={styles.buttonRow}>
+          {renderButton("Créer un compte", () => navigation.navigate('Signup'), styles.secondaryButton, styles.secondaryButtonText)}
+          {renderButton("Mot de passe oublié", () => navigation.navigate('PasswordReset'), styles.secondaryButton, styles.secondaryButtonText)}
+        </View>
       </View>
 
-      <View style={styles.additionalButtonsContainer}>
-        {renderButton("Accès Admin", () => navigation.navigate('AdminTabs'))}
-        {renderButton("Partenaires", () => navigation.navigate('OrganizationsPartenaires'), true)}
+      <View style={styles.adminButtonContainer}>
+        {renderButton("Accès Admin", () => navigation.navigate('AdminTabs'), styles.adminButton, styles.adminButtonText)}
       </View>
     </View>
   );
@@ -196,12 +196,18 @@ const styles = StyleSheet.create({
     backgroundColor: 'white',
     borderRadius: 5,
   },
+  buttonRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginBottom: 10,
+  },
   button: {
     padding: 15,
-    marginBottom: 10,
     borderRadius: 5,
-    alignItems: 'baseline',
-    width: '40%',
+    alignItems: 'center',
+    justifyContent: 'center',
+    flex: 1,
+    marginHorizontal: 5,
   },
   buttonShadow: {
     shadowColor: '#000',
@@ -210,27 +216,58 @@ const styles = StyleSheet.create({
     shadowRadius: 3.84,
     elevation: 5,
   },
+  // buttonText: {
+  //   fontWeight: 'bold',
+  //   fontSize: 16,
+  // },
+  // primaryButton: {
+  //   backgroundColor: '#4CAF50',
+  // },
+  // secondaryButton: {
+  //   backgroundColor: '#FFFFFF',
+  // },
+  // adminButtonContainer: {
+  //   width: '100%',
+  //   alignItems: 'center',
+  //   marginTop: 20,
+  // },
+  // adminButton: {
+  //   backgroundColor: '#333',
+  //   borderWidth: 1,
+  //   borderColor: '#888',
+  //   width: '50%',
+  // },
+  buttonText: {
+    fontWeight: 'bold',
+    fontSize: 16,
+  },
   primaryButton: {
     backgroundColor: '#4CAF50',
+  },
+  primaryButtonText: {
+    color: '#FFFFFF',
   },
   secondaryButton: {
     backgroundColor: '#FFFFFF',
   },
-  primaryButtonText: {
-    color: '#FFFFFF',
-    fontWeight: 'bold',
-    fontSize: 16,
-  },
   secondaryButtonText: {
     color: '#00008B',
-    fontWeight: 'bold',
-    fontSize: 16,
   },
-  additionalButtonsContainer: {
+  adminButtonContainer: {
     width: '100%',
-    flexDirection: 'row',
-    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginTop: 20,
   },
+  adminButton: {
+    backgroundColor: '#333',
+    borderWidth: 1,
+    borderColor: '#888',
+    width: '50%',
+  },
+  adminButtonText: {
+    color: 'white',
+  },
+
 });
 
 export default LoginScreen;
