@@ -25,6 +25,7 @@ const FormationScreen = ({ route, navigation }) => {
     const checkInscription = async () => {
       const user = auth.currentUser;
       if (user) {
+        console.log(`/demandes/${user.uid}/${formationId}`)
         const demandeRef = ref_d(database, `/demandes/${user.uid}/${formationId}`);
         const snapshot = await get(demandeRef);
         setIsInscrit(snapshot.exists());
@@ -35,7 +36,7 @@ const FormationScreen = ({ route, navigation }) => {
     const checkConsent = async () => {
       const user = auth.currentUser;
       if (user) {
-        const consentRef = ref_d(database, `/consent/${user.uid}`);
+        const consentRef = ref_d(database, `/consentement/${user.uid}`);
         const snapshot = await get(consentRef);
         setHasConsent(snapshot.val() === true);
       }

@@ -63,7 +63,7 @@ const ProfileScreen = () => {
         {"\n\n"}
         [Insérer la raison du rejet ici]
         {"\n\n"}
-        Pour toute correspondance ultérieure, veuillez contacter admindumay@gmail.com
+        Pour toute correspondance ultérieure, veuillez contacter contact.esculappl@gmail.com
       </Text>
     </View>
   );

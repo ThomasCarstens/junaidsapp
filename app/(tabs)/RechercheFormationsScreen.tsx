@@ -123,7 +123,7 @@ const RechercheFormationsScreen = (props, { route }) => {
     const categories = [...new Set(formationsArray.map(f => f.domaine))];
     const lieux = [...new Set(formationsArray.map(f => f.lieu))];
     const niveaux = [...new Set(formationsArray.map(f => f.niveau))];
-
+    console.log(categories)
     setCategoryOptions(categories);
     setLieuOptions(lieux);
     setNiveauOptions(niveaux);
@@ -170,7 +170,7 @@ const RechercheFormationsScreen = (props, { route }) => {
   const applyFilters = (tab) => {
     let filtered = formations;
     if (categoryFilter) {
-      filtered = filtered.filter(f => f.category === categoryFilter);
+      filtered = filtered.filter(f => f.domaine === categoryFilter);
     }
     if (lieuFilter) {
       filtered = filtered.filter(f => f.lieu === lieuFilter);
@@ -291,7 +291,7 @@ const RechercheFormationsScreen = (props, { route }) => {
         <ScrollView>
           {renderFilterButtons('Domaine', categoryOptions, categoryFilter, setCategoryFilter)}
           {renderFilterButtons('Lieu', lieuOptions, lieuFilter, setLieuFilter)}
-          {/* {renderFilterButtons('Niveau', niveauOptions, niveauFilter, setNiveauFilter)} */}
+          {renderFilterButtons('Niveau', niveauOptions, niveauFilter, setNiveauFilter)}
           
 
         </ScrollView>
