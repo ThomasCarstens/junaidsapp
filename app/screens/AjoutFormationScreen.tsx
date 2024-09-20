@@ -163,7 +163,7 @@ const AjoutFormationScreen = ({ navigation, route }) => {
       heureFin: formData.heureFin.toTimeString().split(' ')[0].slice(0, 5),
       domaine: formData.domaine === 'Autres' ? formData.autresDomaine : formData.domaine,
       // Autre fields are info for us - not for the filters in this phase.
-      admin: route.params?.formation ? formData.admin : "en attente"//unless isAdmin!
+      admin: 'validée' //route.params?.formation ? formData.admin : "en attente"//unless isAdmin!
     };
 
     set(ref_d(database, `formations/${formData.id}`), formattedData)

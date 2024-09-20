@@ -81,10 +81,14 @@ function AdminTabs() {
         if (route.name === 'RechercheFormations') {
           iconName = focused ? 'search' : 'search';
         } else if (route.name === 'Notifications') {
-          iconName = focused ? 'notifications-outline' : 'notifications-outline';
-        } else if (route.name === 'Demandes de validation') {
-          iconName = focused ? 'people' : 'people';
+          iconName = focused ? 'notifications' : 'notifications';
+        } else if (route.name === 'Administrer') {
+          iconName = focused ? 'shield-checkmark' : 'shield-checkmark';
+        } else if (route.name === 'OrganizationsPartenaires') {
+          iconName = focused ? 'information-circle-outline' : 'information-circle-outline';
         }
+
+        
         // You can return any component that you like here!
         return <Ionicons name={iconName} size={size} color={color} />;
       },
@@ -92,8 +96,10 @@ function AdminTabs() {
       tabBarInactiveTintColor: 'black',
     })}>
       <Tab.Screen name="RechercheFormations" component={RechercheFormationsScreen} initialParams={{spoofLoggedIn: false, spoofFormateur: true, spoofAdmin: true, spoofValidated: true}} />
-      <Tab.Screen name="Notifications" component={NotifsScreen} />
-      <Tab.Screen name="Demandes de validation" component={DemandesProfilsScreen} />
+      {/* <Tab.Screen name="Notifications" component={NotifsScreen} /> */}
+      <Tab.Screen name="Administrer" component={DemandesProfilsScreen} />
+      <Tab.Screen name="OrganizationsPartenaires" component={OrganizationsPartenairesScreen} />
+
     </Tab.Navigator>
   );
 }
@@ -143,9 +149,9 @@ function App() {
           if (route.name === 'RechercheFormations') {
             iconName = focused ? 'search' : 'search';
           } else if (route.name === 'Notifications') {
-            iconName = focused ? 'notifications-outline' : 'notifications-outline';
+            iconName = focused ? 'notifications' : 'notifications';
           } else if (route.name === 'OrganizationsPartenaires') {
-            iconName = focused ? 'cog' : 'cog';
+            iconName = focused ? 'information-circle-outline' : 'information-circle-outline';
           }
           // You can return any component that you like here!
           return <Ionicons name={iconName} size={size} color={color} />;

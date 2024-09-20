@@ -52,7 +52,7 @@ const RechercheFormationsScreen = (props, { route }) => {
   useEffect(() => {
     navigation.setOptions({
       headerShown: true,
-      title: 'Recherche formations',
+      title: 'Formations',
       headerStyle: {
         backgroundColor: '#1a53ff',
       },
@@ -460,8 +460,8 @@ const styles = StyleSheet.create({
   },
   newFormationButtonText: {
     color: 'white',
-    fontSize: 30,
-    fontWeight: 'bold',
+    fontSize: 35,
+    fontWeight: '200',
   },
   // formationTitle: {
   //   fontSize: 18,

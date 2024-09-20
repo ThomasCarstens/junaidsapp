@@ -1,16 +1,38 @@
 import React, { useEffect, useState, useCallback } from 'react';
 import { View, Text, FlatList, StyleSheet, TouchableOpacity } from 'react-native';
 import { ref, onValue } from 'firebase/database';
-import { database } from '../../firebase';
+import { auth, storage, database } from '../../firebase'
 import { Ionicons } from '@expo/vector-icons';
+import { useNavigation } from '@react-navigation/native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
-const DemandesProfilsScreen = ({ navigation }) => {
+const DemandesProfilsScreen = ({  }) => {
   const [items, setItems] = useState([]);
   const [activeTab, setActiveTab] = useState('En attente');
-
+  const navigation = useNavigation();
+    useEffect(() => {
+      navigation.setOptions({
+        headerShown: true,
+        title: 'Administrer',
+        headerStyle: {
+          backgroundColor: '#1a53ff',
+        },
+        headerTintColor: '#fff',
+        headerTitleStyle: {
+          fontWeight: 'bold',
+        },
+        headerRight: () => (
+          <TouchableOpacity onPress={()=>handleLogout()} style={styles.logoutButton}>
+            <Text style={styles.logoutButtonText}>Se déconnecter</Text>
+          </TouchableOpacity>
+        ),
+      });
+    }, [navigation]);
+    
   useEffect(() => {
     const demandesRef = ref(database, 'demandes');
     const formationsRef = ref(database, 'formations');
+    
 
     const unsubscribeDemandes = onValue(demandesRef, (snapshot) => {
       const data = snapshot.val();
@@ -43,7 +65,19 @@ const DemandesProfilsScreen = ({ navigation }) => {
       unsubscribeFormations();
     };
   }, []);
-
+  const handleLogout = async () => {
+    try {
+      await auth.signOut();
+      await AsyncStorage.removeItem('userUid');
+      navigation.navigate('Login');
+      // navigation.
+      // setLoading(false);
+      
+    } catch (error) {
+      console.error('Error logging out:', error);
+      // setLoading(false);
+    }
+  };
   const updateItems = useCallback((newItems) => {
     setItems(prevItems => {
       const combinedItems = [...prevItems, ...newItems];
@@ -63,9 +97,15 @@ const DemandesProfilsScreen = ({ navigation }) => {
 
   const getStatus = useCallback((item) => {
     if (item.admin) {
-      return item.admin.charAt(0).toUpperCase() + item.admin.slice(1);
+      console.log(item.prenom)
+      console.log(item.admin)
+      let modifiedItem = item.admin.charAt(0).toUpperCase() + item.admin.slice(1);
+      console.log(modifiedItem)
+      return modifiedItem;
+    } else {
+      return 'En attente';
     }
-    return 'En attente';
+    
   }, []);
 
   const filteredItems = React.useMemo(() => 
@@ -171,9 +211,18 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
   },
   itemCard: {
-    backgroundColor: 'white',
-    borderRadius: 8,
-    padding: 16,
+    // marginBottom: 20,
+    padding: 20,
+    backgroundColor: '#d5dcf0',
+    borderRadius: 10,
+    shadowColor: "orange",
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.23,
+    shadowRadius: 2.62,
+
     marginHorizontal: 16,
     marginVertical: 8,
     elevation: 2,
@@ -226,6 +275,14 @@ const styles = StyleSheet.create({
     fontSize: 30,
     fontWeight: 'bold',
   },
+  logoutButton: {
+    marginRight: 10,
+  },
+  logoutButtonText: {
+    color: '#fff',
+    fontSize: 16,
+  },
+
 });
 
 export default DemandesProfilsScreen;

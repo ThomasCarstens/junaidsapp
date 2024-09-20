@@ -1,41 +1,107 @@
-import React, { useState } from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Alert } from 'react-native';
-import { ref, update } from 'firebase/database';
+import React, { useState, useEffect } from 'react';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Alert, Modal } from 'react-native';
+import { ref, update, get } from 'firebase/database';
 import { database } from '../../firebase';
 import { Ionicons } from '@expo/vector-icons';
+import { CheckBox } from 'react-native-elements';
+
+const ConfirmationDialog = ({ visible, onConfirm, onCancel, action }) => {
+  const [notifyUser, setNotifyUser] = useState(false);
+
+  return (
+    <Modal
+      transparent={true}
+      visible={visible}
+      onRequestClose={onCancel}
+    >
+      <View style={styles.centeredView}>
+        <View style={styles.modalView}>
+          <Text style={styles.modalText}>Êtes-vous sûr de vouloir {action} cette demande ?</Text>
+          <CheckBox
+            title="Notifier l'utilisateur"
+            checked={notifyUser}
+            onPress={() => setNotifyUser(!notifyUser)}
+          />
+          <View style={styles.modalButtons}>
+            <TouchableOpacity
+              style={[styles.button, styles.buttonCancel]}
+              onPress={onCancel}
+            >
+              <Text style={styles.textStyle}>Annuler</Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={[styles.button, styles.buttonConfirm]}
+              onPress={() => onConfirm(notifyUser)}
+            >
+              <Text style={styles.textStyle}>Confirmer</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </View>
+    </Modal>
+  );
+};
 
 const ValidationProfil = ({ route, navigation }) => {
-  const { profile } = route.params; // profil et formation.
+  const { profile } = route.params;
   const [adminStatus, setAdminStatus] = useState(profile.admin || 'En attente');
+  const [formationInfo, setFormationInfo] = useState(null);
+  const [confirmationVisible, setConfirmationVisible] = useState(false);
+  const [pendingAction, setPendingAction] = useState(null);
+
+  useEffect(() => {
+    if (profile.type === 'demande') {
+      const formationId = profile.id.split('_')[2];
+      const formationRef = ref(database, `formations/${formationId}`);
+      get(formationRef).then((snapshot) => {
+        if (snapshot.exists()) {
+          setFormationInfo(snapshot.val());
+        }
+      }).catch((error) => {
+        console.error("Error fetching formation info:", error);
+      });
+    }
+  }, [profile]);
 
   const handleValidation = async (validationStatus) => {
+    setPendingAction(validationStatus);
+    setConfirmationVisible(true);
+  };
+
+  const confirmValidation = async (notifyUser) => {
     try {
       let updates = {};
       
-      
       if (profile.type === 'demande') {
-        // console.log(profile.id)
-        let formationId = profile.id.split('_')[1]
-        let accountUid = profile.id.split('_')[0]
-        updates[`/demandes/${accountUid}/${formationId}/admin`] = validationStatus;
+        let formationId = profile.id.split('_')[2];
+        let accountUid = profile.id.split('_')[1];
+        updates[`/demandes/${accountUid}/${formationId}/admin`] = pendingAction;
+        updates[`/demandes/${accountUid}/${formationId}/notifierDemandeur`] = notifyUser;
       } else {
-        // console.log(profile.id)
-        updates[`/formations/${profile.id}/admin`] = validationStatus === 'Validée' ? 'validée' : 'rejetée';
-        updates[`/formations/${profile.id}/active`] = validationStatus === 'Validée';
+        updates[`/formations/${profile.id.split('_')[1]}/admin`] = pendingAction === 'Validée' ? 'validée' : 'rejetée';
+        updates[`/formations/${profile.id.split('_')[1]}/active`] = pendingAction === 'Validée';
       }
 
       await update(ref(database), updates);
       
-      setAdminStatus(validationStatus);
+      setAdminStatus(pendingAction);
       Alert.alert(
         'Mise à jour réussie',
-        `La demande a été ${validationStatus === 'Validée' ? 'validée' : 'rejetée'} avec succès.`,
+        `La demande a été ${pendingAction === 'Validée' ? 'validée' : 'rejetée'} avec succès.`,
         [{ text: 'OK', onPress: () => navigation.goBack() }]
       );
     } catch (error) {
       console.error('Error updating status:', error);
       Alert.alert('Erreur', 'Une erreur est survenue lors de la mise à jour du statut.');
+    } finally {
+      setConfirmationVisible(false);
+      setPendingAction(null);
     }
+  };
+
+  const cancelValidation = () => {
+    setConfirmationVisible(false);
+    setPendingAction(null);
   };
 
   const renderField = (label, value) => (
@@ -45,8 +111,35 @@ const ValidationProfil = ({ route, navigation }) => {
     </View>
   );
 
+  const renderFormationInfo = () => {
+    if (!formationInfo) return null;
+
+    return (
+      <View style={styles.formationInfoContainer}>
+        <Text style={styles.formationInfoTitle}>Information de la Formation</Text>
+        {renderField('Titre', formationInfo.title)}
+        {renderField('Catégorie', formationInfo.category)}
+        {renderField('Domaine', formationInfo.domaine)}
+        {renderField('Lieu', formationInfo.lieu)}
+        {renderField('Date', formationInfo.date)}
+        {renderField('Heure de début', formationInfo.heureDebut)}
+        {renderField('Heure de fin', formationInfo.heureFin)}
+        {renderField('Tarif Étudiant', `${formationInfo.tarifEtudiant} €`)}
+        {renderField('Tarif Médecin', `${formationInfo.tarifMedecin} €`)}
+        {renderField('Niveau', formationInfo.niveau)}
+        {renderField('Nature', formationInfo.nature)}
+        {renderField('Affiliation DIU', formationInfo.affiliationDIU)}
+        {renderField('Année conseillée', formationInfo.anneeConseillee)}
+        {renderField('Compétences acquises', formationInfo.competencesAcquises)}
+        {renderField('Prérequis', formationInfo.prerequis)}
+        {renderField('Instructions', formationInfo.instructions)}
+      </View>
+    );
+  };
+
   return (
     <ScrollView style={styles.container}>
+      
       <View style={styles.header}>
         <Text style={styles.title}>
           {profile.type === 'demande' ? "Demande d'inscription" : "Demande de validation Formation"}
@@ -80,6 +173,7 @@ const ValidationProfil = ({ route, navigation }) => {
       </View>
       {profile.type === 'demande' ? (
         <>
+          <Text style={styles.sectionTitle}>Information du Demandeur</Text>
           {renderField('Email', profile.email)}
           {renderField('Téléphone', profile.telephone)}
           {renderField('Médecin Diplômé', profile.medecinDiplome ? 'Oui' : 'Non')}
@@ -89,6 +183,7 @@ const ValidationProfil = ({ route, navigation }) => {
           {renderField('Étudiant DIU', profile.etudiantDIU ? 'Oui' : 'Non')}
           {renderField('Année DIU', profile.anneeDIU)}
           {renderField('Date de soumission', new Date(profile.timestamp).toLocaleString())}
+          {renderFormationInfo()}
         </>
       ) : (
         <>
@@ -110,8 +205,13 @@ const ValidationProfil = ({ route, navigation }) => {
           {renderField('Instructions', profile.instructions)}
         </>
       )}
-    <View></View>
-     
+
+      <ConfirmationDialog
+        visible={confirmationVisible}
+        onConfirm={confirmValidation}
+        onCancel={cancelValidation}
+        action={pendingAction === 'Validée' ? 'valider' : 'rejeter'}
+      />
     </ScrollView>
   );
 };
@@ -132,6 +232,13 @@ const styles = StyleSheet.create({
     fontSize: 22,
     fontWeight: 'bold',
     color: '#2c3e50',
+  },
+  sectionTitle: {
+    fontSize: 20,
+    fontWeight: 'bold',
+    color: '#2c3e50',
+    marginTop: 20,
+    marginBottom: 10,
   },
   field: {
     marginBottom: 12,
@@ -165,12 +272,12 @@ const styles = StyleSheet.create({
     justifyContent: 'space-around',
     marginTop: 20,
   },
-  button: {
-    paddingVertical: 12,
-    paddingHorizontal: 30,
-    borderRadius: 25,
-    alignItems: 'center',
-  },
+  // button: {
+  //   paddingVertical: 12,
+  //   paddingHorizontal: 30,
+  //   borderRadius: 25,
+  //   alignItems: 'center',
+  // },
   validateButton: {
     backgroundColor: '#2ecc71',
   },
@@ -181,6 +288,65 @@ const styles = StyleSheet.create({
     color: 'white',
     fontSize: 18,
     fontWeight: 'bold',
+  },
+  formationInfoContainer: {
+    marginTop: 20,
+    borderTopWidth: 1,
+    borderTopColor: '#bdc3c7',
+    paddingTop: 20,
+  },
+  formationInfoTitle: {
+    fontSize: 20,
+    fontWeight: 'bold',
+    color: '#2c3e50',
+    marginBottom: 10,
+  },
+  centeredView: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+  },
+  modalView: {
+    margin: 20,
+    backgroundColor: "white",
+    borderRadius: 20,
+    padding: 35,
+    alignItems: "center",
+    shadowColor: "#000",
+    shadowOffset: {
+      width: 0,
+      height: 2
+    },
+    shadowOpacity: 0.25,
+    shadowRadius: 4,
+    elevation: 5
+  },
+  modalText: {
+    marginBottom: 15,
+    textAlign: "center"
+  },
+  modalButtons: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    width: '100%',
+    marginTop: 20,
+  },
+  button: {
+    borderRadius: 20,
+    padding: 10,
+    elevation: 2
+  },
+  buttonCancel: {
+    backgroundColor: "#2196F3",
+  },
+  buttonConfirm: {
+    backgroundColor: "#2196F3",
+  },
+  textStyle: {
+    color: "white",
+    fontWeight: "bold",
+    textAlign: "center"
   },
 });
 
