@@ -9,12 +9,12 @@ const AjoutFormationScreen = ({ navigation, route }) => {
   const [formData, setFormData] = useState({
     id: Date.now().toString(),
     title: '',
-    active: true,
+    active: true,     //temporary, only admin can make formations in Phase 2, needs to change in Phase 3
     date: new Date(),
     image: 'https://via.placeholder.com/150',
     region: '',
     lieu: '',
-    status: 'propose', //temporary, only admin can see, needs to change in Phase 3
+    status: 'propose', //temporary, only admin can make formations in Phase 2, needs to change in Phase 3
     heureDebut: new Date(),
     heureFin: new Date(),
     nature: '',
@@ -31,7 +31,7 @@ const AjoutFormationScreen = ({ navigation, route }) => {
     competencesAcquises: '',
     prerequis: '',
     instructions: '',
-    admin: '',
+    admin: 'validée', //temporary, only admin can make formations in Phase 2, needs to change in Phase 3
   });
 
   const [showDatePicker, setShowDatePicker] = useState(false);

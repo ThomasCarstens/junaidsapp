@@ -1,12 +1,11 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import { View, Text, FlatList, StyleSheet, TouchableOpacity } from 'react-native';
 import { ref, onValue } from 'firebase/database';
 import { database } from '../../firebase';
 import { Ionicons } from '@expo/vector-icons';
 
 const DemandesProfilsScreen = ({ navigation }) => {
-  const [profiles, setProfiles] = useState([]);
-  const [formations, setFormations] = useState([]);
+  const [items, setItems] = useState([]);
   const [activeTab, setActiveTab] = useState('En attente');
 
   useEffect(() => {
@@ -16,29 +15,26 @@ const DemandesProfilsScreen = ({ navigation }) => {
     const unsubscribeDemandes = onValue(demandesRef, (snapshot) => {
       const data = snapshot.val();
       if (data) {
-        const formattedProfiles = [];
-        Object.keys(data).forEach(userId => {
-          Object.keys(data[userId]).forEach(demandeId => {
-            formattedProfiles.push({
-              id: `${userId}_${demandeId}`,
-              ...data[userId][demandeId],
-              type: 'demande'
-            });
-          });
-        });
-        setProfiles(formattedProfiles);
+        const formattedProfiles = Object.entries(data).flatMap(([userId, userDemandes]) =>
+          Object.entries(userDemandes).map(([demandeId, demande]) => ({
+            id: `demande_${userId}_${demandeId}`,
+            ...demande,
+            type: 'demande'
+          }))
+        );
+        updateItems(formattedProfiles);
       }
     });
 
     const unsubscribeFormations = onValue(formationsRef, (snapshot) => {
       const data = snapshot.val();
       if (data) {
-        const formattedFormations = Object.keys(data).map(id => ({
-          id,
-          ...data[id],
+        const formattedFormations = Object.entries(data).map(([id, formation]) => ({
+          id: `formation_${id}`,
+          ...formation,
           type: 'formation'
         }));
-        setFormations(formattedFormations);
+        updateItems(formattedFormations);
       }
     });
 
@@ -48,29 +44,36 @@ const DemandesProfilsScreen = ({ navigation }) => {
     };
   }, []);
 
-  const getStatus = (item) => {
-    // if (item.type === 'formation') {
-    //   return item.status === 'propose' ? 'En attente' : (item.active ? 'Validée' : 'Rejetée');
-    // }
-    // return 'En attente'; // Default status for demandes
-    if (item.admin){
-      let status = item.admin
-      let capStatus = status[0].toUpperCase() + status.slice(1);
-      console.log(capStatus)
-      return capStatus
+  const updateItems = useCallback((newItems) => {
+    setItems(prevItems => {
+      const combinedItems = [...prevItems, ...newItems];
+      const uniqueItems = combinedItems.reduce((acc, current) => {
+        const x = acc.find(item => item.id === current.id);
+        if (!x) {
+          return acc.concat([current]);
+        } else {
+          return acc;
+        }
+      }, []);
+      return uniqueItems.sort((a, b) => 
+        new Date(b.timestamp || b.date) - new Date(a.timestamp || a.date)
+      );
+    });
+  }, []);
+
+  const getStatus = useCallback((item) => {
+    if (item.admin) {
+      return item.admin.charAt(0).toUpperCase() + item.admin.slice(1);
     }
-    return 'En attente'; // Default status for demandes
+    return 'En attente';
+  }, []);
 
-    
-  };
-
-  const allItems = [...profiles, ...formations].sort((a, b) => 
-    new Date(b.timestamp || b.date) - new Date(a.timestamp || a.date)
+  const filteredItems = React.useMemo(() => 
+    items.filter(item => getStatus(item) === activeTab),
+    [items, activeTab, getStatus]
   );
 
-  const filteredItems = allItems.filter(item => getStatus(item) === activeTab);
-
-  const renderItem = ({ item }) => (
+  const renderItem = useCallback(({ item }) => (
     <TouchableOpacity
       style={styles.itemCard}
       onPress={() => navigation.navigate('ValidationProfil', { profile: item })}
@@ -106,7 +109,7 @@ const DemandesProfilsScreen = ({ navigation }) => {
         />
       </View>
     </TouchableOpacity>
-  );
+  ), [navigation]);
 
   return (
     <View style={styles.container}>
@@ -129,12 +132,12 @@ const DemandesProfilsScreen = ({ navigation }) => {
         keyExtractor={(item) => item.id}
         ListEmptyComponent={<Text style={styles.emptyList}>Aucun élément trouvé</Text>}
       />
-      <TouchableOpacity 
+      {/* <TouchableOpacity 
         style={styles.newFormationButton}
         onPress={() => navigation.navigate('AjoutFormateur')}
       >
-        <Text style={styles.newFormationButtonText}>+ Formateur</Text>
-      </TouchableOpacity>
+        <Text style={styles.newFormationButtonText}>+ Formateur (Phase 3!)</Text>
+      </TouchableOpacity> */}
     </View>
   );
 };

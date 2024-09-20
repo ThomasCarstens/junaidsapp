@@ -160,9 +160,9 @@ const LoginScreen = ({ navigation }) => {
         </View>
       </View>
 
-      <View style={styles.adminButtonContainer}>
+      {/* <View style={styles.adminButtonContainer}>
         {renderButton("Accès Admin", () => navigation.navigate('AdminTabs'), styles.adminButton, styles.adminButtonText)}
-      </View>
+      </View> */}
     </View>
   );
 };

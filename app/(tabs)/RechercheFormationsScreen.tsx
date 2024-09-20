@@ -14,9 +14,7 @@ const RechercheFormationsScreen = (props, { route }) => {
   const [filteredFormations, setFilteredFormations] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [categoryFilter, setCategoryFilter] = useState('');
-  const [lieuFilter, setLieuFilter] = useState('');
-  const [niveauFilter, setNiveauFilter] = useState('');
+  // const [niveauFilter, setNiveauFilter] = useState('');
   const [activeTab, setActiveTab] = useState('Visibles');
   const [isFormateur, setIsFormateur] = useState(false);
   const [isAdmin, setIsAdmin] = useState(false);
@@ -25,9 +23,16 @@ const RechercheFormationsScreen = (props, { route }) => {
   const filterHeight = useState(new Animated.Value(0))[0];
   const [userDemandes, setUserDemandes] = useState({});
 
+  const [categoryFilter, setCategoryFilter] = useState('');
+  const [lieuFilter, setLieuFilter] = useState('');
+  const [regionFilter, setRegionFilter] = useState('');
+  const [anneeFilter, setAnneeFilter] = useState('');
+  // Remove niveauFilter state
+
   const [categoryOptions, setCategoryOptions] = useState([]);
   const [lieuOptions, setLieuOptions] = useState([]);
-  const [niveauOptions, setNiveauOptions] = useState([]);
+  const [regionOptions, setRegionOptions] = useState([]);
+  const [anneeOptions, setAnneeOptions] = useState([]);
 
   const navigation = useNavigation();
 
@@ -122,11 +127,13 @@ const RechercheFormationsScreen = (props, { route }) => {
   const updateFilterOptions = (formationsArray) => {
     const categories = [...new Set(formationsArray.map(f => f.domaine))];
     const lieux = [...new Set(formationsArray.map(f => f.lieu))];
-    const niveaux = [...new Set(formationsArray.map(f => f.niveau))];
+    const regions = [...new Set(formationsArray.map(f => f.region))];
+    const annees = [...new Set(formationsArray.map(f => f.anneeConseillee))];
     console.log(categories)
     setCategoryOptions(categories);
     setLieuOptions(lieux);
-    setNiveauOptions(niveaux);
+    setRegionOptions(regions);
+    setAnneeOptions(annees);
   };
 
   const renderAppliedFilters = () => {
@@ -175,10 +182,12 @@ const RechercheFormationsScreen = (props, { route }) => {
     if (lieuFilter) {
       filtered = filtered.filter(f => f.lieu === lieuFilter);
     }
-    if (niveauFilter) {
-      filtered = filtered.filter(f => f.niveau === niveauFilter);
+    if (regionFilter) {
+      filtered = filtered.filter(f => f.region === regionFilter);
     }
-
+    if (anneeFilter) {
+      filtered = filtered.filter(f => f.anneeConseillee === anneeFilter);
+    }
     if (tab === "J'y suis inscrit") {
       filtered = filtered.filter(f => userDemandes.hasOwnProperty(f.id));
     } else if (tab === 'Je propose') {
@@ -291,7 +300,8 @@ const RechercheFormationsScreen = (props, { route }) => {
         <ScrollView>
           {renderFilterButtons('Domaine', categoryOptions, categoryFilter, setCategoryFilter)}
           {renderFilterButtons('Lieu', lieuOptions, lieuFilter, setLieuFilter)}
-          {renderFilterButtons('Niveau', niveauOptions, niveauFilter, setNiveauFilter)}
+          {renderFilterButtons('Region', regionOptions, regionFilter, setRegionFilter)}
+          {renderFilterButtons('Année conseillée', anneeOptions, anneeFilter, setAnneeFilter)}
           
 
         </ScrollView>
