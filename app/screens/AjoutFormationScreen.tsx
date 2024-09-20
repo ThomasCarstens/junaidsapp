@@ -12,10 +12,9 @@ const AjoutFormationScreen = ({ navigation, route }) => {
     active: true,
     date: new Date(),
     image: 'https://via.placeholder.com/150',
-    // category: '',
     region: '',
     lieu: '',
-    status: 'propose',
+    status: 'propose', //temporary, only admin can see, needs to change in Phase 3
     heureDebut: new Date(),
     heureFin: new Date(),
     nature: '',
@@ -24,12 +23,15 @@ const AjoutFormationScreen = ({ navigation, route }) => {
     tarifMedecin: '',
     domaine: '',
     autresDomaine: '',
+    autreLieu: '',
+    autreRegion: '',
+    autreNature: '',
     autreAnneeConseillee: '',
     affiliationDIU: '',
     competencesAcquises: '',
     prerequis: '',
     instructions: '',
-    admin: '', //isAdmin should avoid this.
+    admin: '',
   });
 
   const [showDatePicker, setShowDatePicker] = useState(false);
@@ -87,17 +89,32 @@ const AjoutFormationScreen = ({ navigation, route }) => {
     let newErrors = {};
 
     // Check required fields
-    const requiredFields = ['title', 'date', 'heureDebut', 'heureFin', 'lieu', 'region', 'nature', 'anneeConseillee', 'tarifEtudiant', 'tarifMedecin', 'domaine', 'affiliationDIU'];
-    requiredFields.forEach(field => {
+    const requiredFields = ['title', 'date', 'heureDebut', 'heureFin', 'lieu', 'region', 'nature', 'anneeConseillee', 'tarifEtudiant', 'tarifMedecin', 'domaine', 'affiliationDIU'];    requiredFields.forEach(field => {
       if (!formData[field]) {
         newErrors[field] = 'Ce champ est obligatoire';
         isValid = false;
       }
     });
 
-    // Check if 'autresDomaine' is filled when 'domaine' is 'Autres'
-    if (formData.domaine === 'Autres' && !formData.autresDomaine) {
+    // Check if 'autre' fields are filled when their corresponding main fields are 'Autre'
+    if (formData.domaine === 'Autre' && !formData.autresDomaine) {
       newErrors.autresDomaine = 'Veuillez spécifier le domaine';
+      isValid = false;
+    }
+    if (formData.lieu === 'Autre' && !formData.autreLieu) {
+      newErrors.autreLieu = 'Veuillez spécifier le lieu';
+      isValid = false;
+    }
+    if (formData.region === 'Autre' && !formData.autreRegion) {
+      newErrors.autreRegion = 'Veuillez spécifier la région';
+      isValid = false;
+    }
+    if (formData.nature === 'Autre' && !formData.autreNature) {
+      newErrors.autreNature = 'Veuillez spécifier la nature de la formation';
+      isValid = false;
+    }
+    if (formData.anneeConseillee === 'Autre' && !formData.autreAnneeConseillee) {
+      newErrors.autreAnneeConseillee = 'Veuillez spécifier l\'année conseillée';
       isValid = false;
     }
 
@@ -145,7 +162,7 @@ const AjoutFormationScreen = ({ navigation, route }) => {
       heureDebut: formData.heureDebut.toTimeString().split(' ')[0].slice(0, 5),
       heureFin: formData.heureFin.toTimeString().split(' ')[0].slice(0, 5),
       domaine: formData.domaine === 'Autres' ? formData.autresDomaine : formData.domaine,
-      // anneeConseillee: formData.anneeConseillee === 'Autres' ? formData.autreAnneeConseillee : formData.anneeConseillee,
+      // Autre fields are info for us - not for the filters in this phase.
       admin: route.params?.formation ? formData.admin : "en attente"//unless isAdmin!
     };
 
@@ -229,42 +246,7 @@ const AjoutFormationScreen = ({ navigation, route }) => {
         />
       )}
 
-      {/* {renderInput('Lieu', 'lieu', 'Lieu de la formation')} */}
-      <Text style={styles.label}>Lieu *</Text>
-      <Picker
-        selectedValue={formData.lieu}
-        style={[styles.picker, errors.lieu && styles.inputError]}
-        onValueChange={(itemValue) => handleInputChange('lieu', itemValue)}
-      >
-        <Picker.Item label="Sélectionnez une ou plusieurs régions" value="" />
-        <Picker.Item label="Nîmes GEMMLR" value="Nîmes GEMMLR" />
-        <Picker.Item label="Toulouse AMOPY" value="Toulouse AMOPY" />
-        <Picker.Item label="Avignon ISTM" value="Avignon ISTM" />
-        <Picker.Item label="Autre" value="Autre" />
-
-      </Picker>
-
-      {/* {renderInput('Nature de la formation', 'nature', 'Nature de la formation')} */}
-
-      <Text style={styles.label}>Région (pour que les étudiants repèrent les formations par région) *</Text>
-      <Picker
-        selectedValue={formData.region}
-        style={[styles.picker, errors.region && styles.inputError]}
-        onValueChange={(itemValue) => handleInputChange('region', itemValue)}
-      >
-        <Picker.Item label="Sélectionnez une ou plusieurs régions" value="" />
-        <Picker.Item label="PACA" value="PACA" />
-        <Picker.Item label="Occitanie" value="Occitanie" />
-        <Picker.Item label="Ile de France" value="Ile de France" />
-        <Picker.Item label="Champagnes Ardennes" value="Champagnes Ardennes" />
-        <Picker.Item label="Loire Atlantique" value="Loire Atlantique" />
-        <Picker.Item label="Bretagne" value="Bretagne" />
-        <Picker.Item label="Autre" value="Autre" />
-
-      </Picker>
-      {errors.region && <Text style={styles.errorText}>{errors.region}</Text>}
-
-      <Text style={styles.label}>Type de formation *</Text>
+<Text style={styles.label}>Type de formation *</Text>
       <Picker
         selectedValue={formData.nature}
         style={[styles.picker, errors.nature && styles.inputError]}
@@ -279,14 +261,48 @@ const AjoutFormationScreen = ({ navigation, route }) => {
       </Picker>
       {errors.nature && <Text style={styles.errorText}>{errors.nature}</Text>}
 
-      {formData.nature === 'Autre' && renderInput('Spécifier le type de formation', 'nature', 'Spécifier le type de formation')}
+      {formData.nature === 'Autre' && renderInput('Spécifier le type de formation', 'autreNature', 'Spécifier le type de formation')}
 
-      {/* {renderInput('Année conseillée', 'anneeConseillee', 'Année conseillée')} */}
+      <Text style={styles.label}>Lieu *</Text>
+      <Picker
+        selectedValue={formData.lieu}
+        style={[styles.picker, errors.lieu && styles.inputError]}
+        onValueChange={(itemValue) => handleInputChange('lieu', itemValue)}
+      >
+        <Picker.Item label="Sélectionnez un lieu" value="" />
+        <Picker.Item label="Nîmes GEMMLR" value="Nîmes GEMMLR" />
+        <Picker.Item label="Toulouse AMOPY" value="Toulouse AMOPY" />
+        <Picker.Item label="Avignon ISTM" value="Avignon ISTM" />
+        <Picker.Item label="Autre" value="Autre" />
+      </Picker>
+      {errors.lieu && <Text style={styles.errorText}>{errors.lieu}</Text>}
+
+      {formData.lieu === 'Autre' && renderInput('Spécifier le lieu', 'autreLieu', 'Spécifier le lieu')}
+
+      <Text style={styles.label}>Région *</Text>
+      <Picker
+        selectedValue={formData.region}
+        style={[styles.picker, errors.region && styles.inputError]}
+        onValueChange={(itemValue) => handleInputChange('region', itemValue)}
+      >
+        <Picker.Item label="Sélectionnez une région" value="" />
+        <Picker.Item label="PACA" value="PACA" />
+        <Picker.Item label="Occitanie" value="Occitanie" />
+        <Picker.Item label="Ile de France" value="Ile de France" />
+        <Picker.Item label="Champagnes Ardennes" value="Champagnes Ardennes" />
+        <Picker.Item label="Loire Atlantique" value="Loire Atlantique" />
+        <Picker.Item label="Bretagne" value="Bretagne" />
+        <Picker.Item label="Autre" value="Autre" />
+      </Picker>
+      {errors.region && <Text style={styles.errorText}>{errors.region}</Text>}
+
+      {formData.region === 'Autre' && renderInput('Spécifier la région', 'autreRegion', 'Spécifier la région')}
+
       <Text style={styles.label}>Année d'études conseillée *</Text>
       <Picker
         selectedValue={formData.anneeConseillee}
         style={[styles.picker, errors.anneeConseillee && styles.inputError]}
-        onValueChange={(itemValue) => handleInputChange('domaine', itemValue)}
+        onValueChange={(itemValue) => handleInputChange('anneeConseillee', itemValue)}
       >
         <Picker.Item label="Sélectionnez une année d'études" value="" />
         <Picker.Item label="DIU 1" value="DIU 1" />
@@ -295,8 +311,9 @@ const AjoutFormationScreen = ({ navigation, route }) => {
         <Picker.Item label="Postgraduate" value="Postgraduate" />
         <Picker.Item label="Autre" value="Autre" />
       </Picker>
+      {errors.anneeConseillee && <Text style={styles.errorText}>{errors.anneeConseillee}</Text>}
 
-      {formData.anneeConseillee === 'Autre' && renderInput('Spécifier l\'année d\'études conseillée', 'anneeConseillee', 'Spécifier l\'année d\'études conseillée')}
+      {formData.anneeConseillee === 'Autre' && renderInput('Spécifier l\'année d\'études conseillée', 'autreAnneeConseillee', 'Spécifier l\'année d\'études conseillée')}
 
       {renderInput('Tarif étudiant DIU', 'tarifEtudiant', 'Tarif étudiant DIU', 'numeric')}
       {renderInput('Tarif médecin', 'tarifMedecin', 'Tarif médecin', 'numeric')}

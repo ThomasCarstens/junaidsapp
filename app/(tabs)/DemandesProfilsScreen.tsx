@@ -83,7 +83,10 @@ const DemandesProfilsScreen = ({ navigation }) => {
           {new Date(item.timestamp || item.date).toLocaleDateString()}
         </Text>
       </View>
-      <Text style={styles.cardEmail}>{item.email || item.title}</Text>
+      <Text style={styles.cardEmail}>
+        {item.type === 'demande' ? `${item.prenom} ${item.nom}` : item.title}
+      </Text>
+
       {item.type === 'demande' ? (
         <>
           <Text>Médecin Diplômé: {item.medecinDiplome ? 'Oui' : 'Non'}</Text>

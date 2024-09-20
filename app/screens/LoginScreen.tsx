@@ -65,9 +65,9 @@ const LoginScreen = ({ navigation }) => {
       const data = snapshot.val();
       if (data) {
         console.log('Userdata downloaded:', data);
-
+        
         // Tabs According to Roles -- pre-app split.
-        if (data.isAdmin === true){
+        if (data.role.isAdmin === true){
           navigation.navigate('AdminTabs', { userRoles: data, formateur: true, validated: 'true' });
         } else {
           navigation.navigate('UserTabs', { userRoles: data, formateur: true, validated: 'true' });
