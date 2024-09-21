@@ -8,4 +8,6 @@
 
 see master branch for FCMv1 key
 
-see master branch for some hours - 20sept : 1h30 security management / admin tests: 1h30 / 
+see master branch for some hours - 20sept : 1h30 security management / 40min email
+
+21sept: 1h email

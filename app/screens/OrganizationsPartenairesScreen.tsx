@@ -77,22 +77,23 @@ const filterHeight = useState(new Animated.Value(0))[0];
 
         <Animated.View style={[styles.filtersContainer, { height: filterHeight }]}>
 
-          <ScrollView>
-            <View style={styles.filterContainer}>
+          {/* <ScrollView> */}
+            {/* <View style={styles.filterContainer}>
                 <Text style={styles.filterText}>Recevoir des notifications</Text>
                 <Switch
-
                   trackColor={{ false: "#767577", true: "#81b0ff" }}
                   thumbColor={true ? "#f5dd4b" : "#f4f3f4"}
                 />
-            </View>
-
-            <View style={styles.filterContainer}>
+            </View> */}
+            <TouchableOpacity style={styles.filterContainer } onPress={()=>navigation.push('RGPD')} >
+          <Text style={styles.filterText}>Gérer mes données</Text>
+          {/* <Ionicons name={showFilters ? "chevron-up" : "chevron-down"} size={24} color="white" /> */}
+        </TouchableOpacity> 
+            {/* <View style={styles.filterContainer}>
                 <Text style={styles.filterText}>Supprimer mes données</Text>
-
-            </View>
+            </View> */}
           
-          </ScrollView>
+          {/* </ScrollView> */}
         </Animated.View> 
 
       </View>) : <View></View>}

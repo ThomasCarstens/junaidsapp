@@ -28,6 +28,7 @@ import InscriptionFormationScreen from './screens/InscriptionFormationScreen';
 import ValidationProfilScreen from './screens/ValidationProfilScreen';
 import AjoutFormateurScreen from './screens/AjoutFormateurScreen';
 import RGPDScreen from './screens/RGPDScreen';
+import NotifsScreenSkeleton from './skeleton/NotifsScreenSkeleton';
 const Stack = createStackNavigator();
 const Tab = createBottomTabNavigator();
 
@@ -96,7 +97,7 @@ function AdminTabs() {
       tabBarInactiveTintColor: 'black',
     })}>
       <Tab.Screen name="RechercheFormations" component={RechercheFormationsScreen} initialParams={{spoofLoggedIn: false, spoofFormateur: true, spoofAdmin: true, spoofValidated: true}} />
-      {/* <Tab.Screen name="Notifications" component={NotifsScreen} /> */}
+      {/* <Tab.Screen name="NotifsScreenSkeleton" component={NotifsScreenSkeleton} /> */}
       <Tab.Screen name="Administrer" component={DemandesProfilsScreen} />
       <Tab.Screen name="OrganizationsPartenaires" component={OrganizationsPartenairesScreen} />
 
@@ -244,6 +245,7 @@ function App() {
         <Stack.Screen name="PasswordReset"  component={PasswordResetScreen} />
         <Stack.Screen name="OrganizationsPartenaires" component={OrganizationsPartenairesScreen} />
         <Stack.Screen name="RGPD" component={RGPDScreen} />
+        <Stack.Screen name="NotifsScreenSkeleton"       component={NotifsScreenSkeleton} />
 
 
         

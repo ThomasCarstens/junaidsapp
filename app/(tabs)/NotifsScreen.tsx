@@ -73,6 +73,7 @@ const NotificationList = ({ isAdmin, isFormateur }) => {
     }
   };
 
+
   const handleNotificationPress = (item) => {
     if (item.formationId) {
       navigation.navigate('Formation', {
