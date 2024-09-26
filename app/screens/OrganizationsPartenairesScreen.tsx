@@ -68,6 +68,7 @@ const filterHeight = useState(new Animated.Value(0))[0];
   };
   return (
     <View style={styles.container}>
+            <Text style={styles.contextText}>Cette application est conçue pour soutenir le déroulement des formations au sein des organisations partenaires.</Text>
       {(auth.currentUser)? ( 
       <View> 
         <TouchableOpacity style={styles.filterToggleButton } onPress={toggleFilters} >
@@ -87,6 +88,10 @@ const filterHeight = useState(new Animated.Value(0))[0];
             </View> */}
             <TouchableOpacity style={styles.filterContainer } onPress={()=>navigation.push('RGPD')} >
           <Text style={styles.filterText}>Gérer mes données</Text>
+          {/* <Ionicons name={showFilters ? "chevron-up" : "chevron-down"} size={24} color="white" /> */}
+        </TouchableOpacity> 
+        <TouchableOpacity style={styles.filterContainer } onPress={()=>navigation.push('RGPD')} >
+          <Text style={styles.filterText}>Réactiver les notifications Push</Text>
           {/* <Ionicons name={showFilters ? "chevron-up" : "chevron-down"} size={24} color="white" /> */}
         </TouchableOpacity> 
             {/* <View style={styles.filterContainer}>
@@ -118,10 +123,18 @@ const filterHeight = useState(new Animated.Value(0))[0];
 };
 
 const styles = StyleSheet.create({
+
   container: {
     flex: 1,
     padding: 16,
     backgroundColor: '#f0f0f0',
+  },
+  contextText: {
+    fontSize: 16,
+    fontStyle: 'italic',
+    color: '#666',
+    marginBottom: 16,
+    textAlign: 'center',
   },
   title: {
     fontSize: 20,

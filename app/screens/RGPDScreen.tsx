@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { View, Text, Button, Alert, StyleSheet, ScrollView } from 'react-native';
+import { View, Text, Button, Alert, StyleSheet, ScrollView, Platform } from 'react-native';
 import { auth, database } from '../../firebase';
 import { ref, set, get } from 'firebase/database';
 import { useNavigation } from '@react-navigation/native';
