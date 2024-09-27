@@ -288,10 +288,18 @@ const AjoutFormationScreen = ({ navigation, route }) => {
         <Picker.Item label="Sélectionnez une région" value="" />
         <Picker.Item label="PACA" value="PACA" />
         <Picker.Item label="Occitanie" value="Occitanie" />
-        <Picker.Item label="Ile de France" value="Ile de France" />
-        <Picker.Item label="Champagnes Ardennes" value="Champagnes Ardennes" />
-        <Picker.Item label="Loire Atlantique" value="Loire Atlantique" />
+        <Picker.Item label="Île-de-France" value="Île-de-France" />
+        <Picker.Item label="Grand Est" value="Grand Est" />
         <Picker.Item label="Bretagne" value="Bretagne" />
+        <Picker.Item label="Auvergne-Rhône-Alpes" value="Auvergne-Rhône-Alpes" />
+        <Picker.Item label="Bourgogne-Franche-Comté" value="Bourgogne-Franche-Comté" />
+        <Picker.Item label="Centre-Val de Loire" value="Centre-Val de Loire" />
+        <Picker.Item label="Corse" value="Corse" />
+        <Picker.Item label="Hauts-de-France" value="Hauts-de-France" />
+        <Picker.Item label="Normandie" value="Normandie" />
+        <Picker.Item label="Nouvelle-Aquitaine" value="Nouvelle-Aquitaine" />
+        <Picker.Item label="Pays de la Loire" value="Pays de la Loire" />
+        <Picker.Item label="Loire-Atlantique" value="Loire-Atlantique" />
         <Picker.Item label="Autre" value="Autre" />
       </Picker>
       {errors.region && <Text style={styles.errorText}>{errors.region}</Text>}
@@ -325,9 +333,7 @@ const AjoutFormationScreen = ({ navigation, route }) => {
         onValueChange={(itemValue) => handleInputChange('domaine', itemValue)}
       >
         <Picker.Item label="Sélectionnez un domaine" value="" />
-        <Picker.Item label="Médecine Générale" value="Médecine Générale" />
         <Picker.Item label="Médecine Sport" value="Médecine Sport" />
-        <Picker.Item label="Médecine Manuelle" value="Médecine Manuelle" />
         <Picker.Item label="Rhumatologie" value="Rhumatologie" />
         <Picker.Item label="Médecine Physique" value="Médecine Physique" />
         <Picker.Item label="Autre" value="Autre" />

@@ -1,111 +1,105 @@
 import React, { useEffect, useState, useCallback } from 'react';
-import { View, Text, FlatList, StyleSheet, TouchableOpacity } from 'react-native';
-import { ref, onValue } from 'firebase/database';
-import { auth, storage, database } from '../../firebase'
+import { View, Text, FlatList, StyleSheet, TouchableOpacity, ActivityIndicator } from 'react-native';
+import { ref, get } from 'firebase/database';
+import { auth, database } from '../../firebase';
 import { Ionicons } from '@expo/vector-icons';
-import { useNavigation } from '@react-navigation/native';
+import { useNavigation, useFocusEffect } from '@react-navigation/native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
-const DemandesProfilsScreen = ({  }) => {
+const DemandesProfilsScreen = () => {
   const [items, setItems] = useState([]);
   const [activeTab, setActiveTab] = useState('En attente');
+  const [loading, setLoading] = useState(true);
   const navigation = useNavigation();
-    useEffect(() => {
-      navigation.setOptions({
-        headerShown: true,
-        title: 'Administrer',
-        headerStyle: {
-          backgroundColor: '#1a53ff',
-        },
-        headerTintColor: '#fff',
-        headerTitleStyle: {
-          fontWeight: 'bold',
-        },
-        headerRight: () => (
-          <TouchableOpacity onPress={()=>handleLogout()} style={styles.logoutButton}>
-            <Text style={styles.logoutButtonText}>Se déconnecter</Text>
-          </TouchableOpacity>
-        ),
-      });
-    }, [navigation]);
-    
+
   useEffect(() => {
+    navigation.setOptions({
+      headerShown: true,
+      title: 'Administrer',
+      headerStyle: {
+        backgroundColor: '#1a53ff',
+      },
+      headerTintColor: '#fff',
+      headerTitleStyle: {
+        fontWeight: 'bold',
+      },
+      headerRight: () => (
+        <TouchableOpacity onPress={handleLogout} style={styles.logoutButton}>
+          <Text style={styles.logoutButtonText}>Se déconnecter</Text>
+        </TouchableOpacity>
+      ),
+    });
+  }, [navigation]);
+
+  const loadItems = useCallback(async () => {
+    setLoading(true);
     const demandesRef = ref(database, 'demandes');
     const formationsRef = ref(database, 'formations');
-    
 
-    const unsubscribeDemandes = onValue(demandesRef, (snapshot) => {
-      const data = snapshot.val();
-      if (data) {
-        const formattedProfiles = Object.entries(data).flatMap(([userId, userDemandes]) =>
-          Object.entries(userDemandes).map(([demandeId, demande]) => ({
-            id: `demande_${userId}_${demandeId}`,
-            ...demande,
-            type: 'demande'
-          }))
-        );
-        updateItems(formattedProfiles);
+    try {
+      const [demandesSnapshot, formationsSnapshot] = await Promise.all([
+        get(demandesRef),
+        get(formationsRef),
+      ]);
+
+      const demandesData = demandesSnapshot.val();
+      const formationsData = formationsSnapshot.val();
+
+      const formattedItems = [];
+
+      if (demandesData) {
+        Object.entries(demandesData).forEach(([userId, userDemandes]) => {
+          Object.entries(userDemandes).forEach(([demandeId, demande]) => {
+            formattedItems.push({
+              id: `demande_${userId}_${demandeId}`,
+              ...demande,
+              type: 'demande'
+            });
+          });
+        });
       }
-    });
 
-    const unsubscribeFormations = onValue(formationsRef, (snapshot) => {
-      const data = snapshot.val();
-      if (data) {
-        const formattedFormations = Object.entries(data).map(([id, formation]) => ({
-          id: `formation_${id}`,
-          ...formation,
-          type: 'formation'
-        }));
-        updateItems(formattedFormations);
+      if (formationsData) {
+        Object.entries(formationsData).forEach(([id, formation]) => {
+          formattedItems.push({
+            id: `formation_${id}`,
+            ...formation,
+            type: 'formation'
+          });
+        });
       }
-    });
 
-    return () => {
-      unsubscribeDemandes();
-      unsubscribeFormations();
-    };
+      formattedItems.sort((a, b) => new Date(b.timestamp || b.date) - new Date(a.timestamp || a.date));
+      setItems(formattedItems);
+    } catch (error) {
+      console.error('Error loading items:', error);
+    } finally {
+      setLoading(false);
+    }
   }, []);
+
+  useFocusEffect(
+    React.useCallback(() => {
+      loadItems();
+    }, [loadItems])
+  );
+
   const handleLogout = async () => {
     try {
       await auth.signOut();
       await AsyncStorage.removeItem('userUid');
       navigation.navigate('Login');
-      // navigation.
-      // setLoading(false);
-      
     } catch (error) {
       console.error('Error logging out:', error);
-      // setLoading(false);
     }
   };
-  const updateItems = useCallback((newItems) => {
-    setItems(prevItems => {
-      const combinedItems = [...prevItems, ...newItems];
-      const uniqueItems = combinedItems.reduce((acc, current) => {
-        const x = acc.find(item => item.id === current.id);
-        if (!x) {
-          return acc.concat([current]);
-        } else {
-          return acc;
-        }
-      }, []);
-      return uniqueItems.sort((a, b) => 
-        new Date(b.timestamp || b.date) - new Date(a.timestamp || a.date)
-      );
-    });
-  }, []);
 
   const getStatus = useCallback((item) => {
     if (item.admin) {
-      console.log(item.prenom)
-      console.log(item.admin)
-      let modifiedItem = item.admin.charAt(0).toUpperCase() + item.admin.slice(1);
-      console.log(modifiedItem)
-      return modifiedItem;
+      return item.admin.charAt(0).toUpperCase() + item.admin.slice(1);
     } else {
       return 'En attente';
     }
-    
   }, []);
 
   const filteredItems = React.useMemo(() => 
@@ -129,7 +123,6 @@ const DemandesProfilsScreen = ({  }) => {
       <Text style={styles.cardEmail}>
         {item.type === 'demande' ? `${item.prenom} ${item.nom}` : item.title}
       </Text>
-
       {item.type === 'demande' ? (
         <>
           <Text>Médecin Diplômé: {item.medecinDiplome ? 'Oui' : 'Non'}</Text>
@@ -150,6 +143,14 @@ const DemandesProfilsScreen = ({  }) => {
       </View>
     </TouchableOpacity>
   ), [navigation]);
+
+  if (loading) {
+    return (
+      <View style={styles.loadingContainer}>
+        <ActivityIndicator size="large" color="#0000ff" />
+      </View>
+    );
+  }
 
   return (
     <View style={styles.container}>
@@ -172,12 +173,6 @@ const DemandesProfilsScreen = ({  }) => {
         keyExtractor={(item) => item.id}
         ListEmptyComponent={<Text style={styles.emptyList}>Aucun élément trouvé</Text>}
       />
-      {/* <TouchableOpacity 
-        style={styles.newFormationButton}
-        onPress={() => navigation.navigate('AjoutFormateur')}
-      >
-        <Text style={styles.newFormationButtonText}>+ Formateur (Phase 3!)</Text>
-      </TouchableOpacity> */}
     </View>
   );
 };
@@ -186,6 +181,11 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#f5f5f5',
+  },
+  loadingContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   tabContainer: {
     flexDirection: 'row',
@@ -211,7 +211,6 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
   },
   itemCard: {
-    // marginBottom: 20,
     padding: 20,
     backgroundColor: '#d5dcf0',
     borderRadius: 10,
@@ -222,7 +221,6 @@ const styles = StyleSheet.create({
     },
     shadowOpacity: 0.23,
     shadowRadius: 2.62,
-
     marginHorizontal: 16,
     marginVertical: 8,
     elevation: 2,
@@ -243,7 +241,7 @@ const styles = StyleSheet.create({
   },
   cardEmail: {
     fontSize: 18,
-    marginRight:50,
+    marginRight: 50,
     fontWeight: 'bold',
     marginBottom: 8,
     color: '#2c3e50',
@@ -259,22 +257,6 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: '#7f8c8d',
   },
-  newFormationButton: {
-    position: 'absolute',
-    right: 20,
-    bottom: 20,
-    backgroundColor: '#1a53ff',
-    width: 200,
-    height: 60,
-    borderRadius: 30,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  newFormationButtonText: {
-    color: 'white',
-    fontSize: 30,
-    fontWeight: 'bold',
-  },
   logoutButton: {
     marginRight: 10,
   },
@@ -282,7 +264,6 @@ const styles = StyleSheet.create({
     color: '#fff',
     fontSize: 16,
   },
-
 });
 
 export default DemandesProfilsScreen;

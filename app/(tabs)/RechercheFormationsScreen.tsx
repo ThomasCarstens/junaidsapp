@@ -29,13 +29,51 @@ const RechercheFormationsScreen = (props, { route }) => {
   const [anneeFilter, setAnneeFilter] = useState('');
   // Remove niveauFilter state
 
-  const [categoryOptions, setCategoryOptions] = useState([]);
-  const [lieuOptions, setLieuOptions] = useState([]);
-  const [regionOptions, setRegionOptions] = useState([]);
-  const [anneeOptions, setAnneeOptions] = useState([]);
+  // const [categoryOptions, setCategoryOptions] = useState([]);
+  // const [lieuOptions, setLieuOptions] = useState([]);
+  // const [regionOptions, setRegionOptions] = useState([]);
+  // const [anneeOptions, setAnneeOptions] = useState([]);
 
   const navigation = useNavigation();
-
+  const [categoryOptions, setCategoryOptions] = useState([
+    "Médecine Sport",
+    "Rhumatologie",
+    "Médecine Physique",
+    "Autre"
+  ]);
+  
+  const [lieuOptions, setLieuOptions] = useState([
+    "Nîmes GEMMLR",
+    "Toulouse AMOPY",
+    "Avignon ISTM",
+    "Autre"
+  ]);
+  
+  const [regionOptions, setRegionOptions] = useState([
+    "PACA",
+    "Occitanie",
+    "Île-de-France",
+    "Grand Est",
+    "Bretagne",
+    "Auvergne-Rhône-Alpes",
+    "Bourgogne-Franche-Comté",
+    "Centre-Val de Loire",
+    "Corse",
+    "Hauts-de-France",
+    "Normandie",
+    "Nouvelle-Aquitaine",
+    "Pays de la Loire",
+    "Loire-Atlantique",
+    "Autre"
+  ]);
+  
+  const [anneeOptions, setAnneeOptions] = useState([
+    "DIU 1",
+    "DIU 2",
+    "DIU 3",
+    "Postgraduate",
+    "Autre"
+  ]);
   // useEffect(() => {
   //   console.log(route)
   // }, [route?.params]);
@@ -125,16 +163,35 @@ const RechercheFormationsScreen = (props, { route }) => {
   };
 
   const updateFilterOptions = (formationsArray) => {
-    const categories = [...new Set(formationsArray.map(f => f.domaine))];
-    const lieux = [...new Set(formationsArray.map(f => f.lieu))];
-    const regions = [...new Set(formationsArray.map(f => f.region))];
-    const annees = [...new Set(formationsArray.map(f => f.anneeConseillee))];
-    console.log(categories)
-    setCategoryOptions(categories);
-    setLieuOptions(lieux);
-    setRegionOptions(regions);
-    setAnneeOptions(annees);
+    // We don't need to update the options from the formationsArray anymore
+    // as we're using predefined lists. However, we might want to keep track
+    // of which options are actually present in the data.
+    
+    const presentCategories = new Set(formationsArray.map(f => f.domaine));
+    const presentLieux = new Set(formationsArray.map(f => f.lieu));
+    const presentRegions = new Set(formationsArray.map(f => f.region));
+    const presentAnnees = new Set(formationsArray.map(f => f.anneeConseillee));
+  
+    console.log("Present categories:", presentCategories);
+    console.log("Present lieux:", presentLieux);
+    console.log("Present regions:", presentRegions);
+    console.log("Present annees:", presentAnnees);
+  
+    // If you want to highlight or mark which options are actually present in the data,
+    // you can use these Sets to do so in your UI rendering logic.
   };
+
+  // const updateFilterOptions = (formationsArray) => {
+  //   const categories = [...new Set(formationsArray.map(f => f.domaine))];
+  //   const lieux = [...new Set(formationsArray.map(f => f.lieu))];
+  //   const regions = [...new Set(formationsArray.map(f => f.region))];
+  //   const annees = [...new Set(formationsArray.map(f => f.anneeConseillee))];
+  //   console.log(categories)
+  //   setCategoryOptions(categories);
+  //   setLieuOptions(lieux);
+  //   setRegionOptions(regions);
+  //   setAnneeOptions(annees);
+  // };
 
   const renderAppliedFilters = () => {
     const appliedFilters = [];
@@ -189,7 +246,9 @@ const RechercheFormationsScreen = (props, { route }) => {
       filtered = filtered.filter(f => f.anneeConseillee === anneeFilter);
     }
     if (tab === "J'y suis inscrit") {
-      filtered = filtered.filter(f => userDemandes.hasOwnProperty(f.id));
+      filtered = filtered.filter(f => 
+        userDemandes[f.id] && userDemandes[f.id].admin === "Validée"
+      );
     } else if (tab === 'Je propose') {
       filtered = filtered.filter(f => (f.status === 'propose'));
     } else if (tab === 'Cachées') {
@@ -200,7 +259,7 @@ const RechercheFormationsScreen = (props, { route }) => {
     }
     setFilteredFormations(filtered);
   };
-
+  
   const renderFilterButtons = (title, options, selectedValue, setSelectedValue) => (
     <View style={styles.filterSection}>
       <Text style={styles.filterTitle}>{title}</Text>
@@ -299,9 +358,11 @@ const RechercheFormationsScreen = (props, { route }) => {
           </TouchableOpacity>
         <ScrollView>
           {renderFilterButtons('Domaine', categoryOptions, categoryFilter, setCategoryFilter)}
-          {renderFilterButtons('Lieu', lieuOptions, lieuFilter, setLieuFilter)}
-          {renderFilterButtons('Region', regionOptions, regionFilter, setRegionFilter)}
           {renderFilterButtons('Année conseillée', anneeOptions, anneeFilter, setAnneeFilter)}
+          {renderFilterButtons('Lieu', lieuOptions, lieuFilter, setLieuFilter)}
+          
+          {renderFilterButtons('Region', regionOptions, regionFilter, setRegionFilter)}
+          
           
 
         </ScrollView>
