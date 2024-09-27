@@ -1,9 +1,7 @@
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import { View, Text, StyleSheet, ScrollView, TextInput, TouchableOpacity, Switch, Alert } from 'react-native';
 import { Picker } from '@react-native-picker/picker';
-import { useNavigation } from '@react-navigation/native';
 import { ref as ref_d, set } from 'firebase/database';
-// import { database } from '../../firebase';
 import { database, auth } from '../../firebase';
 
 const InscriptionFormationScreen = ({ route, navigation }) => {
@@ -20,15 +18,39 @@ const InscriptionFormationScreen = ({ route, navigation }) => {
   const [formationId, setFormationId] = useState(route.params.formationId);
   const [formationTitle, setFormationTitle] = useState(route.params.formationTitle);
 
-  // const navigation = useNavigation();
-  // useEffect(() => {
-  //   console.log("title: ", route.params.formationId)
-  //   console.log("title: ", route.params)
-  // }, [route.params.formationTitle]);
+  const validateForm = () => {
+    if (!nom.trim() || !prenom.trim() || !email.trim() || !telephone.trim()) {
+      Alert.alert('Erreur', 'Veuillez remplir tous les champs obligatoires (nom, prénom, email, téléphone).');
+      return false;
+    }
+
+    if (medecinDiplome && (!anneeDiplome.trim() || !faculte.trim())) {
+      Alert.alert('Erreur', 'Veuillez remplir tous les champs pour Médecin Diplômé.');
+      return false;
+    }
+
+    // Basic email validation
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+      Alert.alert('Erreur', 'Veuillez entrer une adresse email valide.');
+      return false;
+    }
+
+    // Basic phone number validation (adjust regex as needed for your specific format)
+    const phoneRegex = /^[0-9]{10}$/;
+    if (!phoneRegex.test(telephone)) {
+      Alert.alert('Erreur', 'Veuillez entrer un numéro de téléphone valide (10 chiffres).');
+      return false;
+    }
+
+    return true;
+  };
 
   const handleSubmit = async () => {
+    if (!validateForm()) return;
+
     const formData = {
-      admin: 'en attente', //isAdmin should avoid this.
+      admin: 'en attente',
       formationTitle,
       nom,
       prenom,
@@ -43,9 +65,7 @@ const InscriptionFormationScreen = ({ route, navigation }) => {
       timestamp: new Date().toISOString(),
     };
 
-    // TODO: Replace this with the actual user's UID from authentication
     const userUID = auth.currentUser?.uid;
-    
 
     try {
       const userRef = ref_d(database, `demandes/${userUID}/${formationId}`);
@@ -65,21 +85,23 @@ const InscriptionFormationScreen = ({ route, navigation }) => {
 
       <View style={styles.nameContainer}>
         <View style={styles.nameField}>
-          <Text style={styles.label}>Nom</Text>
+          <Text style={styles.label}>Nom *</Text>
           <TextInput
             style={styles.input}
             value={nom}
             onChangeText={setNom}
             placeholder="Nom de famille"
+            required
           />
         </View>
         <View style={styles.nameField}>
-          <Text style={styles.label}>Prénom</Text>
+          <Text style={styles.label}>Prénom *</Text>
           <TextInput
             style={styles.input}
             value={prenom}
             onChangeText={setPrenom}
             placeholder="Prénom"
+            required
           />
         </View>
       </View>
@@ -95,23 +117,25 @@ const InscriptionFormationScreen = ({ route, navigation }) => {
       {medecinDiplome && (
         <>
           <View style={styles.formGroup}>
-            <Text style={styles.label}>Année de diplôme</Text>
+            <Text style={styles.label}>Année de diplôme *</Text>
             <TextInput
               style={styles.input}
               value={anneeDiplome}
               onChangeText={setAnneeDiplome}
               keyboardType="numeric"
               placeholder="YYYY"
+              required
             />
           </View>
 
           <View style={styles.formGroup}>
-            <Text style={styles.label}>Faculté</Text>
+            <Text style={styles.label}>Faculté *</Text>
             <TextInput
               style={styles.input}
               value={faculte}
               onChangeText={setFaculte}
               placeholder="Nom de l'université"
+              required
             />
           </View>
         </>
@@ -126,24 +150,26 @@ const InscriptionFormationScreen = ({ route, navigation }) => {
       </View>
 
       <View style={styles.formGroup}>
-        <Text style={styles.label}>Email</Text>
+        <Text style={styles.label}>Email *</Text>
         <TextInput
           style={styles.input}
           value={email}
           onChangeText={setEmail}
           keyboardType="email-address"
           placeholder="votre@email.com"
+          required
         />
       </View>
 
       <View style={styles.formGroup}>
-        <Text style={styles.label}>Numéro de téléphone</Text>
+        <Text style={styles.label}>Numéro de téléphone *</Text>
         <TextInput
           style={styles.input}
           value={telephone}
           onChangeText={setTelephone}
           keyboardType="phone-pad"
           placeholder="0123456789"
+          required
         />
       </View>
 
@@ -177,6 +203,7 @@ const InscriptionFormationScreen = ({ route, navigation }) => {
     </ScrollView>
   );
 };
+
 
 const styles = StyleSheet.create({
   container: {
