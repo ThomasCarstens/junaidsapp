@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, TouchableOpacity, StyleSheet, FlatList, Image, ScrollView, Animated, Switch } from 'react-native';
+import { View, Text, TouchableOpacity, StyleSheet, FlatList, Image, ScrollView, Animated, Switch, Linking } from 'react-native';
 import { database, auth } from '../../firebase';
 import { Ionicons } from '@expo/vector-icons';
 
@@ -66,6 +66,10 @@ const filterHeight = useState(new Animated.Value(0))[0];
       useNativeDriver: false,
     }).start();
   };
+
+  const openSupportWebsite = () => {
+    Linking.openURL('https://esculapplsupportpage.vercel.app');
+  };
   return (
     <View style={styles.container}>
             <Text style={styles.contextText}>Cette application est conçue pour soutenir le déroulement des formations au sein des organisations partenaires.</Text>
@@ -86,10 +90,9 @@ const filterHeight = useState(new Animated.Value(0))[0];
                   thumbColor={true ? "#f5dd4b" : "#f4f3f4"}
                 />
             </View> */}
-            <TouchableOpacity style={styles.filterContainer } onPress={()=>navigation.push('RGPD')} >
-          <Text style={styles.filterText}>Gérer mes données</Text>
-          {/* <Ionicons name={showFilters ? "chevron-up" : "chevron-down"} size={24} color="white" /> */}
-        </TouchableOpacity> 
+            <TouchableOpacity style={styles.filterContainer} onPress={openSupportWebsite}>
+              <Text style={styles.filterText}>Visiter le site de support</Text>
+            </TouchableOpacity>
         <TouchableOpacity style={styles.filterContainer } onPress={()=>navigation.push('RGPD')} >
           <Text style={styles.filterText}>Réactiver les notifications Push</Text>
           {/* <Ionicons name={showFilters ? "chevron-up" : "chevron-down"} size={24} color="white" /> */}

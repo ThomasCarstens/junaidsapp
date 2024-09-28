@@ -6,8 +6,9 @@ import { ref as ref_d, set, get, onValue } from 'firebase/database';
 const FormationScreen = ({ route, navigation }) => {
   const { formationId, role } = route.params;
   const [formation, setFormation] = useState(null);
-  const [isInscrit, setIsInscrit] = useState(false);
+  const [inscriptionStatus, setInscriptionStatus] = useState(null);
   const [hasConsent, setHasConsent] = useState(false);
+  const [isDateValid, setIsDateValid] = useState(true);
 
   useEffect(() => {
     const formationRef = ref_d(database, `/formations/${formationId}`);
@@ -15,20 +16,24 @@ const FormationScreen = ({ route, navigation }) => {
       const data = snapshot.val();
       if (data) {
         setFormation(data);
+        checkDateValidity(data.date);
       } else {
         Alert.alert("Erreur", "Formation non trouvée");
         navigation.goBack();
       }
     });
 
-    // Vérifier si l'utilisateur est déjà inscrit
-    const checkInscription = async () => {
+    // Vérifier le statut d'inscription
+    const checkInscriptionStatus = async () => {
       const user = auth.currentUser;
       if (user) {
-        console.log(`/demandes/${user.uid}/${formationId}`)
         const demandeRef = ref_d(database, `/demandes/${user.uid}/${formationId}`);
         const snapshot = await get(demandeRef);
-        setIsInscrit(snapshot.exists());
+        if (snapshot.exists()) {
+          setInscriptionStatus(snapshot.val().admin);
+        } else {
+          setInscriptionStatus(null);
+        }
       }
     };
 
@@ -42,11 +47,18 @@ const FormationScreen = ({ route, navigation }) => {
       }
     };
 
-    checkInscription();
+    checkInscriptionStatus();
     checkConsent();
 
     return () => unsubscribe();
   }, [formationId]);
+
+  const checkDateValidity = (date) => {
+    const formationDate = new Date(date);
+    const currentDate = new Date();
+    const eightDaysFromNow = new Date(currentDate.getTime() + 8 * 24 * 60 * 60 * 1000);
+    setIsDateValid(formationDate > eightDaysFromNow);
+  };
 
   const handleSignUp = async () => {
     const user = auth.currentUser;
@@ -54,12 +66,12 @@ const FormationScreen = ({ route, navigation }) => {
       Alert.alert("Erreur", "Vous devez être connecté pour vous inscrire.");
       return;
     }
-
-    if (isInscrit) {
-      Alert.alert("Information", "Vous êtes déjà inscrit à cette formation.");
+    
+    if (inscriptionStatus) {
+      Alert.alert("Information", "Nous ne permettons qu'une inscription par formation. Pour plus d'informations sur votre inscription, contactez notre email d'assistance: contact.esculappl@gmail.com");
       return;
     }
-
+    
     if (!hasConsent) {
       Alert.alert(
         "Consentement RGPD requis",
@@ -76,27 +88,59 @@ const FormationScreen = ({ route, navigation }) => {
     navigation.navigate('InscriptionFormation', { formationId: formation.id, formationTitle: formation.title });
   };
 
-  const handleDelete = () => {
-    let toggleAction = (formation.active) ? "Désactiver" : "Réactiver";
+  const handleUnsubscribe = () => {
+    if (!isDateValid) {
+      Alert.alert(
+        "Impossible de se désinscrire",
+        "La formation commence dans moins de 8 jours ou est déjà passée. Veuillez contacter contact.esculappl@gmail.com pour toute modification."
+      );
+      return;
+    }
+
     Alert.alert(
       "Confirmation",
-      `Êtes-vous sûr de vouloir ${toggleAction} cette formation ?`,
+      "Êtes-vous sûr de vouloir vous désinscrire de cette formation ?",
       [
         { text: "Annuler", style: "cancel" },
-        { text: toggleAction, onPress: () => {
-          const formationRef = ref_d(database, `/formations/${formationId}`);
-          set(formationRef, { ...formation, active: !(formation.active) })
-            .then(() => {
-              Alert.alert("Succès", `La formation a été ${toggleAction.toLowerCase()}`);
-              navigation.goBack();
-            })
-            .catch((error) => {
-              Alert.alert("Erreur", "Impossible de modifier la formation");
-            });
+        { text: "Confirmer", onPress: async () => {
+          const user = auth.currentUser;
+          if (user) {
+            const demandeRef = ref_d(database, `/demandes/${user.uid}/${formationId}`);
+            await set(demandeRef, { admin: "désinscrit" });
+            setInscriptionStatus("désinscrit");
+            Alert.alert("Succès", "Vous avez été désinscrit de la formation.");
+          }
         }}
       ]
     );
   };
+
+  const getButtonStyle = () => {
+    if (!inscriptionStatus || inscriptionStatus === "désinscrit") return styles.signUpButton;
+    return { ...styles.signUpButton, backgroundColor: '#808080' };
+  };
+
+  const getButtonText = () => {
+    switch (inscriptionStatus) {
+      case "en attente": return "Inscription en attente";
+      case "Rejetée": return "Inscription rejetée";
+      case "Validée": return "Se désinscrire";
+      default: return "S'inscrire";
+    }
+  };
+
+  const handleButtonPress = () => {
+    console.log('inscriptionStatus: ', inscriptionStatus)
+    console.log('hasConsent: ', hasConsent)
+    if (inscriptionStatus === "Validée") {
+      
+      handleUnsubscribe();
+    } else if (!inscriptionStatus ||inscriptionStatus=== "Rejetée" ||  inscriptionStatus === "désinscrit") {
+      handleSignUp();
+      
+    }
+  };
+
 
   if (!formation) {
     return (
@@ -111,38 +155,54 @@ const FormationScreen = ({ route, navigation }) => {
       <Image source={{ uri: formation.image }} style={styles.image} />
       <Text style={styles.title}>{formation.title}</Text>
       {(role.isAdmin === true) ? (
-        <View style={styles.buttonContainer}>
-          {(formation.active) ? (
-            <TouchableOpacity 
-              style={styles.signUpButton}
-              onPress={handleSignUp}
-            >
-              <Text style={styles.signUpButtonText}>S'inscrire</Text>
-            </TouchableOpacity>
-          ) : (<View></View>)}
-          <TouchableOpacity 
-            style={styles.modifyButton}
-            onPress={() => navigation.navigate('AjoutFormation', { formation: formation, role: role })}
-          >
-            <Text style={styles.buttonText}>Modifier</Text>
-          </TouchableOpacity>
-          <TouchableOpacity 
-            style={styles.deleteButton}
-            onPress={handleDelete}
-          >
-            <Text style={styles.buttonText}>{(formation.active) ? "Désactiver" : "Réactiver"}</Text>
-          </TouchableOpacity>
-        </View>
+         <View style={styles.buttonContainer}>
+         {formation.active && (
+           <TouchableOpacity 
+             style={getButtonStyle()}
+             onPress={handleButtonPress}
+             disabled={inscriptionStatus === "en attente" || inscriptionStatus === "Rejetée"}
+           >
+             <Text style={[
+               styles.signUpButtonText, 
+               inscriptionStatus === "Validée" ? { color: 'red' } : null
+             ]}>
+               {getButtonText()}
+             </Text>
+           </TouchableOpacity>
+         )}
+         {role.isAdmin === true && (
+           <>
+             <TouchableOpacity 
+               style={styles.modifyButton}
+               onPress={() => navigation.navigate('AjoutFormation', { formation: formation, role: role })}
+             >
+               <Text style={styles.buttonText}>Modifier</Text>
+             </TouchableOpacity>
+             <TouchableOpacity 
+               style={styles.deleteButton}
+               onPress={handleDelete}
+             >
+               <Text style={styles.buttonText}>{formation.active ? "Désactiver" : "Réactiver"}</Text>
+             </TouchableOpacity>
+           </>
+         )}
+       </View>
       ) : (
         <View style={styles.buttonContainer}>
-          {(formation.active) ? (
-            <TouchableOpacity 
-              style={styles.signUpButton}
-              onPress={handleSignUp}
-            >
-              <Text style={styles.signUpButtonText}>S'inscrire</Text>
-            </TouchableOpacity>
-          ) : (<View></View>)}
+         {formation.active && (
+           <TouchableOpacity 
+             style={getButtonStyle()}
+             onPress={handleButtonPress}
+            //  disabled={inscriptionStatus === "en attente" || inscriptionStatus === "Rejetée"}
+           >
+             <Text style={[
+               styles.signUpButtonText, 
+               inscriptionStatus === "Validée" ? { color: 'red' } : null
+             ]}>
+               {getButtonText()}
+             </Text>
+           </TouchableOpacity>
+         )}
         </View>
       )}
       <Text style={styles.info}>Date: {formation.date}</Text>
