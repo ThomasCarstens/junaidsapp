@@ -28,11 +28,13 @@ async function registerForPushNotificationsAsync() {
   if (Device.isDevice) {
     const { status: existingStatus } = await Notifications.getPermissionsAsync();
     let finalStatus = existingStatus;
+    console.log(finalStatus)
     if (existingStatus !== 'granted') {
       const { status } = await Notifications.requestPermissionsAsync();
       finalStatus = status;
     }
     if (finalStatus !== 'granted') {
+      
       Alert.alert('Erreur', 'Permission non accordée pour les notifications push !');
       return;
     }

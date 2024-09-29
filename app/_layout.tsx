@@ -29,6 +29,7 @@ import ValidationProfilScreen from './screens/ValidationProfilScreen';
 import AjoutFormateurScreen from './screens/AjoutFormateurScreen';
 import RGPDScreen from './screens/RGPDScreen';
 import NotifsScreenSkeleton from './skeleton/NotifsScreenSkeleton';
+import NotificationExplanationScreen from './screens/NotificationExplanationScreen';
 const Stack = createStackNavigator();
 const Tab = createBottomTabNavigator();
 
@@ -246,7 +247,8 @@ function App() {
         <Stack.Screen name="OrganizationsPartenaires" component={OrganizationsPartenairesScreen} />
         <Stack.Screen name="RGPD" component={RGPDScreen} />
         <Stack.Screen name="NotifsScreenSkeleton"       component={NotifsScreenSkeleton} />
-
+        
+        <Stack.Screen name="NotificationExplanation" component={NotificationExplanationScreen} />
 
         
 

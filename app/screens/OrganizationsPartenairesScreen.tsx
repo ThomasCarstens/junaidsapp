@@ -1,13 +1,13 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, TouchableOpacity, StyleSheet, FlatList, Image, ScrollView, Animated, Switch, Linking } from 'react-native';
+import { View, Text, TouchableOpacity, StyleSheet, FlatList, Image, Animated, Linking } from 'react-native';
 import { database, auth } from '../../firebase';
 import { Ionicons } from '@expo/vector-icons';
-
-
+import * as Notifications from 'expo-notifications';
 
 const OrganizationsPartenairesScreen = ({navigation}) => {
   const [showFilters, setShowFilters] = useState(false);
-const filterHeight = useState(new Animated.Value(0))[0];
+  const filterHeight = useState(new Animated.Value(0))[0];
+  const [notificationStatus, setNotificationStatus] = useState('Vérification...');
   const organizations = [
     { id: '1', name: 'SOFMMOOM', image: require('../../assets/images/partenaires/sofMOMMO.png'), description: 'Société Française de Médecine Manuelle Orthopédique et Ostéopathique Médicale' },
     { id: '2', name: 'SMMOF', image: require('../../assets/images/partenaires/SMMOF.png'), description: 'Société de Médecine Manuelle - Orthopédique de France' },
@@ -36,8 +36,14 @@ const filterHeight = useState(new Animated.Value(0))[0];
   });
 
   // return () => unsubscribe();
+  checkNotificationStatus();
 }, [navigation]);
-  
+
+  const checkNotificationStatus = async () => {
+    const { status } = await Notifications.getPermissionsAsync();
+    setNotificationStatus(status === 'granted' ? 'Activées' : 'Désactivées');
+  };
+    
   
   const OrganizationItem = ({ name, description, image }) => (
     
@@ -70,41 +76,30 @@ const filterHeight = useState(new Animated.Value(0))[0];
   const openSupportWebsite = () => {
     Linking.openURL('https://esculapplsupportpage.vercel.app');
   };
+  const navigateToNotificationExplanation = () => {
+    navigation.navigate('NotificationExplanation', { status: notificationStatus });
+  };
+
   return (
     <View style={styles.container}>
-            <Text style={styles.contextText}>Cette application est conçue pour soutenir le déroulement des formations au sein des organisations partenaires.</Text>
-      {(auth.currentUser)? ( 
-      <View> 
-        <TouchableOpacity style={styles.filterToggleButton } onPress={toggleFilters} >
-          <Text style={styles.filterToggleButtonText}>Gérer mes paramètres Esculappl</Text>
-          <Ionicons name={showFilters ? "chevron-up" : "chevron-down"} size={24} color="white" />
-        </TouchableOpacity> 
+      <Text style={styles.contextText}>Cette application est conçue pour soutenir le déroulement des formations au sein des organisations partenaires.</Text>
+      {auth.currentUser && (
+        <View>
+          <TouchableOpacity style={styles.filterToggleButton} onPress={toggleFilters}>
+            <Text style={styles.filterToggleButtonText}>Gérer mes paramètres Esculappl</Text>
+            <Ionicons name={showFilters ? "chevron-up" : "chevron-down"} size={24} color="white" />
+          </TouchableOpacity>
 
-        <Animated.View style={[styles.filtersContainer, { height: filterHeight }]}>
-
-          {/* <ScrollView> */}
-            {/* <View style={styles.filterContainer}>
-                <Text style={styles.filterText}>Recevoir des notifications</Text>
-                <Switch
-                  trackColor={{ false: "#767577", true: "#81b0ff" }}
-                  thumbColor={true ? "#f5dd4b" : "#f4f3f4"}
-                />
-            </View> */}
+          <Animated.View style={[styles.filtersContainer, { height: filterHeight }]}>
             <TouchableOpacity style={styles.filterContainer} onPress={openSupportWebsite}>
-              <Text style={styles.filterText}>Visiter le site de support</Text>
+              <Text style={styles.filterText}>Gérer mon compte et contacter Esculappl</Text>
             </TouchableOpacity>
-        <TouchableOpacity style={styles.filterContainer } onPress={()=>navigation.push('RGPD')} >
-          <Text style={styles.filterText}>Réactiver les notifications Push</Text>
-          {/* <Ionicons name={showFilters ? "chevron-up" : "chevron-down"} size={24} color="white" /> */}
-        </TouchableOpacity> 
-            {/* <View style={styles.filterContainer}>
-                <Text style={styles.filterText}>Supprimer mes données</Text>
-            </View> */}
-          
-          {/* </ScrollView> */}
-        </Animated.View> 
-
-      </View>) : <View></View>}
+            <TouchableOpacity style={styles.filterContainer} onPress={navigateToNotificationExplanation}>
+              <Text style={styles.filterText}>Notifications Push: {notificationStatus}</Text>
+            </TouchableOpacity>
+          </Animated.View>
+        </View>
+      )}
     
       <Text style={styles.title}> Liens des organisations partenaires</Text>
       <FlatList
@@ -118,9 +113,6 @@ const filterHeight = useState(new Animated.Value(0))[0];
         )}
         keyExtractor={item => item.id}
       />
-      {/* {auth.currentUser?<Text style={styles.title}> Gestion de mon compte </Text> : <View></View>} */}
-      
-      {/* <Text style={styles.title}> Gestion des comptes </Text> */}
     </View>
   );
 };

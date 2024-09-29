@@ -16,7 +16,7 @@
       "supportsTablet": true,
       "googleServicesFile": "./GoogleService-Info.plist",
       "bundleIdentifier": "com.olivierdumay.appdolivier",
-      "buildNumber": "16"
+      "buildNumber": "18"
     },
     "android": {
       "icon": "./assets/images/icon.png",
@@ -55,7 +55,7 @@
         "origin": false
       },
       "eas": {
-        "projectId": "51e2e72b-ed5c-4f8d-bc3e-86e58c5e5370"
+        "projectId": "6146ee8a-bf84-4479-866c-0f6797428e33"
       }
     }
   }
