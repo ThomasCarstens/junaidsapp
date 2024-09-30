@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { View, Text, ScrollView, StyleSheet, TouchableOpacity, Image, FlatList, Animated, Linking, Platform, Alert } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { Ionicons } from '@expo/vector-icons';
@@ -7,7 +7,106 @@ import { auth, firebase, storage, database } from '../../firebase'
 import { ref as ref_d, set, get, onValue } from 'firebase/database'
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import * as Application from 'expo-application';
+
+// import { useNavigation } from '@react-navigation/native';
+import * as Device from 'expo-device';
+import * as Notifications from 'expo-notifications';
+import Constants from 'expo-constants';
+
 const RechercheFormationsScreen = (props, { route }) => {
+
+  Notifications.setNotificationHandler({
+    handleNotification: async () => ({
+      shouldShowAlert: true,
+      shouldPlaySound: false,
+      shouldSetBadge: false,
+    }),
+  });
+
+  async function registerForPushNotificationsAsync() {
+    if (Platform.OS === 'android') {
+      Notifications.setNotificationChannelAsync('default', {
+        name: 'default',
+        importance: Notifications.AndroidImportance.MAX,
+        vibrationPattern: [0, 250, 250, 250],
+        lightColor: '#FF231F7C',
+      });
+    }
+
+    if (Device.isDevice) {
+      const { status: existingStatus } = await Notifications.getPermissionsAsync();
+      let finalStatus = existingStatus;
+      console.log(finalStatus)
+      if (existingStatus !== 'granted') {
+        const { status } = await Notifications.requestPermissionsAsync();
+        finalStatus = status;
+      }
+      if (finalStatus !== 'granted') {
+        
+        Alert.alert('Erreur', 'Permission non accordée pour les notifications push !');
+        return;
+      }
+      const projectId = Constants?.expoConfig?.extra?.eas?.projectId ?? Constants?.easConfig?.projectId;
+      if (!projectId) {
+        Alert.alert('Erreur', 'ID du projet non trouvé');
+        return;
+      }
+      try {
+        const pushTokenString = (await Notifications.getExpoPushTokenAsync({ projectId })).data;
+        console.log(pushTokenString);
+        const tokenRef = ref_d(database, `userdata/${auth.currentUser.uid}/notifications/token`);
+        set(tokenRef, pushTokenString);
+        return pushTokenString;
+      } catch (e) {
+        Alert.alert('Erreur', `${e}`);
+      }
+    } else {
+      Alert.alert('Erreur', 'Les notifications push nécessitent un appareil physique');
+    }
+  }
+
+  // const { status } = route.params;
+  const [expoPushToken, setExpoPushToken] = useState('');
+  const [notification, setNotification] = useState(undefined);
+  const notificationListener = useRef();
+  const responseListener = useRef();
+  const [pushTokenList, setPushTokenList] = useState([]);
+  const [UidPushTokenList, setUidPushTokenList] = useState({});
+
+
+  useEffect(() => {
+    // verifierConsentementPrecedent();
+
+    registerForPushNotificationsAsync()
+      .then(token => {
+        setExpoPushToken(token ?? '')
+      })
+      .catch((error) => setExpoPushToken(`${error}`));
+
+    notificationListener.current = Notifications.addNotificationReceivedListener(notification => {
+      setNotification(notification);
+    });
+
+    responseListener.current = Notifications.addNotificationResponseReceivedListener(response => {
+      console.log(response);
+    });
+
+    return () => {
+      notificationListener.current &&
+        Notifications.removeNotificationSubscription(notificationListener.current);
+      responseListener.current &&
+        Notifications.removeNotificationSubscription(responseListener.current);
+    };
+  }, []);
+  const getExplanation = () => {
+    if (status === 'granted') {
+      return "Les notifications push sont actuellement activées pour Esculappl. Si vous souhaitez les désactiver, suivez les instructions ci-dessous.";
+    } else {
+      return "Les notifications push sont actuellement désactivées pour Esculappl. Pour profiter pleinement de l'application, nous vous recommandons de les activer. Suivez les instructions ci-dessous pour les réactiver.";
+    }
+  };
+
+
 
   // const { userDta, role } = route.params;
   const [formations, setFormations] = useState([]);
@@ -108,9 +207,7 @@ const RechercheFormationsScreen = (props, { route }) => {
       setAnneeOptions(parameters.anneeOptions);
       // console.log(categoryOptions)
       // const [lieuOptions, setLieuOptions] = useState([]);
-      
       // const [regionOptions, setRegionOptions] = useState([]);
-      
       // const [anneeOptions, setAnneeOptions] = useState([]);
     } catch (error) {
       console.error('Error checking filter options:', error);
@@ -162,8 +259,8 @@ const RechercheFormationsScreen = (props, { route }) => {
 
   const openAppStore = () => {
     const url = Platform.OS === 'ios'
-      ? 'https://apps.apple.com/app/your-app-id'
-      : 'https://play.google.com/store/apps/details?id=your.app.package';
+      ? 'https://apps.apple.com/app/6642655239'
+      : 'https://play.google.com/store/apps/details?id=com.olivierdumay.appdolivier';
     Linking.openURL(url);
   };
   

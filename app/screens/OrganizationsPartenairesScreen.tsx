@@ -9,45 +9,41 @@ const OrganizationsPartenairesScreen = ({navigation}) => {
   const filterHeight = useState(new Animated.Value(0))[0];
   const [notificationStatus, setNotificationStatus] = useState('Vérification...');
   const organizations = [
-    { id: '1', name: 'SOFMMOOM', image: require('../../assets/images/partenaires/sofMOMMO.png'), description: 'Société Française de Médecine Manuelle Orthopédique et Ostéopathique Médicale' },
-    { id: '2', name: 'SMMOF', image: require('../../assets/images/partenaires/SMMOF.png'), description: 'Société de Médecine Manuelle - Orthopédique de France' },
-    { id: '3', name: 'ISTM', image: require('../../assets/images/partenaires/ISTM.png'), description: 'Institut Supérieur de Thérapie Manuelle' },
-    { id: '4', name: 'GEMMLR', image: require('../../assets/images/partenaires/GEMMLR.png'), description: 'Groupe \'Études et de Médecine Manuelle Médecine Légale et Réparation' },
-    { id: '5', name: 'AMOPY', description: 'Association de Médecine Ostéopathique et de Posturologie Yvelines' },
-    { id: '6', name: 'CEMMOM', description: 'Collège Européen de Médecine Manuelle et Ostéopathie Médicale' },
+    { id: '1', name: 'SOFMMOOM', image: require('../../assets/images/partenaires/sofMOMMO.png'), description: 'Société Française de Médecine Manuelle Orthopédique et Ostéopathique Médicale', link: 'http://www.sofmmoom.org', type: 'website' },
+    { id: '2', name: 'SMMOF', image: require('../../assets/images/partenaires/SMMOF.png'), description: 'Société de Médecine Manuelle - Orthopédique de France', link: 'http://www.smmof.fr', type: 'website' },
+    { id: '3', name: 'ISTM', image: require('../../assets/images/partenaires/ISTM.png'), description: 'Institut Supérieur de Thérapie Manuelle', link: 'http://www.medecinemanuelle.fr', type: 'website' },
+    { id: '4', name: 'GEMMLR', image: require('../../assets/images/partenaires/GEMMLR.png'), description: 'Groupe d\'Études et de Médecine Manuelle Médecine Légale et Réparation', link: 'mailto:docteurdumay@gmail.com', type: 'email' },
+    { id: '5', name: 'AMOPY', description: 'Association de Médecine Ostéopathique et de Posturologie Yvelines', link: 'mailto:dr.f.dasque@gmail.com', type: 'email' },
+    { id: '6', name: 'CEMMOM', description: 'Collège Européen de Médecine Manuelle et Ostéopathie Médicale', link: 'mailto:arnaud.dupeyron@gmail.com', type: 'email' },
   ];
+
   useEffect(() => {
+    navigation.setOptions({
+      headerShown: true,
+      title: 'Partenaires',
+      headerStyle: {
+        backgroundColor: '#1a53ff',
+      },
+      headerTintColor: '#fff',
+      headerTitleStyle: {
+        fontWeight: 'bold',
+      },
+    });
 
-  navigation.setOptions({
-    headerShown: true,
-    title: 'Partenaires',
-    headerStyle: {
-      backgroundColor: '#1a53ff',
-    },
-    headerTintColor: '#fff',
-    headerTitleStyle: {
-      fontWeight: 'bold',
-    },
-    // headerRight: () => (
-    //   <TouchableOpacity onPress={()=>handleLogout()} style={styles.logoutButton}>
-    //     <Text style={styles.logoutButtonText}>Se déconnecter</Text>
-    //   </TouchableOpacity>
-    // ),
-  });
-
-  // return () => unsubscribe();
-  checkNotificationStatus();
-}, [navigation]);
+    checkNotificationStatus();
+  }, [navigation]);
 
   const checkNotificationStatus = async () => {
     const { status } = await Notifications.getPermissionsAsync();
     console.log(status)
     setNotificationStatus(status === 'granted' ? 'Activées' : 'Désactivées');
   };
-    
-  
-  const OrganizationItem = ({ name, description, image }) => (
-    
+
+  const handleVisit = (link, type) => {
+    Linking.openURL(link);
+  };
+
+  const OrganizationItem = ({ name, description, image, link, type }) => (
     <View style={styles.orgItem}>
       {image ? (
         <Image source={ image } style={styles.orgLogo} />
@@ -59,12 +55,18 @@ const OrganizationsPartenairesScreen = ({navigation}) => {
       <View style={styles.orgInfo}>
         <Text style={styles.orgName}>{name}</Text>
         <Text style={styles.orgDescription} numberOfLines={2}>{description}</Text>
-        <TouchableOpacity style={styles.visitButton}>
-          <Text style={styles.visitButtonText}>Visiter</Text>
+        <TouchableOpacity 
+          style={[styles.visitButton, type === 'email' ? styles.emailButton : styles.websiteButton]} 
+          onPress={() => handleVisit(link, type)}
+        >
+          <Text style={styles.visitButtonText}>
+            {type === 'email' ? 'Email' : 'Visiter'}
+          </Text>
         </TouchableOpacity>
       </View>
     </View>
   );
+
   const toggleFilters = () => {
     setShowFilters(!showFilters);
     Animated.timing(filterHeight, {
@@ -78,6 +80,7 @@ const OrganizationsPartenairesScreen = ({navigation}) => {
   const openSupportWebsite = () => {
     Linking.openURL('https://esculapplsupportpage.vercel.app');
   };
+
   const navigateToNotificationExplanation = () => {
     navigation.navigate('NotificationExplanation', { status: notificationStatus });
   };
@@ -86,7 +89,6 @@ const OrganizationsPartenairesScreen = ({navigation}) => {
     <View style={styles.container}>
       <Text style={styles.contextText}>Version du 4 octobre 2024. Cette application est conçue pour soutenir le déroulement des formations au sein des organisations partenaires.</Text>
 
-      {/* <Text style={styles.versionText}>Version « D  »</Text> */}
       {auth.currentUser && (
         <View>
           <TouchableOpacity style={styles.filterToggleButton} onPress={toggleFilters}>
@@ -113,6 +115,8 @@ const OrganizationsPartenairesScreen = ({navigation}) => {
             name={item.name} 
             description={item.description} 
             image={item.image}
+            link={item.link}
+            type={item.type}
           />
         )}
         keyExtractor={item => item.id}
@@ -120,7 +124,6 @@ const OrganizationsPartenairesScreen = ({navigation}) => {
     </View>
   );
 };
-
 const styles = StyleSheet.create({
 
   container: {
@@ -174,12 +177,24 @@ const styles = StyleSheet.create({
     color: '#666',
     marginBottom: 8,
   },
+  // visitButton: {
+  //   backgroundColor: '#4a90e2',
+  //   paddingVertical: 6,
+  //   paddingHorizontal: 12,
+  //   borderRadius: 4,
+  //   alignSelf: 'flex-start',
+  // },
   visitButton: {
-    backgroundColor: '#4a90e2',
     paddingVertical: 6,
     paddingHorizontal: 12,
     borderRadius: 4,
     alignSelf: 'flex-start',
+  },
+  websiteButton: {
+    backgroundColor: '#4a90e2',
+  },
+  emailButton: {
+    backgroundColor: '#34a853',
   },
   visitButtonText: {
     color: 'white',

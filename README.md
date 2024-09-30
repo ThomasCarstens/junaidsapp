@@ -29,7 +29,7 @@ Request ID: 9e61ffaa-0e01-4445-951e-814bedcd9346
 
 https://play.google.com/console/u/0/signup
 const [categoryOptions, setCategoryOptions] = useState([
- "Médecine Sport",
+"Médecine Sport",
 "Rhumatologie",
 "Médecine Physique",
 "Autre"
@@ -64,32 +64,4 @@ const [anneeOptions, setAnneeOptions] = useState([
 "Postgraduate",
 "Autre"
  ]);
-const updateFilterOptions = (formationsArray) => {
- // We don't need to update the options from the formationsArray anymore
-// as we're using predefined lists. However, we might want to keep track
-// of which options are actually present in the data.
-const presentCategories = new Set(formationsArray.map(f => f.domaine));
-const presentLieux = new Set(formationsArray.map(f => f.lieu));
-const presentRegions = new Set(formationsArray.map(f => f.region));
-const presentAnnees = new Set(formationsArray.map(f => f.anneeConseillee));
-console.log("Present categories:", presentCategories);
-console.log("Present lieux:", presentLieux);
-console.log("Present regions:", presentRegions);
-console.log("Present annees:", presentAnnees);
-// If you want to highlight or mark which options are actually present in the data,
-// you can use these Sets to do so in your UI rendering logic.
- };
-// const updateFilterOptions = (formationsArray) => {
-// const categories = [...new Set(formationsArray.map(f => f.domaine))];
-// const lieux = [...new Set(formationsArray.map(f => f.lieu))];
-// const regions = [...new Set(formationsArray.map(f => f.region))];
-// const annees = [...new Set(formationsArray.map(f => f.anneeConseillee))];
-// console.log(categories)
-// setCategoryOptions(categories);
-// setLieuOptions(lieux);
-// setRegionOptions(regions);
-// setAnneeOptions(annees);
-// };
-
-Update RechercheFormationsScreen with filter options that have all the ones existing in our array plus any from the data
-
+https://expo.dev/changelog

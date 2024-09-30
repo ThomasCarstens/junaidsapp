@@ -3,12 +3,16 @@ import { View, Text, StyleSheet, Image, ScrollView, TouchableOpacity, Alert } fr
 import { auth, firebase, storage, database } from '../../firebase';
 import { ref as ref_d, set, get, onValue } from 'firebase/database';
 
+
+
+
 const FormationScreen = ({ route, navigation }) => {
   const { formationId, role } = route.params;
   const [formation, setFormation] = useState(null);
   const [inscriptionStatus, setInscriptionStatus] = useState(null);
   const [hasConsent, setHasConsent] = useState(false);
   const [isDateValid, setIsDateValid] = useState(true);
+
 
   useEffect(() => {
     console.log(formationId)
@@ -45,6 +49,7 @@ const FormationScreen = ({ route, navigation }) => {
       if (user) {
         const consentRef = ref_d(database, `/consentement/${user.uid}`);
         const snapshot = await get(consentRef);
+        
         setHasConsent(snapshot.val() === true);
       }
     };
