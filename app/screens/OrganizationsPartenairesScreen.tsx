@@ -10,11 +10,11 @@ const OrganizationsPartenairesScreen = ({navigation}) => {
   const [notificationStatus, setNotificationStatus] = useState('Vérification...');
   const organizations = [
     { id: '1', name: 'SOFMMOOM', image: require('../../assets/images/partenaires/sofMOMMO.png'), description: 'Société Française de Médecine Manuelle Orthopédique et Ostéopathique Médicale', link: 'http://www.sofmmoom.org', type: 'website' },
-    { id: '2', name: 'SMMOF', image: require('../../assets/images/partenaires/SMMOF.png'), description: 'Société de Médecine Manuelle - Orthopédique de France', link: 'http://www.smmof.fr', type: 'website' },
-    { id: '3', name: 'ISTM', image: require('../../assets/images/partenaires/ISTM.png'), description: 'Institut Supérieur de Thérapie Manuelle', link: 'http://www.medecinemanuelle.fr', type: 'website' },
-    { id: '4', name: 'GEMMLR', image: require('../../assets/images/partenaires/GEMMLR.png'), description: 'Groupe d\'Études et de Médecine Manuelle Médecine Légale et Réparation', link: 'mailto:docteurdumay@gmail.com', type: 'email' },
-    { id: '5', name: 'AMOPY', description: 'Association de Médecine Ostéopathique et de Posturologie Yvelines', link: 'mailto:dr.f.dasque@gmail.com', type: 'email' },
-    { id: '6', name: 'CEMMOM', description: 'Collège Européen de Médecine Manuelle et Ostéopathie Médicale', link: 'mailto:arnaud.dupeyron@gmail.com', type: 'email' },
+    { id: '2', name: 'SMMOF', image: require('../../assets/images/partenaires/SMMOF.png'), description: 'Syndicat de Médecine Manuelle Ostéopathie de France', link: 'http://www.smmof.fr', type: 'website' },
+    { id: '3', name: 'ISTM', image: require('../../assets/images/partenaires/ISTM.png'), description: 'Institut Supérieur de Thérapeutique Manuelle', link: 'http://www.medecinemanuelle.fr', type: 'website' },
+    { id: '4', name: 'GEMMLR', image: require('../../assets/images/partenaires/GEMMLR.png'), description: 'Groupe d\'enseignement en Médecine Manuelle du Languedoc Roussillon', link: 'mailto:docteurdumay@gmail.com', type: 'email' },
+    { id: '5', name: 'AMOPY', description: 'Association des Médecins Ostéopathes des Pyrénées', link: 'mailto:dr.f.dasque@gmail.com', type: 'email' },
+    { id: '6', name: 'CEMMOM', description: 'Collège des Enseignants de Médecine manuelle ostéopathie Médicale', link: 'mailto:arnaud.dupeyron@gmail.com', type: 'email' },
   ];
 
   useEffect(() => {

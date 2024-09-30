@@ -539,7 +539,8 @@ const RechercheFormationsScreen = (props, { route }) => {
         <Image source={{ uri: item.image }} style={styles.formationImage} />
         <View style={styles.formationDetails}>
           <Text style={styles.formationTitle}>{item.title}</Text>
-          <Text>Date: {item.date}</Text>
+          <Text>Début: {item.date}</Text>
+          <Text>Fin: {item.date_de_fin}</Text>
           <Text>Lieu: {item.lieu}</Text>
           <Text>Tarif étudiant DIU: {item.tarifEtudiant} €</Text>
           <Text>Tarif médecin: {item.tarifMedecin} €</Text>

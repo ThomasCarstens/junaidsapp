@@ -240,7 +240,8 @@ const FormationScreen = ({ route, navigation }) => {
          )}
         </View>
       )}
-      <Text style={styles.info}>Date: {formation.date}</Text>
+      <Text style={styles.info}>Début: {formation.date}</Text>
+      <Text style={styles.info}>Fin: {formation.date_de_fin}</Text>
       <Text style={styles.info}>Heure: {formation.heureDebut} - {formation.heureFin}</Text>
       <Text style={styles.info}>Lieu: {formation.lieu}</Text>
       <Text style={styles.info}>Nature: {formation.nature}</Text>

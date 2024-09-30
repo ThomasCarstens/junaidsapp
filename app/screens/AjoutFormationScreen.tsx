@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { View, ScrollView, Text, TextInput, StyleSheet, TouchableOpacity, Alert, Image } from 'react-native';
 import { Picker } from '@react-native-picker/picker';
 import DateTimePicker from '@react-native-community/datetimepicker';
-import { ref as ref_d, set } from 'firebase/database';
+import { ref as ref_d, set, get } from 'firebase/database';
 import { ref as ref_s, uploadBytes, getDownloadURL } from 'firebase/storage';
 import { auth, firebase, storage, database } from '../../firebase';
 import * as ImagePicker from 'expo-image-picker';
@@ -37,13 +37,40 @@ const AjoutFormationScreen = ({ navigation, route }) => {
     admin: 'validée', //temporary, only admin can make formations in Phase 2, needs to change in Phase 3
   });
 
-  const [showDatePicker, setShowDatePicker] = useState(false);
+  // const [showDatePicker, setShowDatePicker] = useState(false);
   const [showStartTimePicker, setShowStartTimePicker] = useState(false);
   const [showEndTimePicker, setShowEndTimePicker] = useState(false);
+  const [showDatePicker, setShowDatePicker] = useState(false);
+  const [showEndDatePicker, setShowEndDatePicker] = useState(false);
   const [imageUri, setImageUri] = useState(null);
   const [errors, setErrors] = useState({});
+  const [categoryOptions, setCategoryOptions] = useState([]);
+  const [lieuOptions, setLieuOptions] = useState([]);
+  const [regionOptions, setRegionOptions] = useState([]);
+  const [anneeOptions, setAnneeOptions] = useState([]);
 
   useEffect(() => {
+    downloadFilterOptions();
+    // ... (keep existing useEffect logic)
+  }, [route.params?.formation]);
+
+  const downloadFilterOptions = async () => {
+    try {
+      const parametersRef = ref_d(database, 'parameters');
+      const paramsSnapshot = await get(parametersRef);
+      const parameters = paramsSnapshot.val();
+      console.log(parameters);
+      setCategoryOptions(parameters.categoryOptions);
+      setLieuOptions(parameters.lieuOptions);
+      setRegionOptions(parameters.regionOptions);
+      setAnneeOptions(parameters.anneeOptions);
+    } catch (error) {
+      console.error('Error checking filter options:', error);
+    }
+  };
+
+  useEffect(() => {
+    downloadFilterOptions();
     const existingFormation = route.params?.formation;
     if (existingFormation) {
       setFormData({
@@ -70,10 +97,15 @@ const AjoutFormationScreen = ({ navigation, route }) => {
     }
   };
 
-  const handleDateChange = (event, selectedDate) => {
-    setShowDatePicker(false);
+
+  const handleDateChange = (event, selectedDate, isEndDate = false) => {
+    if (isEndDate) {
+      setShowEndDatePicker(false);
+    } else {
+      setShowDatePicker(false);
+    }
     if (selectedDate) {
-      handleInputChange('date', selectedDate);
+      handleInputChange(isEndDate ? 'date_de_fin' : 'date', selectedDate);
     }
   };
 
@@ -124,7 +156,8 @@ const AjoutFormationScreen = ({ navigation, route }) => {
     let newErrors = {};
 
     // Check required fields
-    const requiredFields = ['title', 'date', 'heureDebut', 'heureFin', 'lieu', 'region', 'nature', 'anneeConseillee', 'tarifEtudiant', 'tarifMedecin', 'domaine', 'affiliationDIU'];    requiredFields.forEach(field => {
+    const requiredFields = ['title', 'date', 'heureDebut', 'heureFin', 'lieu', 'region', 'nature', 'anneeConseillee', 'tarifEtudiant', 'tarifMedecin', 'domaine', 'affiliationDIU'];    
+    requiredFields.forEach(field => {
       if (!formData[field]) {
         newErrors[field] = 'Ce champ est obligatoire';
         isValid = false;
@@ -234,7 +267,7 @@ const AjoutFormationScreen = ({ navigation, route }) => {
     </View>
   );
 
-  const requiredFields = ['title', 'date', 'heureDebut', 'heureFin', 'lieu', 'nature', 'anneeConseillee', 'tarifEtudiant', 'tarifMedecin', 'domaine', 'affiliationDIU'];
+  const requiredFields = ['title', 'date', 'date_de_fin', 'heureDebut', 'heureFin', 'lieu', 'nature', 'anneeConseillee', 'tarifEtudiant', 'tarifMedecin', 'domaine', 'affiliationDIU'];
 
   return (
     <ScrollView style={styles.container}>
@@ -244,7 +277,7 @@ const AjoutFormationScreen = ({ navigation, route }) => {
 
       {renderInput('Titre', 'title', 'Titre de la formation')}
 
-      <Text style={styles.label}>Date *</Text>
+      <Text style={styles.label}>Date de début *</Text>
       <TouchableOpacity style={[styles.input, errors.date && styles.inputError]} onPress={() => setShowDatePicker(true)}>
         <Text>{formData.date.toLocaleDateString()}</Text>
       </TouchableOpacity>
@@ -254,7 +287,21 @@ const AjoutFormationScreen = ({ navigation, route }) => {
           value={formData.date}
           mode="date"
           display="default"
-          onChange={handleDateChange}
+          onChange={(event, selectedDate) => handleDateChange(event, selectedDate)}
+        />
+      )}
+
+      <Text style={styles.label}>Date de fin *</Text>
+      <TouchableOpacity style={[styles.input, errors.date_de_fin && styles.inputError]} onPress={() => setShowEndDatePicker(true)}>
+        <Text>{formData.date_de_fin.toLocaleDateString()}</Text>
+      </TouchableOpacity>
+      {errors.date_de_fin && <Text style={styles.errorText}>{errors.date_de_fin}</Text>}
+      {showEndDatePicker && (
+        <DateTimePicker
+          value={formData.date_de_fin}
+          mode="date"
+          display="default"
+          onChange={(event, selectedDate) => handleDateChange(event, selectedDate, true)}
         />
       )}
 
@@ -298,6 +345,8 @@ const AjoutFormationScreen = ({ navigation, route }) => {
         <Picker.Item label="Formation spécialisée" value="Formation spécialisée" />
         <Picker.Item label="Atelier pratique" value="Atelier pratique" />
         <Picker.Item label="Autre" value="Autre" />
+
+        
       </Picker>
       {errors.nature && <Text style={styles.errorText}>{errors.nature}</Text>}
 
@@ -310,14 +359,15 @@ const AjoutFormationScreen = ({ navigation, route }) => {
         onValueChange={(itemValue) => handleInputChange('lieu', itemValue)}
       >
         <Picker.Item label="Sélectionnez un lieu" value="" />
-        <Picker.Item label="Nîmes GEMMLR" value="Nîmes GEMMLR" />
-        <Picker.Item label="Toulouse AMOPY" value="Toulouse AMOPY" />
-        <Picker.Item label="Avignon ISTM" value="Avignon ISTM" />
-        <Picker.Item label="Autre" value="Autre" />
+        {lieuOptions.map((lieu, index) => (
+          <Picker.Item key={index} label={lieu} value={lieu} />
+        ))}
+        {/* <Picker.Item label="Autre" value="Autre" /> */}
       </Picker>
       {errors.lieu && <Text style={styles.errorText}>{errors.lieu}</Text>}
-
       {formData.lieu === 'Autre' && renderInput('Spécifier le lieu', 'autreLieu', 'Spécifier le lieu')}
+
+
 
       <Text style={styles.label}>Région *</Text>
       <Picker
@@ -326,25 +376,15 @@ const AjoutFormationScreen = ({ navigation, route }) => {
         onValueChange={(itemValue) => handleInputChange('region', itemValue)}
       >
         <Picker.Item label="Sélectionnez une région" value="" />
-        <Picker.Item label="PACA" value="PACA" />
-        <Picker.Item label="Occitanie" value="Occitanie" />
-        <Picker.Item label="Île-de-France" value="Île-de-France" />
-        <Picker.Item label="Grand Est" value="Grand Est" />
-        <Picker.Item label="Bretagne" value="Bretagne" />
-        <Picker.Item label="Auvergne-Rhône-Alpes" value="Auvergne-Rhône-Alpes" />
-        <Picker.Item label="Bourgogne-Franche-Comté" value="Bourgogne-Franche-Comté" />
-        <Picker.Item label="Centre-Val de Loire" value="Centre-Val de Loire" />
-        <Picker.Item label="Corse" value="Corse" />
-        <Picker.Item label="Hauts-de-France" value="Hauts-de-France" />
-        <Picker.Item label="Normandie" value="Normandie" />
-        <Picker.Item label="Nouvelle-Aquitaine" value="Nouvelle-Aquitaine" />
-        <Picker.Item label="Pays de la Loire" value="Pays de la Loire" />
-        <Picker.Item label="Loire-Atlantique" value="Loire-Atlantique" />
-        <Picker.Item label="Autre" value="Autre" />
+        {regionOptions.map((region, index) => (
+          <Picker.Item key={index} label={region} value={region} />
+        ))}
+        {/* <Picker.Item label="Autre" value="Autre" /> */}
       </Picker>
       {errors.region && <Text style={styles.errorText}>{errors.region}</Text>}
-
       {formData.region === 'Autre' && renderInput('Spécifier la région', 'autreRegion', 'Spécifier la région')}
+
+
 
       <Text style={styles.label}>Année d'études conseillée *</Text>
       <Picker
@@ -353,15 +393,15 @@ const AjoutFormationScreen = ({ navigation, route }) => {
         onValueChange={(itemValue) => handleInputChange('anneeConseillee', itemValue)}
       >
         <Picker.Item label="Sélectionnez une année d'études" value="" />
-        <Picker.Item label="DIU 1" value="DIU 1" />
-        <Picker.Item label="DIU 2" value="DIU 2" />
-        <Picker.Item label="DIU 3" value="DIU 3" />
-        <Picker.Item label="Postgraduate" value="Postgraduate" />
-        <Picker.Item label="Autre" value="Autre" />
+        {anneeOptions.map((annee, index) => (
+          <Picker.Item key={index} label={annee} value={annee} />
+        ))}
+        {/* <Picker.Item label="Autre" value="Autre" /> */}
       </Picker>
       {errors.anneeConseillee && <Text style={styles.errorText}>{errors.anneeConseillee}</Text>}
-
       {formData.anneeConseillee === 'Autre' && renderInput('Spécifier l\'année d\'études conseillée', 'autreAnneeConseillee', 'Spécifier l\'année d\'études conseillée')}
+
+
 
       {renderInput('Tarif étudiant DIU', 'tarifEtudiant', 'Tarif étudiant DIU', 'numeric')}
       {renderInput('Tarif médecin', 'tarifMedecin', 'Tarif médecin', 'numeric')}
