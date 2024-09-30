@@ -1,12 +1,12 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, ScrollView, StyleSheet, TouchableOpacity, Image, FlatList, Animated } from 'react-native';
+import { View, Text, ScrollView, StyleSheet, TouchableOpacity, Image, FlatList, Animated, Linking, Platform, Alert } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { Ionicons } from '@expo/vector-icons';
 
 import { auth, firebase, storage, database } from '../../firebase'
 import { ref as ref_d, set, get, onValue } from 'firebase/database'
 import AsyncStorage from '@react-native-async-storage/async-storage';
-
+import * as Application from 'expo-application';
 const RechercheFormationsScreen = (props, { route }) => {
 
   // const { userDta, role } = route.params;
@@ -74,6 +74,7 @@ const RechercheFormationsScreen = (props, { route }) => {
     "Postgraduate",
     "Autre"
   ]);
+  const [isUpdateAvailable, setIsUpdateAvailable] = useState(false);
   // useEffect(() => {
   //   console.log(route)
   // }, [route?.params]);
@@ -82,7 +83,57 @@ const RechercheFormationsScreen = (props, { route }) => {
     fetchFormations();
     fetchUserDemandes();
     console.log(auth.currentUser?.uid)
+    checkForUpdates();
   }, []);
+
+  const checkForUpdates = async () => {
+    try {
+      let currentVersion;
+      if (Platform.OS === 'ios') {
+        currentVersion = await Application.nativeApplicationVersion;
+      } else {
+        currentVersion = Application.nativeApplicationVersion;
+      }
+      console.log(currentVersion)
+
+      const latestVersionRef = ref_d(database, 'latestAppVersion');
+      const snapshot = await get(latestVersionRef);
+      const latestVersion = snapshot.val();
+      console.log(latestVersion)
+
+      if (latestVersion && compareVersions(currentVersion, latestVersion) < 0) {
+        setIsUpdateAvailable(true);
+        Alert.alert(
+          `Mise à jour disponible: ${latestVersion}`,
+          `Vous avez une ancienne version de l\'application (${currentVersion}). Voulez-vous la télécharger ?`,
+          [
+            { text: 'Plus tard', style: 'cancel' },
+            { text: 'Mettre à jour', onPress: () => openAppStore() }
+          ]
+        );
+      }
+    } catch (error) {
+      console.error('Error checking for updates:', error);
+    }
+  };
+
+  const compareVersions = (v1, v2) => {
+    const parts1 = v1.split('.').map(Number);
+    const parts2 = v2.split('.').map(Number);
+    for (let i = 0; i < 3; i++) {
+      if (parts1[i] > parts2[i]) return 1;
+      if (parts1[i] < parts2[i]) return -1;
+    }
+    return 0;
+  };
+
+  const openAppStore = () => {
+    const url = Platform.OS === 'ios'
+      ? 'https://apps.apple.com/app/your-app-id'
+      : 'https://play.google.com/store/apps/details?id=your.app.package';
+    Linking.openURL(url);
+  };
+  
   useEffect(() => {
     applyFilters(activeTab)
   }, [formations]);
@@ -331,6 +382,11 @@ const RechercheFormationsScreen = (props, { route }) => {
 
   return (
     <View style={styles.container}>
+      {isUpdateAvailable && (
+        <TouchableOpacity style={styles.updateBanner} onPress={openAppStore}>
+          <Text style={styles.updateBannerText}>Une mise à jour est disponible !</Text>
+        </TouchableOpacity>
+      )}
       <View style={styles.tabContainer}>
         {(isFormateur?['Visibles', "J'y suis inscrit", 'Je propose', 'Cachées']
         :(isLoggedIn?['Visibles', "J'y suis inscrit"]:['Visibles'])).map((tab) => (

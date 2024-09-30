@@ -133,7 +133,7 @@ const LoginScreen = ({ navigation }) => {
         <Text style={styles.appTitle}>Esculappl</Text>
         <Text style={styles.appSlogan}>Appli de Formations de Médecine Manuelle</Text>
       </View>
-      <Text style={styles.versionText}>Version « Phase 2: 20 septembre 24 »</Text>
+      
 
       <View style={styles.formContainer}>
         <TextInput

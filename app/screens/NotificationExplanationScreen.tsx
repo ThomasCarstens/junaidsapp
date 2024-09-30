@@ -1,9 +1,94 @@
-import React from 'react';
-import { View, Text, StyleSheet, ScrollView, Platform, Linking, TouchableOpacity } from 'react-native';
+
+import { View, Text, Button, Alert, StyleSheet, ScrollView, Platform, Linking, TouchableOpacity } from 'react-native';
+import React, { useState, useEffect, useRef } from 'react';
+import { auth, database } from '../../firebase';
+import { ref, set, get } from 'firebase/database';
+import { useNavigation } from '@react-navigation/native';
+import * as Device from 'expo-device';
+import * as Notifications from 'expo-notifications';
+import Constants from 'expo-constants';
+
+Notifications.setNotificationHandler({
+  handleNotification: async () => ({
+    shouldShowAlert: true,
+    shouldPlaySound: false,
+    shouldSetBadge: false,
+  }),
+});
+
+async function registerForPushNotificationsAsync() {
+  if (Platform.OS === 'android') {
+    Notifications.setNotificationChannelAsync('default', {
+      name: 'default',
+      importance: Notifications.AndroidImportance.MAX,
+      vibrationPattern: [0, 250, 250, 250],
+      lightColor: '#FF231F7C',
+    });
+  }
+
+  if (Device.isDevice) {
+    const { status: existingStatus } = await Notifications.getPermissionsAsync();
+    let finalStatus = existingStatus;
+    console.log(finalStatus)
+    if (existingStatus !== 'granted') {
+      const { status } = await Notifications.requestPermissionsAsync();
+      finalStatus = status;
+    }
+    if (finalStatus !== 'granted') {
+      
+      Alert.alert('Erreur', 'Permission non accordée pour les notifications push !');
+      return;
+    }
+    const projectId = Constants?.expoConfig?.extra?.eas?.projectId ?? Constants?.easConfig?.projectId;
+    if (!projectId) {
+      Alert.alert('Erreur', 'ID du projet non trouvé');
+      return;
+    }
+    try {
+      const pushTokenString = (await Notifications.getExpoPushTokenAsync({ projectId })).data;
+      console.log(pushTokenString);
+      return pushTokenString;
+    } catch (e) {
+      Alert.alert('Erreur', `${e}`);
+    }
+  } else {
+    Alert.alert('Erreur', 'Les notifications push nécessitent un appareil physique');
+  }
+}
+
 
 const NotificationExplanationScreen = ({ route }) => {
   const { status } = route.params;
+  const [expoPushToken, setExpoPushToken] = useState('');
+  const [notification, setNotification] = useState(undefined);
+  const notificationListener = useRef();
+  const responseListener = useRef();
+  const [pushTokenList, setPushTokenList] = useState([]);
+  const [UidPushTokenList, setUidPushTokenList] = useState({});
 
+
+  useEffect(() => {
+    // verifierConsentementPrecedent();
+
+    registerForPushNotificationsAsync()
+      .then(token => setExpoPushToken(token ?? ''))
+      .catch((error) => setExpoPushToken(`${error}`));
+
+    notificationListener.current = Notifications.addNotificationReceivedListener(notification => {
+      setNotification(notification);
+    });
+
+    responseListener.current = Notifications.addNotificationResponseReceivedListener(response => {
+      console.log(response);
+    });
+
+    return () => {
+      notificationListener.current &&
+        Notifications.removeNotificationSubscription(notificationListener.current);
+      responseListener.current &&
+        Notifications.removeNotificationSubscription(responseListener.current);
+    };
+  }, []);
   const getExplanation = () => {
     if (status === 'granted') {
       return "Les notifications push sont actuellement activées pour Esculappl. Si vous souhaitez les désactiver, suivez les instructions ci-dessous.";

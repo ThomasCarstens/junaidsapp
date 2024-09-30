@@ -11,9 +11,11 @@ const FormationScreen = ({ route, navigation }) => {
   const [isDateValid, setIsDateValid] = useState(true);
 
   useEffect(() => {
+    console.log(formationId)
     const formationRef = ref_d(database, `/formations/${formationId}`);
     const unsubscribe = onValue(formationRef, (snapshot) => {
       const data = snapshot.val();
+      console.log(data)
       if (data) {
         setFormation(data);
         checkDateValidity(data.date);
@@ -56,8 +58,8 @@ const FormationScreen = ({ route, navigation }) => {
   const checkDateValidity = (date) => {
     const formationDate = new Date(date);
     const currentDate = new Date();
-    const eightDaysFromNow = new Date(currentDate.getTime() + 8 * 24 * 60 * 60 * 1000);
-    setIsDateValid(formationDate > eightDaysFromNow);
+    const twoDaysFromNow = new Date(currentDate.getTime() + 2 * 24 * 60 * 60 * 1000);
+    setIsDateValid(formationDate > twoDaysFromNow);
   };
 
   const handleSignUp = async () => {
@@ -68,10 +70,18 @@ const FormationScreen = ({ route, navigation }) => {
     }
     
     if (inscriptionStatus) {
-      Alert.alert("Information", "Nous ne permettons qu'une inscription par formation. Pour plus d'informations sur votre inscription, contactez notre email d'assistance: contact.esculappl@gmail.com");
+      Alert.alert(`Inscription ${inscriptionStatus}`, "Nous ne permettons qu'une inscription par formation. Pour plus d'informations sur votre inscription, contactez notre email d'assistance: contact.esculappl@gmail.com");
       return;
     }
     
+    if (!isDateValid) {
+      Alert.alert(
+        "Inscription impossible sur Esculappl",
+        "La formation commence dans moins de 2 jours ou est déjà passée. Veuillez contacter contact.esculappl@gmail.com pour toute demande urgente."
+      );
+      return;
+    }
+
     if (!hasConsent) {
       Alert.alert(
         "Consentement RGPD requis",
@@ -92,7 +102,7 @@ const FormationScreen = ({ route, navigation }) => {
     if (!isDateValid) {
       Alert.alert(
         "Impossible de se désinscrire",
-        "La formation commence dans moins de 8 jours ou est déjà passée. Veuillez contacter contact.esculappl@gmail.com pour toute modification."
+        "La formation commence dans moins de 2 jours ou est déjà passée. Veuillez contacter contact.esculappl@gmail.com pour toute modification."
       );
       return;
     }
@@ -140,7 +150,27 @@ const FormationScreen = ({ route, navigation }) => {
       
     }
   };
-
+  const handleDelete = () => {
+    let toggleAction = (formation.active) ? "Désactiver" : "Réactiver";
+    Alert.alert(
+      "Confirmation",
+      `Êtes-vous sûr de vouloir ${toggleAction} cette formation ?`,
+      [
+        { text: "Annuler", style: "cancel" },
+        { text: toggleAction, onPress: () => {
+          const formationRef = ref_d(database, `/formations/${formationId}`);
+          set(formationRef, { ...formation, active: !(formation.active) })
+            .then(() => {
+              Alert.alert("Succès", `La formation a été ${toggleAction.toLowerCase()}`);
+              navigation.goBack();
+            })
+            .catch((error) => {
+              Alert.alert("Erreur", "Impossible de modifier la formation");
+            });
+        }}
+      ]
+    );
+  };
 
   if (!formation) {
     return (

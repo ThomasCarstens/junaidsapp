@@ -41,6 +41,7 @@ const OrganizationsPartenairesScreen = ({navigation}) => {
 
   const checkNotificationStatus = async () => {
     const { status } = await Notifications.getPermissionsAsync();
+    console.log(status)
     setNotificationStatus(status === 'granted' ? 'Activées' : 'Désactivées');
   };
     
@@ -67,10 +68,11 @@ const OrganizationsPartenairesScreen = ({navigation}) => {
   const toggleFilters = () => {
     setShowFilters(!showFilters);
     Animated.timing(filterHeight, {
-      toValue: showFilters ? 0 : 300,
+      toValue: showFilters ? 0 : 150,
       duration: 300,
       useNativeDriver: false,
     }).start();
+    checkNotificationStatus();
   };
 
   const openSupportWebsite = () => {
@@ -82,7 +84,9 @@ const OrganizationsPartenairesScreen = ({navigation}) => {
 
   return (
     <View style={styles.container}>
-      <Text style={styles.contextText}>Cette application est conçue pour soutenir le déroulement des formations au sein des organisations partenaires.</Text>
+      <Text style={styles.contextText}>Version du 4 octobre 2024. Cette application est conçue pour soutenir le déroulement des formations au sein des organisations partenaires.</Text>
+
+      {/* <Text style={styles.versionText}>Version « D  »</Text> */}
       {auth.currentUser && (
         <View>
           <TouchableOpacity style={styles.filterToggleButton} onPress={toggleFilters}>

@@ -1,6 +1,6 @@
 {
   "expo": {
-    "name": "appdolivier",
+    "name": "Esculappl",
     "slug": "appdolivier",
     "version": "1.0.0",
     "orientation": "portrait",
@@ -25,7 +25,7 @@
         "backgroundColor": "#ffffff"
       },
       "package": "com.olivierdumay.appdolivier",
-      "versionCode": 14,
+      "versionCode": 17,
       "googleServicesFile": "./google-services.json"
     },
     "plugins": [

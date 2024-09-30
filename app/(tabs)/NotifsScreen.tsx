@@ -75,16 +75,11 @@ const NotificationList = ({ isAdmin, isFormateur }) => {
 
 
   const handleNotificationPress = (item) => {
-    if (item.formationId) {
-      navigation.navigate('Formation', {
-        formationId: item.formationId,
-        role: { isAdmin, isFormateur },
-      });
-    } else if (item.id) {
-      navigation.navigate('Formation', {
-        formationId: item.formationId,
-        role: { isAdmin, isFormateur },
-      });
+    console.log(item)
+    if (item.data) {
+      navigation.navigate('Formation', {formationId: item.data, role: { isAdmin, isFormateur }});
+    // } else if (item.id) {
+    //   navigation.navigate('Formation', {formationId: item.id, role: { isAdmin, isFormateur }});
     }
 
   };
