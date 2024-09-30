@@ -1,9 +1,11 @@
 import React, { useState, useEffect } from 'react';
-import { View, ScrollView, Text, TextInput, StyleSheet, TouchableOpacity, Alert } from 'react-native';
+import { View, ScrollView, Text, TextInput, StyleSheet, TouchableOpacity, Alert, Image } from 'react-native';
 import { Picker } from '@react-native-picker/picker';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import { ref as ref_d, set } from 'firebase/database';
-import { database } from '../../firebase';
+import { ref as ref_s, uploadBytes, getDownloadURL } from 'firebase/storage';
+import { auth, firebase, storage, database } from '../../firebase';
+import * as ImagePicker from 'expo-image-picker';
 
 const AjoutFormationScreen = ({ navigation, route }) => {
   const [formData, setFormData] = useState({
@@ -11,6 +13,7 @@ const AjoutFormationScreen = ({ navigation, route }) => {
     title: '',
     active: true,     //temporary, only admin can make formations in Phase 2, needs to change in Phase 3
     date: new Date(),
+    date_de_fin: new Date(),
     image: 'https://via.placeholder.com/150',
     region: '',
     lieu: '',
@@ -37,6 +40,7 @@ const AjoutFormationScreen = ({ navigation, route }) => {
   const [showDatePicker, setShowDatePicker] = useState(false);
   const [showStartTimePicker, setShowStartTimePicker] = useState(false);
   const [showEndTimePicker, setShowEndTimePicker] = useState(false);
+  const [imageUri, setImageUri] = useState(null);
   const [errors, setErrors] = useState({});
 
   useEffect(() => {
@@ -45,6 +49,7 @@ const AjoutFormationScreen = ({ navigation, route }) => {
       setFormData({
         ...existingFormation,
         date: new Date(existingFormation.date),
+        date_de_fin: new Date(existingFormation.date_de_fin),
         heureDebut: new Date(`2000-01-01T${existingFormation.heureDebut}`),
         heureFin: new Date(`2000-01-01T${existingFormation.heureFin}`),
       });
@@ -84,6 +89,36 @@ const AjoutFormationScreen = ({ navigation, route }) => {
     }
   };
 
+  const pickImage = async () => {
+    let result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ImagePicker.MediaTypeOptions.Images,
+      allowsEditing: true,
+      aspect: [4, 3],
+      quality: 1,
+    });
+
+    if (!result.canceled) {
+      setImageUri(result.assets[0].uri);
+    }
+  };
+  const uploadImage = async () => {
+    if (imageUri) {
+      const response = await fetch(imageUri);
+      const blob = await response.blob();
+      const filename = `formations/${formData.id}_${Date.now()}.jpg`;
+      const storageRef = ref_s(storage, filename);
+
+      try {
+        await uploadBytes(storageRef, blob);
+        const downloadURL = await getDownloadURL(storageRef);
+        return downloadURL;
+      } catch (error) {
+        console.error("Error uploading image: ", error);
+        throw error;
+      }
+    }
+    return null;
+  };
   const validateForm = () => {
     let isValid = true;
     let newErrors = {};
@@ -155,29 +190,34 @@ const AjoutFormationScreen = ({ navigation, route }) => {
     }
   };
 
-  const uploadToFirebase = () => {
-    const formattedData = {
-      ...formData,
-      date: formData.date.toISOString().split('T')[0],
-      heureDebut: formData.heureDebut.toTimeString().split(' ')[0].slice(0, 5),
-      heureFin: formData.heureFin.toTimeString().split(' ')[0].slice(0, 5),
-      domaine: formData.domaine === 'Autres' ? formData.autresDomaine : formData.domaine,
-      // Autre fields are info for us - not for the filters in this phase.
-      admin: 'validée' //route.params?.formation ? formData.admin : "en attente"//unless isAdmin!
+  const uploadToFirebase = async () => {
+      if (validateForm()) {
+        try {
+          const imageUrl = await uploadImage();
+          const formattedData = {
+            ...formData,
+            date: formData.date.toISOString().split('T')[0],
+            date_de_fin: formData.date_de_fin.toISOString().split('T')[0],
+            heureDebut: formData.heureDebut.toTimeString().split(' ')[0].slice(0, 5),
+            heureFin: formData.heureFin.toTimeString().split(' ')[0].slice(0, 5),
+            domaine: formData.domaine === 'Autres' ? formData.autresDomaine : formData.domaine,
+            image: imageUrl || formData.image,
+          };
+  
+          await set(ref_d(database, `formations/${formData.id}`), formattedData);
+          Alert.alert("Succès", route.params?.formation 
+            ? "La formation a été modifiée avec succès."
+            : "La formation a été ajoutée avec succès.");
+          navigation.goBack();
+        } catch (error) {
+          Alert.alert("Erreur", "Une erreur s'est produite lors de l'opération.");
+          console.error(error);
+        }
+      } else {
+        Alert.alert("Erreur", "Veuillez remplir correctement tous les champs obligatoires.");
+      }
     };
-
-    set(ref_d(database, `formations/${formData.id}`), formattedData)
-      .then(() => {
-        Alert.alert("Succès", route.params?.formation 
-          ? "La formation a été modifiée avec succès."
-          : "La formation a été ajoutée avec succès.");
-        navigation.goBack();
-      })
-      .catch((error) => {
-        Alert.alert("Erreur", "Une erreur s'est produite lors de l'opération.");
-        console.error(error);
-      });
-  };
+  
 
   const renderInput = (label, name, placeholder, keyboardType = 'default', multiline = false) => (
     <View>
@@ -375,6 +415,14 @@ const AjoutFormationScreen = ({ navigation, route }) => {
       {renderInput('Prérequis', 'prerequis', 'Prérequis', 'default', true)}
       {renderInput('Instructions', 'instructions', 'Instructions', 'default', true)}
 
+      <Text style={styles.label}>Image de la formation</Text>
+      <TouchableOpacity style={styles.imagePicker} onPress={pickImage}>
+        {imageUri ? (
+          <Image source={{ uri: imageUri }} style={styles.imagePreview} />
+        ) : (
+          <Text>Sélectionner une image</Text>
+        )}
+      </TouchableOpacity>
       <TouchableOpacity style={styles.button} onPress={handleSubmit}>
         <Text style={styles.buttonText}>
           {route.params?.formationId ? "Modifier la formation" : "Ajouter la formation"}
@@ -440,6 +488,21 @@ const styles = StyleSheet.create({
     color: '#fff',
     fontSize: 18,
     fontWeight: 'bold',
+  },
+  imagePicker: {
+    borderWidth: 1,
+    borderColor: '#ddd',
+    borderRadius: 5,
+    padding: 10,
+    alignItems: 'center',
+    justifyContent: 'center',
+    height: 200,
+    marginBottom: 10,
+  },
+  imagePreview: {
+    width: '100%',
+    height: '100%',
+    resizeMode: 'contain',
   },
 });
 
