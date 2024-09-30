@@ -35,7 +35,14 @@ const RechercheFormationsScreen = (props, { route }) => {
   // const [anneeOptions, setAnneeOptions] = useState([]);
 
   const navigation = useNavigation();
+
+  // const parametersRef = ref_d(database, 'parameters');
+  // const paramsSnapshot = await get(paramtersRef);e
+  // const parameters = paramsSnapshot.val();
+  // console.log(parameters)
+
   const [categoryOptions, setCategoryOptions] = useState([
+    "Médecine Manuelle",
     "Médecine Sport",
     "Rhumatologie",
     "Médecine Physique",
@@ -80,11 +87,37 @@ const RechercheFormationsScreen = (props, { route }) => {
   // }, [route?.params]);
 
   useEffect(() => {
+    checkForUpdates();
+    downloadFilterOptions();
     fetchFormations();
     fetchUserDemandes();
     console.log(auth.currentUser?.uid)
-    checkForUpdates();
+    
   }, []);
+
+  const downloadFilterOptions = async () => {
+    try {
+      const parametersRef = ref_d(database, 'parameters');
+      const paramsSnapshot = await get(parametersRef);
+      const parameters = paramsSnapshot.val();
+      console.log(parameters)
+    
+      setCategoryOptions(parameters.categoryOptions);
+      setLieuOptions(parameters.lieuOptions);
+      setRegionOptions(parameters.regionOptions);
+      setAnneeOptions(parameters.anneeOptions);
+      // console.log(categoryOptions)
+      // const [lieuOptions, setLieuOptions] = useState([]);
+      
+      // const [regionOptions, setRegionOptions] = useState([]);
+      
+      // const [anneeOptions, setAnneeOptions] = useState([]);
+    } catch (error) {
+      console.error('Error checking filter options:', error);
+    }
+  
+  }
+
 
   const checkForUpdates = async () => {
     try {
@@ -96,7 +129,7 @@ const RechercheFormationsScreen = (props, { route }) => {
       }
       console.log(currentVersion)
 
-      const latestVersionRef = ref_d(database, 'latestAppVersion');
+      const latestVersionRef = ref_d(database, '/parameters/latestAppVersion');
       const snapshot = await get(latestVersionRef);
       const latestVersion = snapshot.val();
       console.log(latestVersion)
@@ -230,8 +263,39 @@ const RechercheFormationsScreen = (props, { route }) => {
   
     // If you want to highlight or mark which options are actually present in the data,
     // you can use these Sets to do so in your UI rendering logic.
+
+    
   };
 
+
+  // const updateFilterOptions = (formationsArray) => {
+
+  //   // We don't need to update the options from the formationsArray anymore
+  //   // as we're using predefined lists. However, we might want to keep track
+  //   // of which options are actually present in the data.
+
+  //   const updateOptions = (currentOptions, newOptions) => {
+  //     const combinedOptions = new Set([...currentOptions, ...newOptions]);
+  //     return Array.from(combinedOptions);
+  //   };
+
+  //   const newCategories = formationsArray.map(f => f.domaine);
+  //   const newLieux = formationsArray.map(f => f.lieu);
+  //   const newRegions = formationsArray.map(f => f.region);
+  //   const newAnnees = formationsArray.map(f => f.anneeConseillee);
+
+  //   setCategoryOptions(prevOptions => updateOptions(prevOptions, newCategories));
+  //   setLieuOptions(prevOptions => updateOptions(prevOptions, newLieux));
+  //   setRegionOptions(prevOptions => updateOptions(prevOptions, newRegions));
+  //   setAnneeOptions(prevOptions => updateOptions(prevOptions, newAnnees));
+
+  //   console.log("Updated categories:", categoryOptions);
+  //   console.log("Updated lieux:", lieuOptions);
+  //   console.log("Updated regions:", regionOptions);
+  //   console.log("Updated annees:", anneeOptions);
+
+  // };
+  
   // const updateFilterOptions = (formationsArray) => {
   //   const categories = [...new Set(formationsArray.map(f => f.domaine))];
   //   const lieux = [...new Set(formationsArray.map(f => f.lieu))];
