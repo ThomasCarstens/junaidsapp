@@ -25,7 +25,7 @@
         "backgroundColor": "#ffffff"
       },
       "package": "com.olivierdumay.appdolivier",
-      "versionCode": 17,
+      "versionCode": 19,
       "googleServicesFile": "./google-services.json"
     },
     "plugins": [

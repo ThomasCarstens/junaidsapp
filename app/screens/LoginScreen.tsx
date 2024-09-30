@@ -3,10 +3,11 @@
 import { auth, storage, database } from '../../firebase'
 import { getDownloadURL, list, ref } from 'firebase/storage'
 import React, { useEffect, useState } from 'react';
-import { View, Text, Image, TouchableOpacity, TextInput, Button, StyleSheet, ActivityIndicator } from 'react-native';
+import { View, Text, Image, TouchableOpacity, TextInput, Button, StyleSheet, ActivityIndicator, KeyboardAvoidingView, ScrollView, Platform } from 'react-native';
 import { signInWithEmailAndPassword } from 'firebase/auth';
 import { ref as ref_d, onValue } from 'firebase/database';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { Ionicons } from '@expo/vector-icons';
 
 
 const LoginScreen = ({ navigation }) => {
@@ -16,7 +17,7 @@ const LoginScreen = ({ navigation }) => {
   const [loading, setLoading] = useState(true);
   const [userRoles, setUserRoles] = useState({});
   const [uid, setUid] = useState('');
-
+  const [showPassword, setShowPassword] = useState(false);
   useEffect(() => {
     auth.onAuthStateChanged(function(user) {
       checkCachedUser();
@@ -125,45 +126,60 @@ const LoginScreen = ({ navigation }) => {
       </View>
     );
   }
-
   return (
-    <View style={styles.container}>
-      <Image source={require('../../assets/images/logoEsculappl.png')} style={styles.logo} />
-      <View style={styles.titleContainer}>
-        <Text style={styles.appTitle}>Esculappl</Text>
-        <Text style={styles.appSlogan}>Appli de Formations de Médecine Manuelle</Text>
-      </View>
-      
-
-      <View style={styles.formContainer}>
-        <TextInput
-          style={styles.input}
-          placeholder="Email"
-          value={email}
-          onChangeText={setEmail}
-          keyboardType="email-address"
-        />
-        <TextInput
-          style={styles.input}
-          placeholder="Mot de passe"
-          value={password}
-          onChangeText={setPassword}
-          secureTextEntry
-        />
-        <View style={styles.buttonRow}>
-          {renderButton("Se connecter", handleLogin, styles.primaryButton, styles.primaryButtonText)}
-          {renderButton("Partenaires", () => navigation.navigate('OrganizationsPartenaires'), styles.primaryButton, styles.primaryButtonText)}
+    <KeyboardAvoidingView 
+      behavior={Platform.OS === "ios" ? "padding" : "height"}
+      style={styles.container}
+    >
+      <ScrollView 
+        contentContainerStyle={styles.scrollViewContent}
+        keyboardShouldPersistTaps="handled"
+      >
+        <Image source={require('../../assets/images/logoEsculappl.png')} style={styles.logo} />
+        <View style={styles.titleContainer}>
+          <Text style={styles.appTitle}>Esculappl</Text>
+          <Text style={styles.appSlogan}>Appli de Formations de Médecine Manuelle</Text>
         </View>
-        <View style={styles.buttonRow}>
-          {renderButton("Créer un compte", () => navigation.navigate('Signup'), styles.secondaryButton, styles.secondaryButtonText)}
-          {renderButton("Mot de passe oublié", () => navigation.navigate('PasswordReset'), styles.secondaryButton, styles.secondaryButtonText)}
-        </View>
-      </View>
 
-      {/* <View style={styles.adminButtonContainer}>
-        {renderButton("Accès Admin", () => navigation.navigate('AdminTabs'), styles.adminButton, styles.adminButtonText)}
-      </View> */}
-    </View>
+        <View style={styles.formContainer}>
+          <TextInput
+            style={styles.input}
+            placeholder="Email"
+            value={email}
+            onChangeText={setEmail}
+            keyboardType="email-address"
+            autoCapitalize="none"
+          />
+          <View style={styles.passwordContainer}>
+            <TextInput
+              style={styles.passwordInput}
+              placeholder="Mot de passe"
+              value={password}
+              onChangeText={setPassword}
+              secureTextEntry={!showPassword}
+            />
+            <TouchableOpacity
+              style={styles.eyeIcon}
+              onPress={() => setShowPassword(!showPassword)}
+            >
+              <Ionicons
+                name={showPassword ? 'eye-off' : 'eye'}
+                size={24}
+                color="#00008B"
+              />
+            </TouchableOpacity>
+          </View>
+          <View style={styles.buttonRow}>
+            {renderButton("Se connecter", handleLogin, styles.primaryButton, styles.primaryButtonText)}
+            {renderButton("Partenaires", () => navigation.navigate('OrganizationsPartenaires'), styles.primaryButton, styles.primaryButtonText)}
+          </View>
+          <View style={styles.buttonRow}>
+            {renderButton("Créer un compte", () => navigation.navigate('Signup'), styles.secondaryButton, styles.secondaryButtonText)}
+            {renderButton("Mot de passe oublié", () => navigation.navigate('PasswordReset'), styles.secondaryButton, styles.secondaryButtonText)}
+          </View>
+        </View>
+      </ScrollView>
+    </KeyboardAvoidingView>
   );
 };
 
@@ -174,6 +190,13 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     padding: 20,
+  },
+  scrollViewContent: {
+    flexGrow: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingVertical: 40,
+    paddingHorizontal: 20,
   },
   logo: {
     width: 150,
@@ -231,6 +254,23 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.25,
     shadowRadius: 3.84,
     elevation: 5,
+  },
+  passwordContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 10,
+    backgroundColor: 'white',
+    borderRadius: 5,
+    borderColor: 'gray',
+    borderWidth: 1,
+  },
+  passwordInput: {
+    flex: 1,
+    height: 40,
+    paddingHorizontal: 10,
+  },
+  eyeIcon: {
+    padding: 10,
   },
   // buttonText: {
   //   fontWeight: 'bold',

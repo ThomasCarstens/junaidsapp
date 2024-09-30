@@ -65,3 +65,5 @@ const [anneeOptions, setAnneeOptions] = useState([
 "Autre"
  ]);
 https://expo.dev/changelog
+
+in the confirmation , add a text box for title + body of a notification to send and two checkboxes: one for the inscrits, the other for the tout public. save the 4 elements inside the database at 'modifications'

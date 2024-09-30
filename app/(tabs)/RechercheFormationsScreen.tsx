@@ -65,6 +65,29 @@ const RechercheFormationsScreen = (props, { route }) => {
     }
   }
 
+  const checkNotificationPermissions = async () => {
+    const { status } = await Notifications.getPermissionsAsync();
+    setNotificationsEnabled(status === 'granted');
+  };
+
+  const renderTopButtons = () => (
+    <View style={styles.topButtonsContainer}>
+      {isUpdateAvailable && (
+        <TouchableOpacity style={styles.updateButton} onPress={openAppStore}>
+          <Text style={styles.updateButtonText}>Mettre à jour</Text>
+        </TouchableOpacity>
+      )}
+      {!notificationsEnabled && (
+        <TouchableOpacity 
+          style={styles.notificationButton} 
+          onPress={() => navigation.navigate('NotificationsExplanationScreen')}
+        >
+          <Text style={styles.notificationButtonText}>Activer les notifications</Text>
+        </TouchableOpacity>
+      )}
+    </View>
+  );
+
   // const { status } = route.params;
   const [expoPushToken, setExpoPushToken] = useState('');
   const [notification, setNotification] = useState(undefined);
@@ -126,6 +149,8 @@ const RechercheFormationsScreen = (props, { route }) => {
   const [lieuFilter, setLieuFilter] = useState('');
   const [regionFilter, setRegionFilter] = useState('');
   const [anneeFilter, setAnneeFilter] = useState('');
+
+  const [notificationsEnabled, setNotificationsEnabled] = useState(true);
   // Remove niveauFilter state
 
   // const [categoryOptions, setCategoryOptions] = useState([]);
@@ -192,6 +217,7 @@ const RechercheFormationsScreen = (props, { route }) => {
     fetchUserDemandes();
     console.log(auth.currentUser?.uid)
     
+    checkNotificationPermissions();
   }, []);
 
   const downloadFilterOptions = async () => {
@@ -226,19 +252,21 @@ const RechercheFormationsScreen = (props, { route }) => {
       }
       console.log(currentVersion)
 
-      const latestVersionRef = ref_d(database, '/parameters/latestAppVersion');
+      const latestVersionRef = ref_d(database, '/parameters/updateParams');
       const snapshot = await get(latestVersionRef);
-      const latestVersion = snapshot.val();
-      console.log(latestVersion)
-
+      const updateParams = snapshot.val()
+      const latestVersion = updateParams.forceUpdateVersion;
+      console.log('v', latestVersion)
+      console.log(compareVersions(currentVersion, latestVersion))
       if (latestVersion && compareVersions(currentVersion, latestVersion) < 0) {
+        
         setIsUpdateAvailable(true);
         Alert.alert(
           `Mise à jour disponible: ${latestVersion}`,
-          `Vous avez une ancienne version de l\'application (${currentVersion}). Voulez-vous la télécharger ?`,
+          `Vous avez une ancienne version de l\'application (${currentVersion}). Pour continuer à utiliser Esculappl, merci de télécharger la dernière version.`,
           [
-            { text: 'Plus tard', style: 'cancel' },
-            { text: 'Mettre à jour', onPress: () => openAppStore() }
+            // { text: 'Plus tard', style: 'cancel' },
+            { text: 'Mettre à jour', onPress: () => openAppStore(updateParams) }
           ]
         );
       }
@@ -257,10 +285,10 @@ const RechercheFormationsScreen = (props, { route }) => {
     return 0;
   };
 
-  const openAppStore = () => {
+  const openAppStore = (updateParams) => {
     const url = Platform.OS === 'ios'
-      ? 'https://apps.apple.com/app/6642655239'
-      : 'https://play.google.com/store/apps/details?id=com.olivierdumay.appdolivier';
+      ? updateParams.iosLink
+      : updateParams.androidLink;
     Linking.openURL(url);
   };
   
@@ -542,12 +570,9 @@ const RechercheFormationsScreen = (props, { route }) => {
   }
 
   return (
-    <View style={styles.container}>
-      {isUpdateAvailable && (
-        <TouchableOpacity style={styles.updateBanner} onPress={openAppStore}>
-          <Text style={styles.updateBannerText}>Une mise à jour est disponible !</Text>
-        </TouchableOpacity>
-      )}
+    <View style={styles.container}> 
+      {/* {renderTopButtons()} */}
+
       <View style={styles.tabContainer}>
         {(isFormateur?['Visibles', "J'y suis inscrit", 'Je propose', 'Cachées']
         :(isLoggedIn?['Visibles', "J'y suis inscrit"]:['Visibles'])).map((tab) => (
@@ -605,6 +630,10 @@ const RechercheFormationsScreen = (props, { route }) => {
 };
 
 const styles = StyleSheet.create({
+    explanationText: {
+    fontSize: 14,
+    color: '#333',
+  },
   formationItem: {
     marginBottom: 20,
     padding: 20,
@@ -801,7 +830,35 @@ const styles = StyleSheet.create({
     color: '#fff',
     fontSize: 16,
   },
-
+  topButtonsContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-around',
+    marginBottom: 10,
+  },
+  updateButton: {
+    backgroundColor: '#ff9800',
+    padding: 10,
+    borderRadius: 5,
+    flex: 1,
+    marginRight: 5,
+  },
+  updateButtonText: {
+    color: 'white',
+    textAlign: 'center',
+    fontWeight: 'bold',
+  },
+  notificationButton: {
+    backgroundColor: '#4CAF50',
+    padding: 10,
+    borderRadius: 5,
+    flex: 1,
+    marginLeft: 5,
+  },
+  notificationButtonText: {
+    color: 'white',
+    textAlign: 'center',
+    fontWeight: 'bold',
+  },
 });
 
 export default RechercheFormationsScreen;
