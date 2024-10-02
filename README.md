@@ -67,3 +67,8 @@ const [anneeOptions, setAnneeOptions] = useState([
 https://expo.dev/changelog
 
 in the confirmation , add a text box for title + body of a notification to send and two checkboxes: one for the inscrits, the other for the tout public. save the 4 elements inside the database at 'modifications'
+
+My apps (Google Console)
+https://play.google.com/console/u/2/developers/6656870603608572931/app-list?pli=1
+
+
