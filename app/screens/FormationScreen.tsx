@@ -1,8 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { View, Text, StyleSheet, Image, ScrollView, TouchableOpacity, Alert } from 'react-native';
 import { auth, firebase, storage, database } from '../../firebase';
-import { ref as ref_d, set, get, onValue } from 'firebase/database';
-
+import { ref as ref_d, set, get, onValue, update } from 'firebase/database';
 
 
 
@@ -93,7 +92,11 @@ const FormationScreen = ({ route, navigation }) => {
         "Vous devez donner votre consentement RGPD pour vous inscrire à cette formation.",
         [
           { text: "Annuler", style: "cancel" },
-          { text: "Donner mon consentement", onPress: () => navigation.push('RGPD') }
+          { text: "Donner mon consentement", onPress: () => {
+            navigation.navigate('UserTabs');
+            navigation.push('RGPD')
+          
+          }}
         ]
       );
       return;
@@ -120,8 +123,10 @@ const FormationScreen = ({ route, navigation }) => {
         { text: "Confirmer", onPress: async () => {
           const user = auth.currentUser;
           if (user) {
-            const demandeRef = ref_d(database, `/demandes/${user.uid}/${formationId}`);
-            await set(demandeRef, { admin: "désinscrit" });
+            // const demandeRef = ref_d(database, `/demandes/${user.uid}/${formationId}`);
+            await update(ref_d(database, `/demandes/${user.uid}/${formationId}`), { admin: "désinscrit" });
+
+            
             setInscriptionStatus("désinscrit");
             Alert.alert("Succès", "Vous avez été désinscrit de la formation.");
           }

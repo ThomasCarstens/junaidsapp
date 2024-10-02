@@ -17,11 +17,11 @@ const ConfirmationDialog = ({ visible, onConfirm, onCancel, action }) => {
       <View style={styles.centeredView}>
         <View style={styles.modalView}>
           <Text style={styles.modalText}>Êtes-vous sûr de vouloir {action} cette demande ?</Text>
-          <CheckBox
+          {/* <CheckBox
             title="Notifier l'utilisateur"
             checked={notifyUser}
             onPress={() => setNotifyUser(!notifyUser)}
-          />
+          /> */}
           <View style={styles.modalButtons}>
             <TouchableOpacity
               style={[styles.button, styles.buttonCancel]}
@@ -31,7 +31,7 @@ const ConfirmationDialog = ({ visible, onConfirm, onCancel, action }) => {
             </TouchableOpacity>
             <TouchableOpacity
               style={[styles.button, styles.buttonConfirm]}
-              onPress={() => onConfirm(notifyUser)}
+              onPress={() => onConfirm(true)}
             >
               <Text style={styles.textStyle}>Confirmer</Text>
             </TouchableOpacity>

@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, TouchableOpacity, StyleSheet, FlatList, Image, Animated, Linking } from 'react-native';
+import { View, Text, TouchableOpacity, StyleSheet, FlatList, Image, Animated, Linking, Alert } from 'react-native';
 import { database, auth } from '../../firebase';
+
 import { Ionicons } from '@expo/vector-icons';
 import * as Notifications from 'expo-notifications';
 
@@ -70,7 +71,7 @@ const OrganizationsPartenairesScreen = ({navigation}) => {
   const toggleFilters = () => {
     setShowFilters(!showFilters);
     Animated.timing(filterHeight, {
-      toValue: showFilters ? 0 : 150,
+      toValue: showFilters ? 0 : 180,
       duration: 300,
       useNativeDriver: false,
     }).start();
@@ -78,6 +79,7 @@ const OrganizationsPartenairesScreen = ({navigation}) => {
   };
 
   const openSupportWebsite = () => {
+    // console.log('openSupportWebsite')
     Linking.openURL('https://esculapplsupportpage.vercel.app');
   };
 
@@ -85,6 +87,9 @@ const OrganizationsPartenairesScreen = ({navigation}) => {
     navigation.navigate('NotificationExplanation', { status: notificationStatus });
   };
 
+  const handleAccountDelete = () => {
+    navigation.navigate("AccountDeletion");
+  };
   return (
     <View style={styles.container}>
       <Text style={styles.contextText}>Version du 4 octobre 2024. Cette application est conçue pour soutenir le déroulement des formations au sein des organisations partenaires.</Text>
@@ -97,11 +102,17 @@ const OrganizationsPartenairesScreen = ({navigation}) => {
           </TouchableOpacity>
 
           <Animated.View style={[styles.filtersContainer, { height: filterHeight }]}>
+          <TouchableOpacity style={styles.filterContainer} >
+              <Text style={styles.filterTextTop}>Compte de {auth.currentUser.email}</Text>
+            </TouchableOpacity>
             <TouchableOpacity style={styles.filterContainer} onPress={openSupportWebsite}>
-              <Text style={styles.filterText}>Gérer mon compte et contacter Esculappl</Text>
+              <Text style={styles.filterText}>Gérer mes données et contacter Esculappl</Text>
             </TouchableOpacity>
             <TouchableOpacity style={styles.filterContainer} onPress={navigateToNotificationExplanation}>
               <Text style={styles.filterText}>Notifications Push: {notificationStatus}</Text>
+            </TouchableOpacity>
+            <TouchableOpacity style={styles.filterContainer} onPress={handleAccountDelete}>
+              <Text style={styles.filterText}>Supprimer mon compte</Text>
             </TouchableOpacity>
           </Animated.View>
         </View>
@@ -240,7 +251,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    padding: 16,
+    padding: 10,
     backgroundColor: 'white',
     borderBottomWidth: 1,
     borderBottomColor: '#e0e0e0',
@@ -251,9 +262,14 @@ const styles = StyleSheet.create({
     backgroundColor: '#f0f0f0',
     borderRadius: 5,
   },
+
   filterText: {
     fontSize: 16,
     fontWeight: 'bold',
+  },
+  filterTextTop: {
+    fontSize: 20,
+    fontWeight: '900',
   },
 });
 

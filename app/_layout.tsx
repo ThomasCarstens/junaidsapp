@@ -30,6 +30,7 @@ import AjoutFormateurScreen from './screens/AjoutFormateurScreen';
 import RGPDScreen from './screens/RGPDScreen';
 import NotifsScreenSkeleton from './skeleton/NotifsScreenSkeleton';
 import NotificationExplanationScreen from './screens/NotificationExplanationScreen';
+import AccountDeletionScreen from './screens/AccountDeletionScreen';
 const Stack = createStackNavigator();
 const Tab = createBottomTabNavigator();
 
@@ -249,6 +250,7 @@ function App() {
         <Stack.Screen name="NotifsScreenSkeleton"       component={NotifsScreenSkeleton} />
         
         <Stack.Screen name="NotificationExplanation" component={NotificationExplanationScreen} />
+        <Stack.Screen name="AccountDeletion" component={AccountDeletionScreen} />
 
         
 
