@@ -71,7 +71,7 @@ const OrganizationsPartenairesScreen = ({navigation}) => {
   const toggleFilters = () => {
     setShowFilters(!showFilters);
     Animated.timing(filterHeight, {
-      toValue: showFilters ? 0 : 180,
+      toValue: showFilters ? 0 : 200,
       duration: 300,
       useNativeDriver: false,
     }).start();
