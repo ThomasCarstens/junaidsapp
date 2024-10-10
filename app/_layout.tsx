@@ -31,6 +31,7 @@ import RGPDScreen from './screens/RGPDScreen';
 import NotifsScreenSkeleton from './skeleton/NotifsScreenSkeleton';
 import NotificationExplanationScreen from './screens/NotificationExplanationScreen';
 import AccountDeletionScreen from './screens/AccountDeletionScreen';
+import ParticipantsScreen from './screens/ParticipantsScreen';
 const Stack = createStackNavigator();
 const Tab = createBottomTabNavigator();
 
@@ -253,7 +254,7 @@ function App() {
         <Stack.Screen name="AccountDeletion" component={AccountDeletionScreen} />
 
         
-
+        <Stack.Screen name="Participants"       component={ParticipantsScreen} />
         
         <Stack.Screen name="AjoutFormation"       component={AjoutFormationScreen} />
         <Stack.Screen name="Formation"       component={FormationScreen} />

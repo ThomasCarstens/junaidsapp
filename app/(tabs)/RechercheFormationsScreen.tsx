@@ -95,6 +95,29 @@ const RechercheFormationsScreen = (props, { route }) => {
   const responseListener = useRef();
   const [pushTokenList, setPushTokenList] = useState([]);
   const [UidPushTokenList, setUidPushTokenList] = useState({});
+  const [participantCounts, setParticipantCounts] = useState({});
+  const [allDemandes, setAllDemandes] = useState({});
+
+
+  const fetchParticipantCounts = () => {
+    const counts = {};
+
+    
+    formations.forEach(formation => {
+      let count = 0;
+      console.log('dem: ', formation.id)
+      for (const eachUid in allDemandes) {
+        console.log('for formation ', formation.id, ' user is ', allDemandes[eachUid][formation.id])
+        // && allDemandes[eachUid][formation.id].admin === 'Validée'
+        if (allDemandes[eachUid][formation.id] ) {
+          count++;
+        }
+      }
+      counts[formation.id] = count;
+    });
+    console.log('counts', counts)
+    setParticipantCounts(counts);
+  };
 
 
   useEffect(() => {
@@ -215,10 +238,16 @@ const RechercheFormationsScreen = (props, { route }) => {
     downloadFilterOptions();
     fetchFormations();
     fetchUserDemandes();
+
     console.log(auth.currentUser?.uid)
     
     checkNotificationPermissions();
   }, []);
+
+  useEffect(() => {
+    fetchParticipantCounts();
+    
+  }, [allDemandes]);
 
   const downloadFilterOptions = async () => {
     try {
@@ -353,6 +382,7 @@ const RechercheFormationsScreen = (props, { route }) => {
     onValue(formationsRef, (snapshot) => {
       const data = snapshot.val();
       if (data) {
+        
         const formationsArray = Object.keys(data).map(key => ({
           ...data[key],
           id: key
@@ -469,6 +499,15 @@ const RechercheFormationsScreen = (props, { route }) => {
         setUserDemandes(data);
       }
     });
+
+    const allDemandesRef = ref_d(database, 'demandes');
+    onValue(allDemandesRef, (snapshot) => {
+      const data = snapshot.val();
+      if (data) {
+        setAllDemandes(data);
+      }
+    });
+
   };
 
   const applyFilters = (tab) => {
@@ -539,6 +578,13 @@ const RechercheFormationsScreen = (props, { route }) => {
         <Image source={{ uri: item.image }} style={styles.formationImage} />
         <View style={styles.formationDetails}>
           <Text style={styles.formationTitle}>{item.title}</Text>
+          {isAdmin && (
+            <TouchableOpacity style={styles.participantsButton} onPress={()=>navigation.navigate("Participants", { formationId: item.id})}>
+              <Text style={styles.participantsButtonText}>
+                Demandes: {participantCounts[item.id] || 0}
+              </Text>
+            </TouchableOpacity>
+          )}
           <Text>Début: {item.date}</Text>
           <Text>Fin: {item.date_de_fin}</Text>
           <Text>Lieu: {item.lieu}</Text>
@@ -549,6 +595,7 @@ const RechercheFormationsScreen = (props, { route }) => {
               Inscription: {userDemandes[item.id].admin}
             </Text>
           )}
+
         </View>
       </View>
     </TouchableOpacity>
@@ -631,6 +678,17 @@ const RechercheFormationsScreen = (props, { route }) => {
 };
 
 const styles = StyleSheet.create({
+  participantsButton: {
+    backgroundColor: '#1a53ff',
+    padding: 5,
+    borderRadius: 5,
+    marginTop: 5,
+  },
+  participantsButtonText: {
+    color: 'white',
+    fontWeight: 'bold',
+    textAlign: 'center',
+  },
     explanationText: {
     fontSize: 14,
     color: '#333',

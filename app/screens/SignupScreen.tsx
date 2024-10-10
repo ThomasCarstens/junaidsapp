@@ -1,116 +1,157 @@
 import React, { useState } from 'react';
-import { View, TextInput, Button, StyleSheet, Text, ScrollView, Image, TouchableOpacity } from 'react-native';
-import { Picker } from '@react-native-picker/picker';
-import { auth, firebase, storage, database } from '../../firebase'
-import { ref as ref_d, set, get, onValue } from 'firebase/database'
-import { browserLocalPersistence, browserSessionPersistence, 
-  getReactNativePersistence, createUserWithEmailAndPassword, 
-  setPersistence, signInWithEmailAndPassword } from 'firebase/auth'
+import { 
+  View, 
+  TextInput, 
+  StyleSheet, 
+  Text, 
+  Image, 
+  TouchableOpacity, 
+  KeyboardAvoidingView,
+  ScrollView,
+  Platform
+} from 'react-native';
+import { auth, database } from '../../firebase';
+import { ref as ref_d, set } from 'firebase/database';
+import { createUserWithEmailAndPassword } from 'firebase/auth';
+import { Ionicons } from '@expo/vector-icons';
 
-//   import { auth, firebase, storage, database } from '../../firebase'
-// import { ref as ref_d, set, get, onValue } from 'firebase/database'
 const SignupScreen = ({ navigation }) => {
   const [name, setName] = useState('');
   const [surname, setSurname] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
-  const [domain, setDomain] = useState('');
-  const [practice, setPractice] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
   const handleSignup = () => {
-    // Implement your signup logic here
-    // console.log('Signup attempt with:', { name, email, password, domain, practice });
+    if (password !== confirmPassword) {
+      alert("Les mots de passe ne correspondent pas.");
+      return;
+    }
+
     createUserWithEmailAndPassword(auth, email, password)
-    .then(userCredentials => {
+      .then(userCredentials => {
         const user = userCredentials.user;
         console.log('Registered with: ', user.email);
-        // set user roles here
-        set(ref_d(database, `userdata/${auth.currentUser.uid}/role/`), {
+        set(ref_d(database, `userdata/${user.uid}/role/`), {
           isAdmin: false,
-          isValidated: false, //Unless Formateur code is valid: Phase 3
+          isValidated: false,
           isFormateur: false
-        })
-        set(ref_d(database, `userdata/${auth.currentUser.uid}/name/`), {
+        });
+        set(ref_d(database, `userdata/${user.uid}/name/`), {
           prenom: name,
           nom: surname
-        })
-        // NewUserTabs since isValidated=false
-        navigation.navigate('UserTabs')
+        });
+        navigation.navigate('UserTabs');
         navigation.push('RGPD');
-    
-    }).catch(error => alert(error.message))
-
+      })
+      .catch(error => alert(error.message));
   };
 
   return (
-    <View style={styles.container}>
-      <Image
-        source={require('../../assets/images/logoEsculappl.png')}
-        alt="Anatomical illustration"
-        style={styles.image}
-      />
-      {/* <Image source={require('../../assets/images/logoEsculappl.png')} style={styles.logo} /> */}
-
-      <Text style={styles.title}>Esculappl</Text>
-      <Text style={styles.subtitle}>Appli de Formations de Médecine Manuelle</Text>
-      <Text style={styles.version}></Text>
-      
-      <TextInput
-        style={styles.input}
-        placeholder="Prénom"
-        value={name}
-        onChangeText={setName}
-      />
-      <TextInput
-        style={styles.input}
-        placeholder="Nom"
-        value={surname}
-        onChangeText={setSurname}
-      />
-      <TextInput
-        style={styles.input}
-        placeholder="Email"
-        value={email}
-        onChangeText={setEmail}
-        keyboardType="email-address"
-      />
-      <TextInput
-        style={styles.input}
-        placeholder="Mot de passe"
-        value={password}
-        onChangeText={setPassword}
-        secureTextEntry
-      />
-      <TextInput
-        style={styles.input}
-        placeholder="Confirmer le mot de passe"
-        value={confirmPassword}
-        onChangeText={setConfirmPassword}
-        secureTextEntry
-      />
-      
-      <TouchableOpacity style={styles.button} onPress={handleSignup}>
-        <Text style={styles.buttonText}>Se connecter</Text>
-      </TouchableOpacity>
-      
-      <TouchableOpacity style={styles.button} onPress={() => navigation.navigate('Login')}>
-        <Text style={styles.buttonText}>J'ai déjà un compte: me connecter</Text>
-      </TouchableOpacity>
-    </View>
+    <KeyboardAvoidingView 
+      behavior={Platform.OS === "ios" ? "padding" : "height"}
+      style={styles.container}
+    >
+      <ScrollView 
+        contentContainerStyle={styles.scrollViewContent}
+        keyboardShouldPersistTaps="handled"
+      >
+        <Image
+          source={require('../../assets/images/logoEsculappl.png')}
+          style={styles.logo}
+        />
+        <Text style={styles.title}>Esculappl</Text>
+        <Text style={styles.subtitle}>Appli de Formations de Médecine Manuelle</Text>
+        
+        <View style={styles.formContainer}>
+          <TextInput
+            style={styles.input}
+            placeholder="Prénom"
+            value={name}
+            onChangeText={setName}
+          />
+          <TextInput
+            style={styles.input}
+            placeholder="Nom"
+            value={surname}
+            onChangeText={setSurname}
+          />
+          <TextInput
+            style={styles.input}
+            placeholder="Email"
+            value={email}
+            onChangeText={setEmail}
+            keyboardType="email-address"
+            autoCapitalize="none"
+          />
+          <View style={styles.passwordContainer}>
+            <TextInput
+              style={styles.passwordInput}
+              placeholder="Mot de passe"
+              value={password}
+              onChangeText={setPassword}
+              secureTextEntry={!showPassword}
+            />
+            <TouchableOpacity
+              style={styles.eyeIcon}
+              onPress={() => setShowPassword(!showPassword)}
+            >
+              <Ionicons
+                name={showPassword ? 'eye-off' : 'eye'}
+                size={24}
+                color="#00008B"
+              />
+            </TouchableOpacity>
+          </View>
+          <View style={styles.passwordContainer}>
+            <TextInput
+              style={styles.passwordInput}
+              placeholder="Confirmer le mot de passe"
+              value={confirmPassword}
+              onChangeText={setConfirmPassword}
+              secureTextEntry={!showConfirmPassword}
+            />
+            <TouchableOpacity
+              style={styles.eyeIcon}
+              onPress={() => setShowConfirmPassword(!showConfirmPassword)}
+            >
+              <Ionicons
+                name={showConfirmPassword ? 'eye-off' : 'eye'}
+                size={24}
+                color="#00008B"
+              />
+            </TouchableOpacity>
+          </View>
+          
+          <TouchableOpacity style={styles.button} onPress={handleSignup}>
+            <Text style={styles.buttonText}>S'inscrire</Text>
+          </TouchableOpacity>
+          
+          <TouchableOpacity style={styles.secondaryButton} onPress={() => navigation.navigate('Login')}>
+            <Text style={styles.secondaryButtonText}>J'ai déjà un compte: me connecter</Text>
+          </TouchableOpacity>
+        </View>
+      </ScrollView>
+    </KeyboardAvoidingView>
   );
 };
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+    backgroundColor: '#00008B',
+  },
+  scrollViewContent: {
+    flexGrow: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    padding: 20,
-    backgroundColor: '#0000A0',
+    paddingVertical: 40,
+    paddingHorizontal: 20,
   },
-  image: {
-    width: 200,
+  logo: {
+    width: 150,
     height: 150,
     marginBottom: 20,
   },
@@ -124,12 +165,10 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: 'white',
     textAlign: 'center',
-    marginBottom: 5,
-  },
-  version: {
-    fontSize: 14,
-    color: 'white',
     marginBottom: 20,
+  },
+  formContainer: {
+    width: '100%',
   },
   input: {
     width: '100%',
@@ -139,10 +178,25 @@ const styles = StyleSheet.create({
     marginBottom: 10,
     paddingHorizontal: 10,
   },
+  passwordContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 10,
+    backgroundColor: 'white',
+    borderRadius: 5,
+  },
+  passwordInput: {
+    flex: 1,
+    height: 40,
+    paddingHorizontal: 10,
+  },
+  eyeIcon: {
+    padding: 10,
+  },
   button: {
     width: '100%',
     height: 40,
-    backgroundColor: '#4CAF50', // A more muted green color
+    backgroundColor: '#4CAF50',
     justifyContent: 'center',
     alignItems: 'center',
     borderRadius: 5,
@@ -150,6 +204,18 @@ const styles = StyleSheet.create({
   },
   buttonText: {
     color: 'white',
+    fontWeight: 'bold',
+  },
+  secondaryButton: {
+    width: '100%',
+    height: 40,
+    backgroundColor: 'white',
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderRadius: 5,
+  },
+  secondaryButtonText: {
+    color: '#00008B',
     fontWeight: 'bold',
   },
 });
