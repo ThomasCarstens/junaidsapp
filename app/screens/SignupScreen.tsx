@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { 
   View, 
   TextInput, 
@@ -23,7 +23,19 @@ const SignupScreen = ({ navigation }) => {
   const [confirmPassword, setConfirmPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
-
+  useEffect(() => {
+    navigation.setOptions({
+      headerShown: true,
+      title: 'Créer un compte',
+      headerStyle: {
+        backgroundColor: '#00008B',
+      },
+      headerTintColor: '#fff',
+      headerTitleStyle: {
+        fontWeight: 'bold',
+      },
+    });
+  }, [navigation]);
   const handleSignup = () => {
     if (password !== confirmPassword) {
       alert("Les mots de passe ne correspondent pas.");
@@ -66,30 +78,33 @@ const SignupScreen = ({ navigation }) => {
         <Text style={styles.subtitle}>Appli de Formations de Médecine Manuelle</Text>
         
         <View style={styles.formContainer}>
+          <Text style={styles.inputLabel}>Prénom</Text>
           <TextInput
             style={styles.input}
-            placeholder="Prénom"
             value={name}
             onChangeText={setName}
           />
+          
+          <Text style={styles.inputLabel}>Nom</Text>
           <TextInput
             style={styles.input}
-            placeholder="Nom"
             value={surname}
             onChangeText={setSurname}
           />
+          
+          <Text style={styles.inputLabel}>Email</Text>
           <TextInput
             style={styles.input}
-            placeholder="Email"
             value={email}
             onChangeText={setEmail}
             keyboardType="email-address"
             autoCapitalize="none"
           />
+          
+          <Text style={styles.inputLabel}>Mot de passe</Text>
           <View style={styles.passwordContainer}>
             <TextInput
               style={styles.passwordInput}
-              placeholder="Mot de passe"
               value={password}
               onChangeText={setPassword}
               secureTextEntry={!showPassword}
@@ -105,10 +120,11 @@ const SignupScreen = ({ navigation }) => {
               />
             </TouchableOpacity>
           </View>
+          
+          <Text style={styles.inputLabel}>Confirmer le mot de passe</Text>
           <View style={styles.passwordContainer}>
             <TextInput
               style={styles.passwordInput}
-              placeholder="Confirmer le mot de passe"
               value={confirmPassword}
               onChangeText={setConfirmPassword}
               secureTextEntry={!showConfirmPassword}
@@ -170,18 +186,23 @@ const styles = StyleSheet.create({
   formContainer: {
     width: '100%',
   },
+  inputLabel: {
+    color: 'white',
+    marginBottom: 5,
+    fontWeight: 'bold',
+  },
   input: {
     width: '100%',
     height: 40,
     backgroundColor: 'white',
     borderRadius: 5,
-    marginBottom: 10,
+    marginBottom: 15,
     paddingHorizontal: 10,
   },
   passwordContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: 10,
+    marginBottom: 15,
     backgroundColor: 'white',
     borderRadius: 5,
   },

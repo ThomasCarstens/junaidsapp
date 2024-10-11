@@ -28,6 +28,7 @@ const PasswordResetScreen = ({ navigation }) => {
   return (
     <View style={styles.container}>
       <Text style={styles.title}>Réinitialiser le mot de passe</Text>
+      <Text style={styles.inputLabel}>Entrez votre e-mail</Text>
       <TextInput
         style={styles.input}
         placeholder="Entrez votre e-mail"
@@ -56,6 +57,12 @@ const PasswordResetScreen = ({ navigation }) => {
 };
 
 const styles = StyleSheet.create({
+  inputLabel: {
+    color: 'white',
+    marginBottom: 5,
+    fontWeight: 'bold',
+    marginRight: 200
+  },
   container: {
     flex: 1,
     justifyContent: 'center',

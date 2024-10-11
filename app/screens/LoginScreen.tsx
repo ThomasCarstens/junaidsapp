@@ -140,7 +140,7 @@ const LoginScreen = ({ navigation }) => {
           <Text style={styles.appTitle}>Esculappl</Text>
           <Text style={styles.appSlogan}>Appli de Formations de Médecine Manuelle</Text>
         </View>
-
+        <Text style={styles.inputLabel}>Email</Text>
         <View style={styles.formContainer}>
           <TextInput
             style={styles.input}
@@ -150,6 +150,7 @@ const LoginScreen = ({ navigation }) => {
             keyboardType="email-address"
             autoCapitalize="none"
           />
+          <Text style={styles.inputLabel}>Mot de passe</Text>
           <View style={styles.passwordContainer}>
             <TextInput
               style={styles.passwordInput}
@@ -323,7 +324,11 @@ const styles = StyleSheet.create({
   adminButtonText: {
     color: 'white',
   },
-
+  inputLabel: {
+    color: 'white',
+    marginBottom: 5,
+    fontWeight: 'bold',
+  }
 });
 
 export default LoginScreen;
