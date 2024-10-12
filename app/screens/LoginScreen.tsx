@@ -135,7 +135,8 @@ const LoginScreen = ({ navigation }) => {
         contentContainerStyle={styles.scrollViewContent}
         keyboardShouldPersistTaps="handled"
       >
-        <Image source={require('../../assets/images/logoEsculappl.png')} style={styles.logo} />
+        {/* <Image source={require('../../assets/images/logoEsculappl.png')} style={styles.logo} /> */}
+        <Image source={require('../../assets/images/logoEsculappl2.png')} style={styles.logo2} />
         <View style={styles.titleContainer}>
           <Text style={styles.appTitle}>Esculappl</Text>
           <Text style={styles.appSlogan}>Appli de Formations de Médecine Manuelle</Text>
@@ -202,6 +203,12 @@ const styles = StyleSheet.create({
   logo: {
     width: 150,
     height: 250,
+    marginBottom: 20,
+    borderRadius: 30,
+  },
+  logo2: {
+    width: 150,
+    height: 150,
     marginBottom: 20,
     borderRadius: 30,
   },

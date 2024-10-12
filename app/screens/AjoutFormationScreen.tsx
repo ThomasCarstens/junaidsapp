@@ -31,6 +31,7 @@ const AjoutFormationScreen = ({ navigation, route }) => {
     autreNature: '',
     autreAnneeConseillee: '',
     affiliationDIU: '',
+    autreAffiliationDIU: '',
     competencesAcquises: '',
     prerequis: '',
     instructions: '',
@@ -45,9 +46,11 @@ const AjoutFormationScreen = ({ navigation, route }) => {
   const [imageUri, setImageUri] = useState(null);
   const [errors, setErrors] = useState({});
   const [categoryOptions, setCategoryOptions] = useState([]);
+  const [affiliationOptions, setAffiliationOptions] = useState([]);
   const [lieuOptions, setLieuOptions] = useState([]);
   const [regionOptions, setRegionOptions] = useState([]);
   const [anneeOptions, setAnneeOptions] = useState([]);
+  const [natureOptions, setNatureOptions] = useState([]);
 
   useEffect(() => {
     downloadFilterOptions();
@@ -64,6 +67,8 @@ const AjoutFormationScreen = ({ navigation, route }) => {
       setLieuOptions(parameters.lieuOptions);
       setRegionOptions(parameters.regionOptions);
       setAnneeOptions(parameters.anneeOptions);
+      setAffiliationOptions(parameters.affiliationOptions);
+      setNatureOptions(parameters.natureOptions);
     } catch (error) {
       console.error('Error checking filter options:', error);
     }
@@ -185,6 +190,10 @@ const AjoutFormationScreen = ({ navigation, route }) => {
       newErrors.autreAnneeConseillee = 'Veuillez spécifier l\'année conseillée';
       isValid = false;
     }
+    if (formData.affiliationDIU === 'Autre' && !formData.autreAffiliationDIU) {
+      newErrors.autreAffiliationDIU = 'Veuillez spécifier l\'Affiliation DIU';
+      isValid = false;
+    }
 
     // Validate numeric fields
     if (isNaN(Number(formData.tarifEtudiant)) || formData.tarifEtudiant === '') {
@@ -233,7 +242,14 @@ const AjoutFormationScreen = ({ navigation, route }) => {
             date_de_fin: formData.date_de_fin.toISOString().split('T')[0],
             heureDebut: formData.heureDebut.toTimeString().split(' ')[0].slice(0, 5),
             heureFin: formData.heureFin.toTimeString().split(' ')[0].slice(0, 5),
-            domaine: formData.domaine === 'Autres' ? formData.autresDomaine : formData.domaine,
+
+            domaine: formData.domaine === 'Autre' ? formData.autresDomaine : formData.domaine,
+            lieu: formData.lieu === 'Autre' ? formData.autreLieu : formData.lieu,
+            region: formData.region === 'Autre' ? formData.autreRegion : formData.region,
+            nature: formData.nature === 'Autre' ? formData.autreNature : formData.nature,
+            anneeConseillee: formData.anneeConseillee === 'Autre' ? formData.autreAnneeConseillee : formData.anneeConseillee,
+            affiliationDIU: formData.affiliationDIU === 'Autre' ? formData.autreAffiliationDIU : formData.affiliationDIU,
+
             image: imageUrl || formData.image,
           };
   
@@ -340,11 +356,9 @@ const AjoutFormationScreen = ({ navigation, route }) => {
         onValueChange={(itemValue) => handleInputChange('nature', itemValue)}
       >
         <Picker.Item label="Sélectionnez un type de formation" value="" />
-        <Picker.Item label="Séminaire pratique" value="Séminaire pratique" />
-        <Picker.Item label="Séminaire" value="Séminaire" />
-        <Picker.Item label="Formation spécialisée" value="Formation spécialisée" />
-        <Picker.Item label="Atelier pratique" value="Atelier pratique" />
-        <Picker.Item label="Autre" value="Autre" />
+        {natureOptions.map((natureOption, index) => (
+          <Picker.Item key={index} label={natureOption} value={natureOption} />
+        ))}
 
         
       </Picker>
@@ -359,8 +373,8 @@ const AjoutFormationScreen = ({ navigation, route }) => {
         onValueChange={(itemValue) => handleInputChange('lieu', itemValue)}
       >
         <Picker.Item label="Sélectionnez un lieu" value="" />
-        {lieuOptions.map((lieu, index) => (
-          <Picker.Item key={index} label={lieu} value={lieu} />
+        {lieuOptions.map((lieuOption, index) => (
+          <Picker.Item key={index} label={lieuOption} value={lieuOption} />
         ))}
         {/* <Picker.Item label="Autre" value="Autre" /> */}
       </Picker>
@@ -376,8 +390,8 @@ const AjoutFormationScreen = ({ navigation, route }) => {
         onValueChange={(itemValue) => handleInputChange('region', itemValue)}
       >
         <Picker.Item label="Sélectionnez une région" value="" />
-        {regionOptions.map((region, index) => (
-          <Picker.Item key={index} label={region} value={region} />
+        {regionOptions.map((regionOption, index) => (
+          <Picker.Item key={index} label={regionOption} value={regionOption} />
         ))}
         {/* <Picker.Item label="Autre" value="Autre" /> */}
       </Picker>
@@ -402,7 +416,7 @@ const AjoutFormationScreen = ({ navigation, route }) => {
       {formData.anneeConseillee === 'Autre' && renderInput('Spécifier l\'année d\'études conseillée', 'autreAnneeConseillee', 'Spécifier l\'année d\'études conseillée')}
 
 
-
+      
       {renderInput('Tarif étudiant DIU', 'tarifEtudiant', 'Tarif étudiant DIU', 'numeric')}
       {renderInput('Tarif médecin', 'tarifMedecin', 'Tarif médecin', 'numeric')}
 
@@ -413,10 +427,10 @@ const AjoutFormationScreen = ({ navigation, route }) => {
         onValueChange={(itemValue) => handleInputChange('domaine', itemValue)}
       >
         <Picker.Item label="Sélectionnez un domaine" value="" />
-        <Picker.Item label="Médecine Sport" value="Médecine Sport" />
-        <Picker.Item label="Rhumatologie" value="Rhumatologie" />
-        <Picker.Item label="Médecine Physique" value="Médecine Physique" />
-        <Picker.Item label="Autre" value="Autre" />
+        {categoryOptions.map((annee, index) => (
+          <Picker.Item key={index} label={annee} value={annee} />
+        ))}
+        {/* <Picker.Item label="Autre" value="Autre" /> */}
       </Picker>
 
       {errors.domaine && <Text style={styles.errorText}>{errors.domaine}</Text>}
@@ -430,26 +444,15 @@ const AjoutFormationScreen = ({ navigation, route }) => {
         onValueChange={(itemValue) => handleInputChange('affiliationDIU', itemValue)}
       >
         <Picker.Item label="Sélectionnez une affiliation" value="" />
-        <Picker.Item label="Aix-Marseille" value="Aix-Marseille" />
-        <Picker.Item label="Bordeaux" value="Bordeaux" />
-        <Picker.Item label="Caen" value="Caen" />
-        <Picker.Item label="Dijon" value="Dijon" />
-        <Picker.Item label="Lille" value="Lille" />
-        <Picker.Item label="Nancy" value="Nancy" />
-        <Picker.Item label="Nantes-Angers" value="Nantes-Angers" />
-        <Picker.Item label="Nîmes-Montpellier" value="Nîmes-Montpellier" />
-        <Picker.Item label="Paris Pitié Salpetrière" value="Paris Pitié Salpetrière" />
-        <Picker.Item label="Paris Saclay" value="Paris Saclay" />
-        <Picker.Item label="Paris Bobigny" value="Paris Bobigny" />
-        <Picker.Item label="Reims" value="Reims" />
-        <Picker.Item label="Rennes" value="Rennes" />
-        <Picker.Item label="Strasbourg" value="Strasbourg" />
-        <Picker.Item label="Toulouse" value="Toulouse" />
-        <Picker.Item label="Tours" value="Tours" />
+        {affiliationOptions.map((affiliation, index) => (
+          <Picker.Item key={index} label={affiliation} value={affiliation} />
+        ))}
+
         {/* PACA, Occitanie, Ile de France, Champagnes Ardennes, Loire Atlantique, Bretagne */}
       </Picker>
       {errors.affiliationDIU && <Text style={styles.errorText}>{errors.affiliationDIU}</Text>}
 
+      {formData.affiliationDIU === 'Autre' && renderInput('Spécifier l\'affiliation DIU', 'affiliationDIU', 'Spécifier l\'affiliation DIU')}
       {/* {renderInput('Catégorie', 'category', 'Catégorie de la formation')} */}
       {renderInput('Compétences acquises', 'competencesAcquises', 'Compétences acquises', 'default', true)}
       {renderInput('Prérequis', 'prerequis', 'Prérequis', 'default', true)}

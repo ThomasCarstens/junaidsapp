@@ -72,3 +72,10 @@ My apps (Google Console)
 https://play.google.com/console/u/2/developers/6656870603608572931/app-list?pli=1
 
 
+Android: Make sure that you have correctly uploaded the server key from the Firebase Console as specified in uploading FCM V1 server credentials (https://docs.expo.dev/push-notifications/fcm-credentials/)
+
+https://expo.dev/notifications
+
+
+Backups to check
+https://console.firebase.google.com/u/2/project/appdolivier/database/backups
