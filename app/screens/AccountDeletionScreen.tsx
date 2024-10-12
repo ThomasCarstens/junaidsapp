@@ -25,7 +25,7 @@ const AccountDeletionScreen = ({ navigation }) => {
       console.log(`/userdata/${user.uid}`)
       const path = `/userdata/${user.uid}`
       const userRef = ref_d(database, path);
-      await update(userRef, { accountExists: "désinscrit" })
+      await update(userRef, { accountExists: "Compte supprimé via l'application" })
         .then(async () => {
           console.log('test')
           await user.delete();

@@ -18,6 +18,23 @@ const InscriptionFormationScreen = ({ route, navigation }) => {
   const [formationId, setFormationId] = useState(route.params.formationId);
   const [formationTitle, setFormationTitle] = useState(route.params.formationTitle);
 
+  navigation.setOptions({
+    headerShown: true,
+    title: 'Fiche d\'inscription',
+    headerStyle: {
+      backgroundColor: '#1a53ff',
+    },
+    headerTintColor: '#fff',
+    headerTitleStyle: {
+      fontWeight: 'bold',
+    },
+    // headerRight: () => (
+    //   <TouchableOpacity onPress={()=>handleLogout()} style={styles.logoutButton}>
+    //     <Text style={styles.logoutButtonText}>Se déconnecter</Text>
+    //   </TouchableOpacity>
+    // ),
+  });
+
   const validateForm = () => {
     if (!nom.trim() || !prenom.trim() || !email.trim() || !telephone.trim()) {
       Alert.alert('Erreur', 'Veuillez remplir tous les champs obligatoires (nom, prénom, email, téléphone).');
@@ -209,7 +226,7 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     padding: 20,
-    backgroundColor: '#f5f5f5',
+    backgroundColor: '#d5dcf0',
   },
   title: {
     fontSize: 24,

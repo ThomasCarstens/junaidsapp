@@ -292,11 +292,13 @@ const RechercheFormationsScreen = (props, { route }) => {
       const latestVersionRef = ref_d(database, '/parameters/updateParams');
       const snapshot = await get(latestVersionRef);
       const updateParams = snapshot.val()
-      const latestVersion = updateParams.forceUpdateVersion;
+
+      const latestVersion = Platform.OS === 'ios' ? updateParams.ios.forceUpdate_minimumVersion : updateParams.android.forceUpdate_minimumVersion
+      
       console.log('v', latestVersion)
       console.log(compareVersions(currentVersion, latestVersion))
       if (latestVersion && compareVersions(currentVersion, latestVersion) < 0) {
-        
+        console.log('UPDATE')
         setIsUpdateAvailable(true);
         Alert.alert(
           `Mise à jour disponible: ${latestVersion}`,
@@ -324,8 +326,8 @@ const RechercheFormationsScreen = (props, { route }) => {
 
   const openAppStore = (updateParams) => {
     const url = Platform.OS === 'ios'
-      ? updateParams.iosLink
-      : updateParams.androidLink;
+      ? updateParams.ios.storeLink
+      : updateParams.android.storeLink 
     Linking.openURL(url);
   };
   

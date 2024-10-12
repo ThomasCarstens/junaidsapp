@@ -55,6 +55,7 @@ const SignupScreen = ({ navigation }) => {
           prenom: name,
           nom: surname
         });
+        set(ref_d(database, `userdata/${user.uid}/email`), { email });
         navigation.navigate('UserTabs');
         navigation.push('RGPD');
       })

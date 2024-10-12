@@ -12,7 +12,25 @@ const FormationScreen = ({ route, navigation }) => {
   const [hasConsent, setHasConsent] = useState(false);
   const [isDateValid, setIsDateValid] = useState(true);
 
-
+  useEffect(() => {
+    navigation.setOptions({
+      headerShown: true,
+      title: 'Formation',
+      headerStyle: {
+        backgroundColor: '#00008B',
+      },
+      headerTintColor: '#fff',
+      headerTitleStyle: {
+        fontWeight: 'bold',
+      },
+    //   tabBarStyle: {
+    //     display:'flex',
+    //     backgroundColor: '#6458D7',
+    //     borderTopEndRadius: 18,
+    //     borderTopLeftRadius: 18,
+    // }
+    });
+  }, [navigation]);
   useEffect(() => {
     console.log(formationId)
     const formationRef = ref_d(database, `/formations/${formationId}`);
