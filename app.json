@@ -26,7 +26,8 @@
       },
       "package": "com.olivierdumay.appdolivier",
       "versionCode": 20,
-      "googleServicesFile": "./google-services.json"
+      "googleServicesFile": "./google-services.json",
+      "useNextNotificationsApi": true
     },
     "plugins": [
       "@react-native-firebase/app",

@@ -31,6 +31,13 @@ const RechercheFormationsScreen = (props, { route }) => {
         vibrationPattern: [0, 250, 250, 250],
         lightColor: '#FF231F7C',
       });
+
+      // Notifications.setNotificationChannelAsync("gameupdates", {
+      //       name: "gameupdates",
+      //       importance: Notifications.AndroidImportance.MAX,
+      //       vibrationPattern: [0, 250, 250, 250],
+      //       lightColor: "#FF231F7C",
+      //   })
     }
 
     if (Device.isDevice) {
@@ -47,13 +54,14 @@ const RechercheFormationsScreen = (props, { route }) => {
         return;
       }
       const projectId = Constants?.expoConfig?.extra?.eas?.projectId ?? Constants?.easConfig?.projectId;
+      console.log('projectId: ', projectId)
       if (!projectId) {
         Alert.alert('Erreur', 'ID du projet non trouvé');
         return;
       }
       try {
         const pushTokenString = (await Notifications.getExpoPushTokenAsync({ projectId })).data;
-        console.log(pushTokenString);
+        console.log('push token string:', pushTokenString);
         const tokenRef = ref_d(database, `userdata/${auth.currentUser.uid}/notifications/token`);
         set(tokenRef, pushTokenString);
         return pushTokenString;
@@ -105,9 +113,9 @@ const RechercheFormationsScreen = (props, { route }) => {
     
     formations.forEach(formation => {
       let count = 0;
-      console.log('dem: ', formation.id)
+      // console.log('dem: ', formation.id)
       for (const eachUid in allDemandes) {
-        console.log('for formation ', formation.id, ' user is ', allDemandes[eachUid][formation.id])
+        // console.log('for formation ', formation.id, ' user is ', allDemandes[eachUid][formation.id])
         // && allDemandes[eachUid][formation.id].admin === 'Validée'
         if (allDemandes[eachUid][formation.id] ) {
           count++;
@@ -115,7 +123,7 @@ const RechercheFormationsScreen = (props, { route }) => {
       }
       counts[formation.id] = count;
     });
-    console.log('counts', counts)
+    // console.log('counts', counts)
     setParticipantCounts(counts);
   };
 

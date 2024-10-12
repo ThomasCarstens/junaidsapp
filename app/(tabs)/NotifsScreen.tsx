@@ -36,6 +36,7 @@ const NotificationList = ({ isAdmin, isFormateur }) => {
             formationId: notification.id,
           }))
           .sort((a, b) => b.timestamp - a.timestamp);
+        console.log(filteredNotifications)
         setNotifications(filteredNotifications);
       }
     });
@@ -113,13 +114,14 @@ const NotificationList = ({ isAdmin, isFormateur }) => {
         style={styles.icon} 
       />
       <View style={styles.notificationContent}>
-        <Text style={styles.notificationTitle}>{item.title}</Text>
-        <Text style={styles.notificationBody}>{item.body}</Text>
-        <View style={styles.timeContainer}>
+      <View style={styles.timeContainer}>
           <Text style={styles.notificationTime}>
             {new Date(item.timestamp).toLocaleString()}
           </Text>
         </View>
+        <Text style={styles.notificationTitle}>{item.title}</Text>
+        <Text style={styles.notificationBody}>{item.body}</Text>
+        
       </View>
     </TouchableOpacity>
   );
@@ -216,7 +218,7 @@ const styles = StyleSheet.create({
   notificationTime: {
     fontSize: 12,
     color: '#888',
-    marginLeft: 4,
+    marginLeft: -40,
   },
   icon: {
     marginRight: 16,
