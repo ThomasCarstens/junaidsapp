@@ -2,7 +2,7 @@
   "expo": {
     "name": "Esculappl-Admin",
     "slug": "appdolivier",
-    "version": "1.2.0",
+    "version": "1.4.0",
     "orientation": "portrait",
     "icon": "./assets/images/esculappl-admin-logo.jpg",
     "scheme": "myapp",
@@ -16,7 +16,7 @@
       "supportsTablet": true,
       "googleServicesFile": "./GoogleService-Info.plist",
       "bundleIdentifier": "com.olivierdumay.appdolivier-admin",
-      "buildNumber": "14"
+      "buildNumber": "24"
     },
     "android": {
       "icon": "./assets/images/icon.png",
@@ -34,6 +34,13 @@
       "@react-native-firebase/auth",
       "@react-native-firebase/crashlytics",
       "expo-router",
+      [
+        "expo-image-picker",
+        {
+          "photosPermission": "Allow $(PRODUCT_NAME) to access your photo",
+          "cameraPermission": "Allow $(PRODUCT_NAME) to access your camera"
+        }
+      ],
       [
         "expo-build-properties",
         {

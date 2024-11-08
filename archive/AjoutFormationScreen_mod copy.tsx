@@ -142,138 +142,35 @@ const AjoutFormationScreen = ({ navigation, route }) => {
 
     if (!result.canceled) {
       setImageUri(result.assets[0].uri);
-      Alert.alert('Uri', result.assets[0].uri)
     }
   };
 
 
+const uploadImageAsync = async (): Promise => {
+  // if (imageUri) {
+  //   try {
+  //     // Request image picker permissions
+  //     const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
+  //     if (status !== 'granted') {
+  //       Alert.alert('Error', 'Permission to access media library is required to upload an image.');
+  //       return null;
+  //     }
 
-// const uploadImageAsync = async ():  Promise<any> ((resolve,reject) => {
-//     const response =  fetch(imageUri);
-//     const blob =  response.blob();
+  //     // Fetch image data directly
+  //     const response = await fetch(imageUri);
 
-//     const filename = `formations/${formData.id}_${Date.now()}.jpg`;
-//     const storageRef = ref_s(storage, filename);
-//     // const storageRef = ref_s(storage, location)
-//     const uploadTask = uploadBytesResumable(storageRef, blob)
 
-//     uploadTask.on(
-//       'state_changed',
-//       (snapshot) => {
-//         switch (snapshot.state) {
-//           case 'paused':
-//             break
-//           case 'running':
-//             break
-//         }
-//       },
-//       (error) => {
-//         // A full list of error codes is available at
-//         // https://firebase.google.com/docs/storage/web/handle-errors
-//         switch (error.code) {
-//           case 'storage/unauthorized':
-//             // User doesn't have permission to access the object
-//             break
-//           case 'storage/canceled':
-//             // User canceled the upload
-//             break
-//           case 'storage/unknown':
-//             break
-//         }
-//         reject(error)
-//       },
-//       async () => {
-//         // We're done with the blob, close and release it
-//         try {
-//           //@ts-ignore
-//           blob.close()
-//         } catch (error) {
-//           //blob close seems to throw an error on web, but works on android
-//         }
-
-//         // Upload completed successfully, now we can get the download URL
-//         resolve({ storageUrl: await getDownloadURL(storageRef) })
-//       },
-//     )
-//   })
-
-// export const uploadImageAsync = async (): Promise<void> => {
- 
-//   // return new Promise(async (resolve, reject): Promise<void> => {
-//   //   const filePath = await fetch(media.storageUrl)
-//   //   const blob = await filePath.blob()
-//     const response = await fetch(imageUri);
-//     const blob = await response.blob();
-
-//     const filename = `formations/${formData.id}_${Date.now()}.jpg`;
-//     const storageRef = ref_s(storage, filename);
-//     // const storageRef = ref_s(storage, location)
-//     const uploadTask = uploadBytesResumable(storageRef, blob)
-
-//     uploadTask.on(
-//       'state_changed',
-//       (snapshot) => {
-//         switch (snapshot.state) {
-//           case 'paused':
-//             break
-//           case 'running':
-//             break
-//         }
-//       },
-//       (error) => {
-//         // A full list of error codes is available at
-//         // https://firebase.google.com/docs/storage/web/handle-errors
-//         switch (error.code) {
-//           case 'storage/unauthorized':
-//             // User doesn't have permission to access the object
-//             break
-//           case 'storage/canceled':
-//             // User canceled the upload
-//             break
-//           case 'storage/unknown':
-//             break
-//         }
-//         reject(error)
-//       },
-//       async () => {
-//         // We're done with the blob, close and release it
-//         try {
-//           //@ts-ignore
-//           blob.close()
-//         } catch (error) {
-//           //blob close seems to throw an error on web, but works on android
-//         }
-
-//         // Upload completed successfully, now we can get the download URL
-//         resolve({ storageUrl: await getDownloadURL(storageRef) })
-//       },
-//     )
-//   })
-// }
-
-const uploadImageAsync = async (): Promise<any> => {
- 
   return new Promise(async (resolve, reject): Promise<void> => {
-    // if (imageUri) {
-      // try {
-        // Request image picker permissions
-        const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
-        if (status !== 'granted') {
-          Alert.alert('Error', 'Permission to access media library is required to upload an image.');
-          return null;
-        }
-        // const snapshot = await upRef.put(blob)
-        // Fetch image data directly
-        const response = await fetch(imageUri);
-        const blob = await response.blob();
-        const filename = `formations/${formData.id}_${Date.now()}.jpg`;
-        const storageRef = ref_s(storage, filename);
+    if (imageUri) {
+      try {
+    const filePath = await fetch(imageUri)
+    const blob = await filePath.blob()
 
-        // const filePath = await fetch(media.storageUrl)
-        // const blob = await filePath.blob()
 
-        // const storageRef = ref(storage(), location)
-        const uploadTask = uploadBytesResumable(storageRef, blob)
+    const filename = `formations/${formData.id}_${Date.now()}.jpg`;
+    const storageRef = ref_s(storage, filename);
+    // const storageRef = ref_s(storage(), location)
+    const uploadTask = uploadBytesResumable(storageRef, blob)
 
     uploadTask.on(
       'state_changed',
@@ -310,11 +207,314 @@ const uploadImageAsync = async (): Promise<any> => {
         }
 
         // Upload completed successfully, now we can get the download URL
-        resolve( getDownloadURL(storageRef) )
+        resolve({ storageUrl: await getDownloadURL(storageRef) })
       },
     )
-  })
+  
+} catch (error) {
+  console.error("Error uploading image: ", error);
+  Alert.alert('Error', 'An error occurred while uploading the image.');
+  return null;
 }
+}
+return null;
+})
+};
+
+const uploadImageZeta = async () => {
+  try {
+    // Extract extension and generate filename
+    const ext = imageUri.split('.').pop();
+    const filename = `formations/${formData.id}_${Date.now()}.jpg`;
+    
+    // Create storage reference
+    const storageRef = ref_s(storage, filename);
+
+    // Handle platform-specific blob creation
+    let theBlob;
+    if (Platform.OS === 'ios') {
+      const filePath = imageUri.replace('file://', '');
+      const xhr = new XMLHttpRequest();
+      theBlob = await new Promise((resolve, reject) => {
+        xhr.onload = () => {
+          resolve(xhr.response);
+        };
+        xhr.onerror = () => {
+          reject(new Error('Blob creation failed'));
+        };
+        xhr.responseType = 'blob';
+        xhr.open('GET', imageUri, true);
+        xhr.send(null);
+      });
+    } else {
+      const fetchResponse = await fetch(imageUri);
+      theBlob = await fetchResponse.blob();
+    }
+
+    // Create upload task
+    const uploadTask = uploadBytesResumable(storageRef, theBlob);
+
+    return new Promise((resolve, reject) => {
+      uploadTask.on(
+        "state_changed",
+        (snapshot) => {
+          const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
+          // Update state with progress
+          setState(prevState => ({
+            ...prevState,
+            progress,
+            uploading: true
+          }));
+        },
+        (error) => {
+          // Clean up blob
+          if (Platform.OS === 'ios') {
+            theBlob.close();
+          }
+          console.error("Upload failed:", error);
+          reject(error);
+        },
+        async () => {
+          try {
+            // Get download URL
+            const downloadUrl = await getDownloadURL(uploadTask.snapshot.ref);
+            
+            // Update state with new image
+            setState(prevState => {
+              const allImages = [...(prevState.images || []), downloadUrl];
+              
+              // Store in AsyncStorage
+              AsyncStorage.setItem('images', JSON.stringify(allImages));
+              
+              return {
+                ...prevState,
+                uploading: false,
+                imgSource: '',
+                imageUri: '',
+                progress: 0,
+                images: allImages
+              };
+            });
+
+            // Clean up blob
+            if (Platform.OS === 'ios') {
+              theBlob.close();
+            }
+
+            // Resolve with URL and metadata
+            resolve({
+              downloadUrl,
+              metadata: uploadTask.snapshot.metadata,
+            });
+          } catch (error) {
+            console.error("Error getting download URL:", error);
+            reject(error);
+          }
+        }
+      );
+    });
+  } catch (error) {
+    console.error("Upload preparation failed:", error);
+    throw error;
+  }
+};
+
+const uploadImageGamma = async () => {
+  const fetchResponse = await fetch(imageUri);
+  const theBlob = await fetchResponse.blob();
+
+  const filename = `formations/${formData.id}_${Date.now()}.jpg`;
+  const storageRef = ref_s(storage, filename);
+
+  const uploadTask = uploadBytesResumable(storageRef, theBlob);
+
+  return new Promise((resolve, reject) => {
+    uploadTask.on(
+      "state_changed",
+      (snapshot) => {
+        const progress =
+          (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
+        // onProgress && onProgress(progress);
+      },
+      (error) => {
+        // Handle unsuccessful uploads
+        console.log(error);
+        reject(error);
+      },
+      async () => {
+        const downloadUrl = await getDownloadURL(uploadTask.snapshot.ref);
+        resolve({
+          downloadUrl,
+          metadata: uploadTask.snapshot.metadata,
+        });
+      }
+    );
+  });
+};
+
+// const uploadImage = async () => {
+//   if (imageUri) {
+//     try {
+//       // Request image picker permissions
+//       const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
+//       if (status !== 'granted') {
+//         Alert.alert('Error', 'Permission to access media library is required to upload an image.');
+//         return null;
+//       }
+
+//       // Fetch image data directly
+//       const response = await fetch(imageUri);
+//       const blob = await response.blob();
+//       const filename = `formations/${formData.id}_${Date.now()}.jpg`;
+//       const storageRef = ref_s(storage, filename);
+
+//       // Upload image to Firebase Storage
+//       await uploadBytes(storageRef, blob);
+//       const downloadURL = await getDownloadURL(storageRef);
+//       return downloadURL;
+//     } catch (error) {
+//       console.error("Error uploading image: ", error);
+//       Alert.alert('Error', 'An error occurred while uploading the image.');
+//       return null;
+//     }
+//   }
+//   return null;
+// };
+
+
+const uploadImageDelta = async () => {
+  if (!imageUri) return null;
+
+  try {
+    const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
+    if (status !== 'granted') {
+      Alert.alert('Error', 'Permission to access media library is required to upload an image.');
+      return null;
+    }
+
+    // Create blob using XMLHttpRequest
+    const blob = await new Promise((resolve, reject) => {
+      const xhr = new XMLHttpRequest();
+      xhr.onload = () => {
+        resolve(xhr.response);
+      };
+      xhr.onerror = (e) => {
+        console.log(e);
+        reject(new Error('Failed to create blob'));
+      };
+      xhr.responseType = 'blob';
+      xhr.open('GET', imageUri, true);
+      xhr.send(null);
+    });
+
+    const filename = `formations/${formData.id}_${Date.now()}.jpg`;
+    const storageRef = ref_s(storage, filename);
+    
+    await uploadBytes(storageRef, blob);
+    
+    // Clean up the blob
+    blob.close();
+    
+    const downloadURL = await getDownloadURL(storageRef);
+    return downloadURL;
+  } catch (error) {
+    console.error("Error uploading image: ", error);
+    Alert.alert('Error', `Failed to upload image: ${error.message}`);
+    return null;
+  }
+};
+
+const uploadImageEpsilon = async () => {
+  if (!imageUri) return null;
+
+  try {
+    // Request image picker permissions
+    const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
+    if (status !== 'granted') {
+      Alert.alert('Error', 'Permission to access media library is required to upload an image.');
+      return null;
+    }
+
+    let blob;
+    if (Platform.OS === 'ios') {
+      // Remove 'file://' prefix if present
+      const filePath = imageUri.replace('file://', '');
+      
+      // Check if file exists
+      const fileInfo = await FileSystem.getInfoAsync(filePath);
+      if (!fileInfo.exists) {
+        throw new Error('File does not exist');
+      }
+
+      // Read the file as base64
+      const base64 = await FileSystem.readAsStringAsync(filePath, {
+        encoding: FileSystem.EncodingType.Base64
+      });
+
+      // Create blob from base64
+      const response = await fetch(`data:image/jpeg;base64,${base64}`);
+      blob = await response.blob();
+    } else {
+      // Android handling remains the same
+      const response = await fetch(imageUri);
+      blob = await response.blob();
+    }
+
+    // Validate blob
+    if (!blob) {
+      throw new Error('Failed to create blob from image');
+    }
+
+    const filename = `formations/${formData.id}_${Date.now()}.jpg`;
+    const storageRef = ref_s(storage, filename);
+    
+    // Upload image to Firebase Storage
+    await uploadBytes(storageRef, blob);
+    const downloadURL = await getDownloadURL(storageRef);
+    return downloadURL;
+  } catch (error) {
+    console.error("Error uploading image: ", error);
+    Alert.alert('Error', `Failed to upload image: ${error.message}`);
+    return null;
+  }
+};
+
+const uploadImageFileSystem = async () => {
+  if (imageUri) {
+    try {
+      // Request image picker permissions
+      const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
+      if (status !== 'granted') {
+        Alert.alert('Error', 'Permission to access media library is required to upload an image.');
+        return null;
+      }
+
+      let blob;
+      if (Platform.OS === 'ios') {
+        // For iOS, we need to use FileSystem to read the file
+        const response = await fetch('data:image/jpeg;base64,' + await FileSystem.readAsStringAsync(imageUri, { encoding: FileSystem.EncodingType.Base64 }));
+        blob = await response.blob();
+      } else {
+        // Android can use fetch directly
+        const response = await fetch(imageUri);
+        blob = await response.blob();
+      }
+
+      const filename = `formations/${formData.id}_${Date.now()}.jpg`;
+      const storageRef = ref_s(storage, filename);
+      
+      // Upload image to Firebase Storage
+      await uploadBytes(storageRef, blob);
+      const downloadURL = await getDownloadURL(storageRef);
+      return downloadURL;
+    } catch (error) {
+      console.error("Error uploading image: ", error);
+      Alert.alert('Error', 'An error occurred while uploading the image.');
+      return null;
+    }
+  }
+  return null;
+};
 
   const uploadImage = async () => {
     if (imageUri) {
@@ -325,7 +525,7 @@ const uploadImageAsync = async (): Promise<any> => {
           Alert.alert('Error', 'Permission to access media library is required to upload an image.');
           return null;
         }
-        // const snapshot = await upRef.put(blob)
+  
         // Fetch image data directly
         const response = await fetch(imageUri);
         const blob = await response.blob();
@@ -386,7 +586,6 @@ const uploadImageAsync = async (): Promise<any> => {
     // Validate numeric fields
     if (isNaN(Number(formData.tarifEtudiant)) || formData.tarifEtudiant === '') {
       newErrors.tarifEtudiant = 'Le tarif doit être un nombre';
-      Alert.alert('Uri', imageUri)
       isValid = false;
     }
     if (isNaN(Number(formData.tarifMedecin)) || formData.tarifMedecin === '') {
@@ -424,7 +623,7 @@ const uploadImageAsync = async (): Promise<any> => {
   const uploadToFirebase = async () => {
       if (validateForm()) {
         try {
-          const imageUrl = await uploadImageAsync();
+          const imageUrl = await uploadImageZeta();
           const formattedData = {
             ...formData,
             date: formData.date.toISOString().split('T')[0],

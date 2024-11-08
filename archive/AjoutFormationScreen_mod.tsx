@@ -148,174 +148,6 @@ const AjoutFormationScreen = ({ navigation, route }) => {
 
 
 
-// const uploadImageAsync = async ():  Promise<any> ((resolve,reject) => {
-//     const response =  fetch(imageUri);
-//     const blob =  response.blob();
-
-//     const filename = `formations/${formData.id}_${Date.now()}.jpg`;
-//     const storageRef = ref_s(storage, filename);
-//     // const storageRef = ref_s(storage, location)
-//     const uploadTask = uploadBytesResumable(storageRef, blob)
-
-//     uploadTask.on(
-//       'state_changed',
-//       (snapshot) => {
-//         switch (snapshot.state) {
-//           case 'paused':
-//             break
-//           case 'running':
-//             break
-//         }
-//       },
-//       (error) => {
-//         // A full list of error codes is available at
-//         // https://firebase.google.com/docs/storage/web/handle-errors
-//         switch (error.code) {
-//           case 'storage/unauthorized':
-//             // User doesn't have permission to access the object
-//             break
-//           case 'storage/canceled':
-//             // User canceled the upload
-//             break
-//           case 'storage/unknown':
-//             break
-//         }
-//         reject(error)
-//       },
-//       async () => {
-//         // We're done with the blob, close and release it
-//         try {
-//           //@ts-ignore
-//           blob.close()
-//         } catch (error) {
-//           //blob close seems to throw an error on web, but works on android
-//         }
-
-//         // Upload completed successfully, now we can get the download URL
-//         resolve({ storageUrl: await getDownloadURL(storageRef) })
-//       },
-//     )
-//   })
-
-// export const uploadImageAsync = async (): Promise<void> => {
- 
-//   // return new Promise(async (resolve, reject): Promise<void> => {
-//   //   const filePath = await fetch(media.storageUrl)
-//   //   const blob = await filePath.blob()
-//     const response = await fetch(imageUri);
-//     const blob = await response.blob();
-
-//     const filename = `formations/${formData.id}_${Date.now()}.jpg`;
-//     const storageRef = ref_s(storage, filename);
-//     // const storageRef = ref_s(storage, location)
-//     const uploadTask = uploadBytesResumable(storageRef, blob)
-
-//     uploadTask.on(
-//       'state_changed',
-//       (snapshot) => {
-//         switch (snapshot.state) {
-//           case 'paused':
-//             break
-//           case 'running':
-//             break
-//         }
-//       },
-//       (error) => {
-//         // A full list of error codes is available at
-//         // https://firebase.google.com/docs/storage/web/handle-errors
-//         switch (error.code) {
-//           case 'storage/unauthorized':
-//             // User doesn't have permission to access the object
-//             break
-//           case 'storage/canceled':
-//             // User canceled the upload
-//             break
-//           case 'storage/unknown':
-//             break
-//         }
-//         reject(error)
-//       },
-//       async () => {
-//         // We're done with the blob, close and release it
-//         try {
-//           //@ts-ignore
-//           blob.close()
-//         } catch (error) {
-//           //blob close seems to throw an error on web, but works on android
-//         }
-
-//         // Upload completed successfully, now we can get the download URL
-//         resolve({ storageUrl: await getDownloadURL(storageRef) })
-//       },
-//     )
-//   })
-// }
-
-const uploadImageAsync = async (): Promise<any> => {
- 
-  return new Promise(async (resolve, reject): Promise<void> => {
-    // if (imageUri) {
-      // try {
-        // Request image picker permissions
-        const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
-        if (status !== 'granted') {
-          Alert.alert('Error', 'Permission to access media library is required to upload an image.');
-          return null;
-        }
-        // const snapshot = await upRef.put(blob)
-        // Fetch image data directly
-        const response = await fetch(imageUri);
-        const blob = await response.blob();
-        const filename = `formations/${formData.id}_${Date.now()}.jpg`;
-        const storageRef = ref_s(storage, filename);
-
-        // const filePath = await fetch(media.storageUrl)
-        // const blob = await filePath.blob()
-
-        // const storageRef = ref(storage(), location)
-        const uploadTask = uploadBytesResumable(storageRef, blob)
-
-    uploadTask.on(
-      'state_changed',
-      (snapshot) => {
-        switch (snapshot.state) {
-          case 'paused':
-            break
-          case 'running':
-            break
-        }
-      },
-      (error) => {
-        // A full list of error codes is available at
-        // https://firebase.google.com/docs/storage/web/handle-errors
-        switch (error.code) {
-          case 'storage/unauthorized':
-            // User doesn't have permission to access the object
-            break
-          case 'storage/canceled':
-            // User canceled the upload
-            break
-          case 'storage/unknown':
-            break
-        }
-        reject(error)
-      },
-      async () => {
-        // We're done with the blob, close and release it
-        try {
-          //@ts-ignore
-          blob.close()
-        } catch (error) {
-          //blob close seems to throw an error on web, but works on android
-        }
-
-        // Upload completed successfully, now we can get the download URL
-        resolve( getDownloadURL(storageRef) )
-      },
-    )
-  })
-}
-
   const uploadImage = async () => {
     if (imageUri) {
       try {
@@ -325,7 +157,7 @@ const uploadImageAsync = async (): Promise<any> => {
           Alert.alert('Error', 'Permission to access media library is required to upload an image.');
           return null;
         }
-        // const snapshot = await upRef.put(blob)
+  
         // Fetch image data directly
         const response = await fetch(imageUri);
         const blob = await response.blob();
@@ -424,7 +256,7 @@ const uploadImageAsync = async (): Promise<any> => {
   const uploadToFirebase = async () => {
       if (validateForm()) {
         try {
-          const imageUrl = await uploadImageAsync();
+          const imageUrl = await uploadImage();
           const formattedData = {
             ...formData,
             date: formData.date.toISOString().split('T')[0],
