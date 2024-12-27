@@ -248,7 +248,7 @@ function App() {
         <Stack.Screen name="PasswordReset"  component={PasswordResetScreen} />
         <Stack.Screen name="OrganizationsPartenaires" component={OrganizationsPartenairesScreen} />
         <Stack.Screen name="RGPD" component={RGPDScreen} />
-        <Stack.Screen name="NotifsScreenSkeleton"       component={NotifsScreenSkeleton} />
+        <Stack.Screen name="NotifsScreenSkeleton" component={NotifsScreenSkeleton} />
         
         <Stack.Screen name="NotificationExplanation" component={NotificationExplanationScreen} />
         <Stack.Screen name="AccountDeletion" component={AccountDeletionScreen} />

@@ -180,6 +180,7 @@ const RechercheFormationsScreen = (props, { route }) => {
   const [lieuFilter, setLieuFilter] = useState('');
   const [regionFilter, setRegionFilter] = useState('');
   const [anneeFilter, setAnneeFilter] = useState('');
+  const [monthFilter, setMonthFilter] = useState('');
 
   const [notificationsEnabled, setNotificationsEnabled] = useState(true);
   // Remove niveauFilter state
@@ -236,6 +237,22 @@ const RechercheFormationsScreen = (props, { route }) => {
     "Postgraduate",
     "Autre"
   ]);
+
+  const [monthOptions, setMonthOptions] = useState([
+    "Janvier",
+    "Février", 
+    "Mars",
+    "Avril",
+    "Mai",
+    "Juin",
+    "Juillet",
+    "Août",
+    "Septembre",
+    "Octobre",
+    "Novembre",
+    "Décembre"
+   ]);
+
   const [isUpdateAvailable, setIsUpdateAvailable] = useState(false);
   // useEffect(() => {
   //   console.log(route)
@@ -268,6 +285,7 @@ const RechercheFormationsScreen = (props, { route }) => {
       setLieuOptions(parameters.lieuOptions);
       setRegionOptions(parameters.regionOptions);
       setAnneeOptions(parameters.anneeOptions);
+      // TBD: monthOptions
       // console.log(categoryOptions)
       // const [lieuOptions, setLieuOptions] = useState([]);
       // const [regionOptions, setRegionOptions] = useState([]);
@@ -534,6 +552,13 @@ const RechercheFormationsScreen = (props, { route }) => {
     if (anneeFilter) {
       filtered = filtered.filter(f => f.anneeConseillee === anneeFilter);
     }
+    if (monthFilter) {
+      filtered = filtered.filter(f => {
+          // const startMonth = f.date.getMonth();
+          // const endMonth = f.date_de_fin.getMonth();
+          // return startMonth === monthFilter || endMonth === monthFilter;
+      });
+  }
     if (tab === "J'y suis inscrit") {
       filtered = filtered.filter(f => 
         userDemandes[f.id] && userDemandes[f.id].admin === "Validée"
@@ -659,6 +684,8 @@ const RechercheFormationsScreen = (props, { route }) => {
         <ScrollView>
           {renderFilterButtons('Domaine', categoryOptions, categoryFilter, setCategoryFilter)}
           {renderFilterButtons('Année conseillée', anneeOptions, anneeFilter, setAnneeFilter)}
+          {renderFilterButtons('Date', monthOptions, monthFilter, setMonthFilter)}
+
           {renderFilterButtons('Lieu', lieuOptions, lieuFilter, setLieuFilter)}
           
           {renderFilterButtons('Region', regionOptions, regionFilter, setRegionFilter)}
@@ -688,6 +715,7 @@ const RechercheFormationsScreen = (props, { route }) => {
 };
 
 const styles = StyleSheet.create({
+  
   participantsButton: {
     backgroundColor: '#1a53ff',
     padding: 5,
@@ -717,14 +745,28 @@ const styles = StyleSheet.create({
     shadowRadius: 2.62,
     elevation: 4,
   },
+
+  // formationItem: {
+  //   backgroundColor: '#EBF3FF',
+  //   borderRadius: 12,
+  //   padding: 16,
+  //   marginBottom: 16,
+  // }
+
   formationContent: {
-    flexDirection: 'row',
+    flexDirection: 'column',
   },
+  // formationImage: {
+  //   width: 120,
+  //   height: 180,
+  //   borderRadius: 30,
+  //   marginRight: 15,
+  // },
   formationImage: {
-    width: 120,
-    height: 180,
-    borderRadius: 30,
-    marginRight: 15,
+    width: 300,
+    height: 200,
+    borderRadius: 8,
+    marginBottom: 10,
   },
   formationDetails: {
     flex: 1,
@@ -928,6 +970,55 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     fontWeight: 'bold',
   },
+  // New styles
+  formationItem: {
+    marginBottom: 20,
+    padding: 15,
+    backgroundColor: '#d5dcf0',
+    borderRadius: 10,
+    shadowColor: "orange",
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.23,
+    shadowRadius: 2.62,
+    elevation: 4,
+  },
+  formationContent: {
+    flexDirection: 'column',
+    alignItems: 'center', // Center content horizontally
+  },
+  formationImage: {
+    width: '100%', // Full width of container
+    height: 200,
+    borderRadius: 8,
+    marginBottom: 12,
+    resizeMode: 'cover', // Ensure image fills space properly
+  },
+  formationDetails: {
+    width: '100%', // Full width alignment
+    paddingHorizontal: 5,
+  },
+  formationTitle: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    marginBottom: 8,
+    textAlign: 'center', // Center title
+    color: '#1a53ff', // Match app's theme color
+  },
+  participantsButton: {
+    backgroundColor: '#1a53ff',
+    padding: 8,
+    borderRadius: 5,
+    marginVertical: 8,
+    width: '100%', // Full width button
+  },
+  participantsButtonText: {
+    color: 'white',
+    fontWeight: 'bold',
+    textAlign: 'center',
+  }
 });
 
 export default RechercheFormationsScreen;

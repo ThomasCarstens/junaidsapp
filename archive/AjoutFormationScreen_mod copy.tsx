@@ -221,7 +221,8 @@ return null;
 })
 };
 
-const uploadImageZeta = async () => {
+const uploadImageZeta = async (setState, 
+  currentState) => {
   try {
     // Extract extension and generate filename
     const ext = imageUri.split('.').pop();

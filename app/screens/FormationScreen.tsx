@@ -212,6 +212,8 @@ const FormationScreen = ({ route, navigation }) => {
     <ScrollView style={styles.container}>
       <Image source={{ uri: formation.image }} style={styles.image} />
       <Text style={styles.title}>{formation.title}</Text>
+      <Text style={styles.sectionTitle}>{formation.nature} de {formation.domaine}</Text>
+
       {(role.isAdmin === true) ? (
          <View style={styles.buttonContainer}>
          {formation.active && (
@@ -263,19 +265,29 @@ const FormationScreen = ({ route, navigation }) => {
          )}
         </View>
       )}
-      <Text style={styles.info}>Début: {formation.date}</Text>
-      <Text style={styles.info}>Fin: {formation.date_de_fin}</Text>
-      <Text style={styles.info}>Heure: {formation.heureDebut} - {formation.heureFin}</Text>
+
+      <Text style={styles.info}>Date: {new Date(formation.date).toLocaleDateString('fr-FR')} au {new Date(formation.date_de_fin).toLocaleDateString('fr-FR')}</Text>
+      <Text style={styles.info}>Horaires: {formation.heureDebut} à {formation.heureFin}</Text>
       <Text style={styles.info}>Lieu: {formation.lieu}</Text>
-      <Text style={styles.info}>Nature: {formation.nature}</Text>
-      <Text style={styles.info}>Tarif étudiant: {formation.tarifEtudiant} €</Text>
-      <Text style={styles.info}>Tarif médecin: {formation.tarifMedecin} €</Text>
+
+      <Text style={styles.info}>Tarif étudiant: {formation.tarifEtudiant} € / Tarif médecin: {formation.tarifMedecin} €</Text>
       
-      <Text style={styles.sectionTitle}>Domaine</Text>
-      <Text style={styles.text}>{formation.domaine}</Text>
-      
+      <Text style={styles.sectionTitle}>Programme</Text>
+      <Image source={ require("../../assets/images/exemple_presentation.jpg") } style={styles.programmeImage} />
+
+
+      <Text style={styles.sectionTitle}>Année conseillée</Text>
+      <Text style={styles.text}>{formation.anneeConseillee}</Text>
+            
       <Text style={styles.sectionTitle}>Prérequis</Text>
       <Text style={styles.text}>{formation.prerequis}</Text>
+
+      <Text style={styles.sectionTitle}>À savoir</Text>
+      <Text style={styles.text}>{formation.instructions}</Text>
+
+      <Image source={ require("../../assets/images/exemple_programme-pdf.jpg") } style={styles.programmeImage} />
+
+
       
       <Text style={styles.sectionTitle}>Compétences acquises</Text>
       <Text style={styles.text}>{formation.competencesAcquises || "Non spécifié"}</Text>
@@ -287,13 +299,6 @@ const FormationScreen = ({ route, navigation }) => {
       <Text style={styles.sectionTitle}>Affiliation DIU</Text>
       <Text style={styles.text}>{formation.affiliationDIU}</Text>
       
-      <Text style={styles.sectionTitle}>Année conseillée</Text>
-      <Text style={styles.text}>{formation.anneeConseillee}</Text>
-      
-
-      
-      <Text style={styles.sectionTitle}>Instructions</Text>
-      <Text style={styles.text}>{formation.instructions}</Text>
 
       <View style={styles.bottomSpacer} />
     </ScrollView>
@@ -312,12 +317,12 @@ const styles = StyleSheet.create({
   bottomSpacer: {
     height: 50, // Adjust this value to increase or decrease the space at the bottom
   },
-  image: {
-    width: '100%',
-    height: 200,
-    marginBottom: 15,
-    borderRadius: 10,
-  },
+  // image: {
+  //   width: '100%',
+  //   // height: 200,
+  //   marginBottom: 15,
+  //   borderRadius: 10,
+  // },
   title: {
     fontSize: 24,
     fontWeight: 'bold',
@@ -374,6 +379,115 @@ const styles = StyleSheet.create({
     fontSize: 16,
     marginBottom: 10,
   },
+  // new styles:
+  container: {
+    flex: 1,
+    padding: 20,
+    backgroundColor: '#f5f7fa',
+  },
+  image: {
+    width: '100%',
+    height: 250,
+    marginBottom: 20,
+    borderRadius: 12,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+  },
+  programmeImage: {
+    width: 350,
+    height: 200,
+    marginBottom: 20,
+    borderRadius: 12,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+  },
+  title: {
+    fontSize: 26,
+    fontWeight: '600',
+    color: '#2c3e50',
+    marginBottom: 20,
+    letterSpacing: 0.5,
+    lineHeight: 32,
+  },
+  buttonContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginBottom: 25,
+    gap: 10,
+  },
+  signUpButton: {
+    backgroundColor: '#1a53ff',
+    padding: 12,
+    borderRadius: 8,
+    flex: 1,
+    elevation: 2,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.2,
+    shadowRadius: 3,
+  },
+  modifyButton: {
+    backgroundColor: '#2ecc71',
+    padding: 12,
+    borderRadius: 8,
+    flex: 1,
+    elevation: 2,
+  },
+  deleteButton: {
+    backgroundColor: '#e74c3c',
+    padding: 12,
+    borderRadius: 8,
+    flex: 1,
+    elevation: 2,
+  },
+  signUpButtonText: {
+    color: 'white',
+    fontSize: 16,
+    fontWeight: '600',
+    textAlign: 'center',
+    letterSpacing: 0.5,
+  },
+  buttonText: {
+    color: 'white',
+    fontSize: 16,
+    fontWeight: '500',
+    textAlign: 'center',
+  },
+  info: {
+    fontSize: 16,
+    marginBottom: 12,
+    color: '#34495e',
+    lineHeight: 24,
+  },
+  sectionTitle: {
+    fontSize: 20,
+    fontWeight: '600',
+    color: '#2c3e50',
+    marginTop: 25,
+    marginBottom: 10,
+    letterSpacing: 0.5,
+    borderBottomWidth: 1,
+    borderBottomColor: '#e0e6ed',
+    paddingBottom: 8,
+  },
+  text: {
+    fontSize: 16,
+    marginBottom: 15,
+    color: '#34495e',
+    lineHeight: 24,
+    letterSpacing: 0.3,
+  },
+  contentContainer: {
+    padding: 20,
+    paddingBottom: 40,
+  },
+  bottomSpacer: {
+    height: 60,
+  }
 });
 
 export default FormationScreen;
