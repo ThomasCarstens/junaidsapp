@@ -39,7 +39,7 @@ const FormationScreen = ({ route, navigation }) => {
     if (formation && formation.pdfUrl) {
       // setPdfUrl(formation.pdfUrl);
     }
-    setPdfUrl(`https://www.africau.edu/images/default/sample.pdf`);
+    setPdfUrl(`https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf`);
   }, [formation]);
 
 
@@ -316,9 +316,9 @@ const FormationScreen = ({ route, navigation }) => {
       <Text style={styles.text}>{formation.affiliationDIU}</Text>
       
       <Text style={styles.sectionTitle}>Documentation PDF</Text>
-      {/* {pdfUrl ? (
+      {pdfUrl ? (
         <View style={styles.pdfContainer}>
-          <RNPdf
+          <RNPdf trustAllCerts={false}
             source={{ uri: pdfUrl, cache: true }}
             style={styles.pdf}
             onLoadComplete={(numberOfPages, filePath) => {
@@ -326,7 +326,7 @@ const FormationScreen = ({ route, navigation }) => {
             }}
             onError={(error) => {
               console.log('PDF Error:', error);
-              Alert.alert('Erreur', 'Impossible de charger le PDF');
+              Alert.alert('Erreur', String(error));
             }}
             enablePaging={true}
             onPageChanged={(page, numberOfPages) => {
@@ -336,7 +336,7 @@ const FormationScreen = ({ route, navigation }) => {
         </View>
       ) : (
         <Text style={styles.text}>Aucun document PDF disponible</Text>
-      )} */}
+      )}
       <View style={styles.bottomSpacer} />
     </ScrollView>
   );
@@ -350,9 +350,6 @@ const styles = StyleSheet.create({
   contentContainer: {
     padding: 15,
     paddingBottom: 30, // Add extra padding at the bottom
-  },
-  bottomSpacer: {
-    height: 50, // Adjust this value to increase or decrease the space at the bottom
   },
   // image: {
   //   width: '100%',

@@ -24,8 +24,8 @@
         "foregroundImage": "./assets/images/icon.png",
         "backgroundColor": "#ffffff"
       },
-      "package": "com.olivierdumay.appdolivier-admin",
-      "versionCode": 22,
+      "package": "com.olivierdumay.appdolivier",
+      "versionCode": 29,
       "googleServicesFile": "./google-services.json",
       "useNextNotificationsApi": true
     },
