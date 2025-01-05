@@ -32,6 +32,7 @@ import NotifsScreenSkeleton from './skeleton/NotifsScreenSkeleton';
 import NotificationExplanationScreen from './screens/NotificationExplanationScreen';
 import AccountDeletionScreen from './screens/AccountDeletionScreen';
 import ParticipantsScreen from './screens/ParticipantsScreen';
+// import PDFScreen from './screens/PDFScreen';
 const Stack = createStackNavigator();
 const Tab = createBottomTabNavigator();
 
@@ -274,6 +275,7 @@ function App() {
 
         {/* tabs if FORMATEUR */}
         <Stack.Screen name="FormateurTabs" component={FormateurTabs} options={{ headerShown: false }}  />
+        {/* <Stack.Screen name="PDFScreen" component={PDFScreen} options={{ headerShown: false }}  /> */}
         
         {/* Restrained Functionality */}
         <Stack.Screen name="RestrainedTabs"            component={RestrainedTabs} options={{ headerShown: false }}  />

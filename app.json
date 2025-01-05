@@ -16,7 +16,7 @@
       "supportsTablet": true,
       "googleServicesFile": "./GoogleService-Info.plist",
       "bundleIdentifier": "com.olivierdumay.appdolivier-admin",
-      "buildNumber": "24"
+      "buildNumber": "26"
     },
     "android": {
       "icon": "./assets/images/icon.png",

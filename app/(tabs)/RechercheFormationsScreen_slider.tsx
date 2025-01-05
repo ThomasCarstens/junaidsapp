@@ -105,7 +105,51 @@ const RechercheFormationsScreen = (props, { route }) => {
   const [UidPushTokenList, setUidPushTokenList] = useState({});
   const [participantCounts, setParticipantCounts] = useState({});
   const [allDemandes, setAllDemandes] = useState({});
+  const scrollY = new Animated.Value(0);
+  const [currentMonth, setCurrentMonth] = useState('');
+  const AnimatedFlatList = Animated.createAnimatedComponent(FlatList);
+  // Add this component inside RechercheFormationsScreen but before the return statement
+  const MonthIndicator = () => {
+    const opacity = useRef(new Animated.Value(0)).current;
 
+    useEffect(() => {
+      const listener = scrollY.addListener(({ value }) => {
+        updateMonth(value);
+      });
+      return () => scrollY.removeAllListeners();
+    }, []);
+
+    const updateMonth = (y) => {
+      const monthIndex = Math.floor(y / 400);
+      const date = new Date();
+      date.setMonth(date.getMonth() + monthIndex);
+      
+      const monthName = new Intl.DateTimeFormat('fr-FR', { month: 'long' }).format(date);
+      setCurrentMonth(monthName.charAt(0).toUpperCase() + monthName.slice(1));
+      
+      Animated.sequence([
+        Animated.timing(opacity, {
+          toValue: 1,
+          duration: 200,
+          useNativeDriver: true,
+        }),
+        Animated.delay(1000),
+        Animated.timing(opacity, {
+          toValue: 0,
+          duration: 200,
+          useNativeDriver: true,
+        }),
+      ]).start();
+    };
+
+    return (
+      <Animated.View style={[styles.monthIndicator, { opacity }]}>
+        <View style={styles.monthPill}>
+          <Text style={styles.monthText}>{currentMonth}</Text>
+        </View>
+      </Animated.View>
+    );
+  };
 
   const fetchParticipantCounts = () => {
     const counts = {};
@@ -702,12 +746,33 @@ const RechercheFormationsScreen = (props, { route }) => {
         </ScrollView>
       </Animated.View>
 
-      <FlatList
+      <MonthIndicator />
+      <AnimatedFlatList
         data={filteredFormations}
         renderItem={renderFormationItem}
         keyExtractor={item => item.id}
         style={styles.list}
+        nestedScrollEnabled={true}
+        onScroll={Animated.event(
+          [{ nativeEvent: { contentOffset: { y: scrollY } } }],
+          { 
+            useNativeDriver: true,
+            listener: ({ nativeEvent }) => {
+              const y = nativeEvent.contentOffset.y;
+              console.log(y)
+              // Only update if the change is significant to prevent jumps
+              if (Math.abs(y - scrollY._value) > 1) {
+                scrollY.setValue(y);
+              }
+            }
+          }
+        )}
+        scrollEventThrottle={16}
+        maintainVisibleContentPosition={{
+          minIndexForVisible: 0,
+        }}
       />
+
 
       {isFormateur && (
         <TouchableOpacity 
@@ -1025,7 +1090,26 @@ const styles = StyleSheet.create({
     color: 'white',
     fontWeight: 'bold',
     textAlign: 'center',
-  }
+  },
+  monthIndicator: {
+    position: 'absolute',
+    top: 180,
+    alignSelf: 'center',
+    zIndex: 1000,
+  },
+  monthPill: {
+    backgroundColor: 'rgba(26, 83, 255, 0.9)',
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    borderRadius: 20,
+    minWidth: 100,
+    alignItems: 'center',
+  },
+  monthText: {
+    color: 'white',
+    fontSize: 16,
+    fontWeight: '600',
+  },
 });
 
 export default RechercheFormationsScreen;

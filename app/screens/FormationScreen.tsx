@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, Image, ScrollView, TouchableOpacity, Alert } from 'react-native';
+import { View, Text, StyleSheet, Image, ScrollView, TouchableOpacity, Alert, Dimensions } from 'react-native';
 import { auth, firebase, storage, database } from '../../firebase';
 import { ref as ref_d, set, get, onValue, update } from 'firebase/database';
-
+import RNPdf from 'react-native-pdf';
 
 
 const FormationScreen = ({ route, navigation }) => {
@@ -11,6 +11,7 @@ const FormationScreen = ({ route, navigation }) => {
   const [inscriptionStatus, setInscriptionStatus] = useState(null);
   const [hasConsent, setHasConsent] = useState(false);
   const [isDateValid, setIsDateValid] = useState(true);
+  const [pdfUrl, setPdfUrl] = useState(null);
 
   useEffect(() => {
     navigation.setOptions({
@@ -31,6 +32,17 @@ const FormationScreen = ({ route, navigation }) => {
     // }
     });
   }, [navigation]);
+
+
+  useEffect(() => {
+    // Add this new useEffect to fetch PDF URL from formation data
+    if (formation && formation.pdfUrl) {
+      // setPdfUrl(formation.pdfUrl);
+    }
+    setPdfUrl(`https://www.africau.edu/images/default/sample.pdf`);
+  }, [formation]);
+
+
   useEffect(() => {
     console.log(formationId)
     const formationRef = ref_d(database, `/formations/${formationId}`);
@@ -207,6 +219,8 @@ const FormationScreen = ({ route, navigation }) => {
       </View>
     );
   }
+  const source = { uri: 'http://samples.leanpub.com/thereactnativebook-sample.pdf', cache: true };
+
 
   return (
     <ScrollView style={styles.container}>
@@ -262,7 +276,10 @@ const FormationScreen = ({ route, navigation }) => {
                {getButtonText()}
              </Text>
            </TouchableOpacity>
+                       
          )}
+
+
         </View>
       )}
 
@@ -274,7 +291,6 @@ const FormationScreen = ({ route, navigation }) => {
       
       <Text style={styles.sectionTitle}>Programme</Text>
       <Image source={ require("../../assets/images/exemple_presentation.jpg") } style={styles.programmeImage} />
-
 
       <Text style={styles.sectionTitle}>Année conseillée</Text>
       <Text style={styles.text}>{formation.anneeConseillee}</Text>
@@ -299,7 +315,28 @@ const FormationScreen = ({ route, navigation }) => {
       <Text style={styles.sectionTitle}>Affiliation DIU</Text>
       <Text style={styles.text}>{formation.affiliationDIU}</Text>
       
-
+      <Text style={styles.sectionTitle}>Documentation PDF</Text>
+      {/* {pdfUrl ? (
+        <View style={styles.pdfContainer}>
+          <RNPdf
+            source={{ uri: pdfUrl, cache: true }}
+            style={styles.pdf}
+            onLoadComplete={(numberOfPages, filePath) => {
+              console.log(`PDF loaded: ${numberOfPages} pages`);
+            }}
+            onError={(error) => {
+              console.log('PDF Error:', error);
+              Alert.alert('Erreur', 'Impossible de charger le PDF');
+            }}
+            enablePaging={true}
+            onPageChanged={(page, numberOfPages) => {
+              console.log(`Page ${page} of ${numberOfPages}`);
+            }}
+          />
+        </View>
+      ) : (
+        <Text style={styles.text}>Aucun document PDF disponible</Text>
+      )} */}
       <View style={styles.bottomSpacer} />
     </ScrollView>
   );
@@ -396,10 +433,10 @@ const styles = StyleSheet.create({
     shadowRadius: 4,
   },
   programmeImage: {
-    width: 350,
-    height: 200,
+    width: '100%',
+    height: 210,
     marginBottom: 20,
-    borderRadius: 12,
+    // borderRadius: 12,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
@@ -487,7 +524,34 @@ const styles = StyleSheet.create({
   },
   bottomSpacer: {
     height: 60,
-  }
+  },
+  // container2: {
+  //   flex: 1,
+  //   justifyContent: 'flex-start',
+  //   alignItems: 'center',
+  //   marginTop: 25,
+  // },
+  // pdf: {
+  //     flex:1,
+  //     width:Dimensions.get('window').width,
+  //     height:Dimensions.get('window').height,
+  // },
+  pdfContainer: {
+    width: '100%',
+    height: 500, // Fixed height for PDF viewer
+    marginVertical: 15,
+    borderRadius: 8,
+    overflow: 'hidden',
+    backgroundColor: '#f8f9fa',
+    borderWidth: 1,
+    borderColor: '#e0e6ed',
+  },
+  pdf: {
+    flex: 1,
+    width: '100%',
+    height: '100%',
+    backgroundColor: '#f8f9fa',
+  },
 });
 
 export default FormationScreen;
