@@ -8,6 +8,8 @@ import { auth, firebase, storage, database } from '../../firebase';
 import * as ImagePicker from 'expo-image-picker';
 import { Platform } from 'react-native';
 import * as FileSystem from 'expo-file-system';
+import RNPdf from 'react-native-pdf';
+import * as DocumentPicker from 'expo-document-picker';
 // import { Media } from '@models/shared/Media'
 // import { getDownloadURL, ref, uploadBytesResumable } from 'firebase/storage'
 
@@ -21,6 +23,7 @@ const AjoutFormationScreen = ({ navigation, route }) => {
     date: new Date(),
     date_de_fin: new Date(),
     image: 'https://via.placeholder.com/150',
+    pdf: '',
     region: '',
     lieu: '',
     status: 'propose', //temporary, only admin can make formations in Phase 2, needs to change in Phase 3
@@ -57,6 +60,7 @@ const AjoutFormationScreen = ({ navigation, route }) => {
   const [regionOptions, setRegionOptions] = useState([]);
   const [anneeOptions, setAnneeOptions] = useState([]);
   const [natureOptions, setNatureOptions] = useState([]);
+  const [pdfUrl, setPdfUrl] = useState('');
 
   useEffect(() => {
     downloadFilterOptions();
@@ -132,6 +136,123 @@ const AjoutFormationScreen = ({ navigation, route }) => {
     }
   };
 
+  const uploadPdfAsync = async (): Promise<string> => {
+    return new Promise(async (resolve, reject) => {
+      try {
+        const result = await DocumentPicker.getDocumentAsync({
+          type: ['application/pdf'],
+          copyToCacheDirectory: true,
+          multiple: false
+        });
+  
+        if (result.canceled) {
+          reject(new Error('Document picking was canceled'));
+          return;
+        }
+  
+        const { uri, name } = result.assets[0];
+        
+        // Fetch PDF data
+        const response = await fetch(uri);
+        const blob = await response.blob();
+        
+        const filename = `formations/${formData.id}_${Date.now()}_${name}`;
+        const storageRef = ref_s(storage, filename);
+        
+        const uploadTask = uploadBytesResumable(storageRef, blob);
+        
+        uploadTask.on(
+          'state_changed',
+          (snapshot) => {
+            const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
+            console.log(`Upload is ${progress}% complete`);
+          },
+          (error) => {
+            switch (error.code) {
+              case 'storage/unauthorized':
+                reject(new Error('User does not have permission to access the object'));
+                break;
+              case 'storage/canceled':
+                reject(new Error('User canceled the upload'));
+                break;
+              case 'storage/unknown':
+                reject(new Error('Unknown error occurred during upload'));
+                break;
+              default:
+                reject(error);
+            }
+          },
+          async () => {
+            try {
+              // @ts-ignore
+              blob.close();
+            } catch (error) {
+              // Ignore blob close error on web
+            }
+            
+            const downloadURL = await getDownloadURL(storageRef)
+            
+            resolve(downloadURL);
+          }
+        );
+      } catch (error) {
+        reject(error);
+      }
+    });
+  };
+  
+  const pickPDF = async () => {
+    try {
+      const downloadURL = await uploadPdfAsync();
+      setPdfUrl(downloadURL);
+      handleInputChange('pdfUrl', downloadURL);
+      Alert.alert('Success', downloadURL);
+    } catch (error) {
+      console.error('Error uploading PDF:', error);
+      Alert.alert('Error', String(error));
+    }
+  };
+
+  const uploadPDF = async (uri, originalName) => {
+    try {
+      const response = await fetch(uri);
+      const blob = await response.blob();
+      
+      const filename = `formations/${formData.id}_${Date.now()}_${originalName}`;
+      const storageRef = ref_s(storage, filename);
+      
+      const uploadTask = uploadBytesResumable(storageRef, blob);
+      
+      uploadTask.on(
+        'state_changed',
+        (snapshot) => {
+          // You can add progress tracking here if desired
+          const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
+          console.log('Upload is ' + progress + '% done');
+        },
+        (error) => {
+          console.error('Error uploading PDF:', error);
+          Alert.alert('Error', 'Failed to upload PDF file');
+        },
+        async () => {
+          try {
+            blob.close();
+          } catch (error) {
+            // Ignore blob close error on web
+          }
+          
+          const downloadURL = await getDownloadURL(storageRef);
+          setPdfUrl(downloadURL);
+          handleInputChange('pdfUrl', downloadURL);
+          Alert.alert('Success', 'PDF uploaded successfully');
+        }
+      );
+    } catch (error) {
+      console.error('Error in uploadPDF:', error);
+      Alert.alert('Error', 'Failed to process PDF file');
+    }
+  };
+
   const pickImage = async () => {
     let result = await ImagePicker.launchImageLibraryAsync({
       mediaTypes: ImagePicker.MediaTypeOptions.Images,
@@ -146,110 +267,6 @@ const AjoutFormationScreen = ({ navigation, route }) => {
     }
   };
 
-
-
-// const uploadImageAsync = async ():  Promise<any> ((resolve,reject) => {
-//     const response =  fetch(imageUri);
-//     const blob =  response.blob();
-
-//     const filename = `formations/${formData.id}_${Date.now()}.jpg`;
-//     const storageRef = ref_s(storage, filename);
-//     // const storageRef = ref_s(storage, location)
-//     const uploadTask = uploadBytesResumable(storageRef, blob)
-
-//     uploadTask.on(
-//       'state_changed',
-//       (snapshot) => {
-//         switch (snapshot.state) {
-//           case 'paused':
-//             break
-//           case 'running':
-//             break
-//         }
-//       },
-//       (error) => {
-//         // A full list of error codes is available at
-//         // https://firebase.google.com/docs/storage/web/handle-errors
-//         switch (error.code) {
-//           case 'storage/unauthorized':
-//             // User doesn't have permission to access the object
-//             break
-//           case 'storage/canceled':
-//             // User canceled the upload
-//             break
-//           case 'storage/unknown':
-//             break
-//         }
-//         reject(error)
-//       },
-//       async () => {
-//         // We're done with the blob, close and release it
-//         try {
-//           //@ts-ignore
-//           blob.close()
-//         } catch (error) {
-//           //blob close seems to throw an error on web, but works on android
-//         }
-
-//         // Upload completed successfully, now we can get the download URL
-//         resolve({ storageUrl: await getDownloadURL(storageRef) })
-//       },
-//     )
-//   })
-
-// export const uploadImageAsync = async (): Promise<void> => {
- 
-//   // return new Promise(async (resolve, reject): Promise<void> => {
-//   //   const filePath = await fetch(media.storageUrl)
-//   //   const blob = await filePath.blob()
-//     const response = await fetch(imageUri);
-//     const blob = await response.blob();
-
-//     const filename = `formations/${formData.id}_${Date.now()}.jpg`;
-//     const storageRef = ref_s(storage, filename);
-//     // const storageRef = ref_s(storage, location)
-//     const uploadTask = uploadBytesResumable(storageRef, blob)
-
-//     uploadTask.on(
-//       'state_changed',
-//       (snapshot) => {
-//         switch (snapshot.state) {
-//           case 'paused':
-//             break
-//           case 'running':
-//             break
-//         }
-//       },
-//       (error) => {
-//         // A full list of error codes is available at
-//         // https://firebase.google.com/docs/storage/web/handle-errors
-//         switch (error.code) {
-//           case 'storage/unauthorized':
-//             // User doesn't have permission to access the object
-//             break
-//           case 'storage/canceled':
-//             // User canceled the upload
-//             break
-//           case 'storage/unknown':
-//             break
-//         }
-//         reject(error)
-//       },
-//       async () => {
-//         // We're done with the blob, close and release it
-//         try {
-//           //@ts-ignore
-//           blob.close()
-//         } catch (error) {
-//           //blob close seems to throw an error on web, but works on android
-//         }
-
-//         // Upload completed successfully, now we can get the download URL
-//         resolve({ storageUrl: await getDownloadURL(storageRef) })
-//       },
-//     )
-//   })
-// }
 
 const uploadImageAsync = async (): Promise<any> => {
  
@@ -440,6 +457,8 @@ const uploadImageAsync = async (): Promise<any> => {
             affiliationDIU: formData.affiliationDIU === 'Autre' ? formData.autreAffiliationDIU : formData.affiliationDIU,
 
             image: imageUrl || formData.image,
+            pdf: pdfUrl || formData.pdf,
+            // pdfUrl: formData.pdfUrl || '',
           };
   
           await set(ref_d(database, `formations/${formData.id}`), formattedData);
@@ -538,7 +557,7 @@ const uploadImageAsync = async (): Promise<any> => {
         />
       )}
 
-<Text style={styles.label}>Type de formation *</Text>
+<Text style={styles.label}>Type de V46 *</Text>
       <Picker
         selectedValue={formData.nature}
         style={[styles.picker, errors.nature && styles.inputError]}
@@ -655,6 +674,36 @@ const uploadImageAsync = async (): Promise<any> => {
           <Text>Sélectionner une image</Text>
         )}
       </TouchableOpacity>
+
+
+      <Text style={styles.label}>Programme PDF de la formation</Text>
+      <TouchableOpacity style={styles.imagePicker} onPress={pickPDF}>
+        {pdfUrl ? (
+          <View style={styles.pdfContainer}>
+            <RNPdf
+              trustAllCerts={false}
+              source={{ uri: pdfUrl, cache: true }}
+              style={styles.pdf}
+              onLoadComplete={(numberOfPages, filePath) => {
+                console.log(`PDF loaded: ${numberOfPages} pages`);
+                Alert.alert(`PDF loaded: ${numberOfPages} pages`);
+              }}
+              onError={(error) => {
+                console.log('PDF Error:', error);
+                Alert.alert('PDF Erreur');
+              }}
+              enablePaging={true}
+              onPageChanged={(page, numberOfPages) => {
+                console.log(`Page ${page} of ${numberOfPages}`);
+                Alert.alert(`Page ${page} of ${numberOfPages}`);
+              }}
+            />
+            <Text style={styles.pdfUploaded}>PDF sauvegardé</Text>
+          </View>
+        ) : (
+          <Text style={styles.text}>Cliquer pour choisir un PDF</Text>
+        )}
+      </TouchableOpacity>
       <TouchableOpacity style={styles.button} onPress={handleSubmit}>
         <Text style={styles.buttonText}>
           {route.params?.formationId ? "Modifier la formation" : "Ajouter la formation"}
@@ -735,6 +784,21 @@ const styles = StyleSheet.create({
     width: '100%',
     height: '100%',
     resizeMode: 'contain',
+  },
+  pdfContainer: {
+    flex: 1,
+    width: '100%',
+    height: '100%',
+  },
+  pdf: {
+    flex: 1,
+    width: '100%',
+    height: '100%',
+  },
+  pdfUploaded: {
+    marginTop: 10,
+    color: 'green',
+    textAlign: 'center',
   },
 });
 

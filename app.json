@@ -15,7 +15,7 @@
     "ios": {
       "supportsTablet": true,
       "googleServicesFile": "./GoogleService-Info.plist",
-      "bundleIdentifier": "com.olivierdumay.appdolivier-admin",
+      "bundleIdentifier": "com.olivierdumay.appdolivier",
       "buildNumber": "26"
     },
     "android": {
@@ -25,7 +25,7 @@
         "backgroundColor": "#ffffff"
       },
       "package": "com.olivierdumay.appdolivier",
-      "versionCode": 29,
+      "versionCode": 49,
       "googleServicesFile": "./google-services.json",
       "useNextNotificationsApi": true
     },
