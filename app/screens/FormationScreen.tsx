@@ -316,7 +316,7 @@ const FormationScreen = ({ route, navigation }) => {
       <Text style={styles.text}>{formation.affiliationDIU}</Text>
       
       <Text style={styles.sectionTitle}>Documentation PDF</Text>
-      {pdfUrl ? (
+      {/* {pdfUrl ? (
         <View style={styles.pdfContainer}>
           <RNPdf trustAllCerts={false}
             source={{ uri: pdfUrl, cache: true }}
@@ -336,7 +336,7 @@ const FormationScreen = ({ route, navigation }) => {
         </View>
       ) : (
         <Text style={styles.text}>Aucun document PDF disponible</Text>
-      )}
+      )} */}
       <View style={styles.bottomSpacer} />
     </ScrollView>
   );

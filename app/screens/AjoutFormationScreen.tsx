@@ -271,7 +271,8 @@ const AjoutFormationScreen = ({ navigation, route }) => {
 const uploadImageAsync = async (): Promise<any> => {
  
   return new Promise(async (resolve, reject): Promise<void> => {
-    // if (imageUri) {
+    // console.log(imageUri?"exists":"no exist")
+    if (imageUri) {
       // try {
         // Request image picker permissions
         const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
@@ -330,7 +331,11 @@ const uploadImageAsync = async (): Promise<any> => {
         resolve( getDownloadURL(storageRef) )
       },
     )
-  })
+  } else {
+    // return
+    resolve(null);
+  }})
+  
 }
 
   const uploadImage = async () => {
@@ -441,7 +446,10 @@ const uploadImageAsync = async (): Promise<any> => {
   const uploadToFirebase = async () => {
       if (validateForm()) {
         try {
+          console.log('upload start');
           const imageUrl = await uploadImageAsync();
+          console.log('upload now');
+          console.log(formData.pdf)
           const formattedData = {
             ...formData,
             date: formData.date.toISOString().split('T')[0],
@@ -457,10 +465,11 @@ const uploadImageAsync = async (): Promise<any> => {
             affiliationDIU: formData.affiliationDIU === 'Autre' ? formData.autreAffiliationDIU : formData.affiliationDIU,
 
             image: imageUrl || formData.image,
-            pdf: pdfUrl || formData.pdf,
-            // pdfUrl: formData.pdfUrl || '',
+            pdf: pdfUrl || formData.pdf,//
+            // pdf: pdfUrl || '',//formData.pdf
+
           };
-  
+          console.log('upload now');
           await set(ref_d(database, `formations/${formData.id}`), formattedData);
           Alert.alert("Succès", route.params?.formation 
             ? "La formation a été modifiée avec succès."
@@ -677,7 +686,7 @@ const uploadImageAsync = async (): Promise<any> => {
 
 
       <Text style={styles.label}>Programme PDF de la formation</Text>
-      <TouchableOpacity style={styles.imagePicker} onPress={pickPDF}>
+      {/* <TouchableOpacity style={styles.imagePicker} onPress={pickPDF}>
         {pdfUrl ? (
           <View style={styles.pdfContainer}>
             <RNPdf
@@ -703,7 +712,7 @@ const uploadImageAsync = async (): Promise<any> => {
         ) : (
           <Text style={styles.text}>Cliquer pour choisir un PDF</Text>
         )}
-      </TouchableOpacity>
+      </TouchableOpacity> */}
       <TouchableOpacity style={styles.button} onPress={handleSubmit}>
         <Text style={styles.buttonText}>
           {route.params?.formationId ? "Modifier la formation" : "Ajouter la formation"}
