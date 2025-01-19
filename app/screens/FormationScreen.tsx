@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, Image, ScrollView, TouchableOpacity, Alert, Dimensions } from 'react-native';
+import { View, Text, StyleSheet, Image, ScrollView, TouchableOpacity, Alert, Dimensions, Linking } from 'react-native';
 import { auth, firebase, storage, database } from '../../firebase';
 import { ref as ref_d, set, get, onValue, update } from 'firebase/database';
 import RNPdf from 'react-native-pdf';
@@ -34,13 +34,6 @@ const FormationScreen = ({ route, navigation }) => {
   }, [navigation]);
 
 
-  useEffect(() => {
-    // Add this new useEffect to fetch PDF URL from formation data
-    if (formation && formation.pdfUrl) {
-      // setPdfUrl(formation.pdfUrl);
-    }
-    setPdfUrl(`https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf`);
-  }, [formation]);
 
 
   useEffect(() => {
@@ -72,6 +65,8 @@ const FormationScreen = ({ route, navigation }) => {
       }
     };
 
+
+    
     // Vérifier le consentement RGPD
     const checkConsent = async () => {
       const user = auth.currentUser;
@@ -88,6 +83,23 @@ const FormationScreen = ({ route, navigation }) => {
 
     return () => unsubscribe();
   }, [formationId]);
+
+  // useEffect(() => {
+  //   // Add this new useEffect to fetch PDF URL from formation data
+    
+  //   if (formation.pdf) {
+      
+  //     setPdfUrl(formation.pdf);
+  //     Alert.alert("PDF Introuvable", formation.pdf);
+  //   } else {
+  //     Alert.alert("PDF Introuvable", formation);
+  //     setPdfUrl(`https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf`);
+  //     // Alert.alert("PDF Introuvable", "Pas de PDF");
+  //   }
+    
+  //   // setPdfUrl(`https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf`);
+  // }, [formation]);
+
 
   const checkDateValidity = (date) => {
     const formationDate = new Date(date);
@@ -165,6 +177,12 @@ const FormationScreen = ({ route, navigation }) => {
     );
   };
 
+  const handleExternalLink = () => {
+    Linking.openURL('https://www.google.com').catch(err => {
+      Alert.alert('Erreur', "Impossible d'ouvrir le lien. Info developpeur: "+ err);
+    });
+  };
+
   const getButtonStyle = () => {
     if (!inscriptionStatus || inscriptionStatus === "désinscrit") return styles.signUpButton;
     return { ...styles.signUpButton, backgroundColor: '#808080' };
@@ -175,6 +193,7 @@ const FormationScreen = ({ route, navigation }) => {
       case "en attente": return "Inscription en attente";
       case "Rejetée": return "Inscription rejetée";
       case "Validée": return "Se désinscrire";
+      case "Externe": return "Site d'inscriptions"
       default: return "S'inscrire";
     }
   };
@@ -188,7 +207,8 @@ const FormationScreen = ({ route, navigation }) => {
     } else if (!inscriptionStatus ||inscriptionStatus=== "Rejetée" ||  inscriptionStatus === "désinscrit") {
       handleSignUp();
       
-    }
+    } else if (inscriptionStatus=== "Externe")
+      handleExternalLink()
   };
   const handleDelete = () => {
     let toggleAction = (formation.active) ? "Désactiver" : "Réactiver";
@@ -290,11 +310,11 @@ const FormationScreen = ({ route, navigation }) => {
       <Text style={styles.info}>Tarif étudiant: {formation.tarifEtudiant} € / Tarif médecin: {formation.tarifMedecin} €</Text>
       
       <Text style={styles.sectionTitle}>Documentation PDF</Text>
-      <Text style={styles.label}>[ Cette version n'est pas adaptée au format Android ]</Text>
-      {/* {pdfUrl ? (
+      {/* <Text style={styles.label}>[ Cette version n'est pas adaptée au format Android ]</Text> */}
+      {formation.pdf ? (
         <View style={styles.pdfContainer}>
           <RNPdf trustAllCerts={false}
-            source={{ uri: pdfUrl, cache: true }}
+            source={{ uri: formation.pdf, cache: true }}
             style={styles.pdf}
             onLoadComplete={(numberOfPages, filePath) => {
               console.log(`PDF loaded: ${numberOfPages} pages`);
@@ -311,7 +331,7 @@ const FormationScreen = ({ route, navigation }) => {
         </View>
       ) : (
         <Text style={styles.text}>Aucun document PDF disponible</Text>
-      )} */}
+      )}
 
       <Text style={styles.sectionTitle}>Année conseillée</Text>
       <Text style={styles.text}>{formation.anneeConseillee}</Text>

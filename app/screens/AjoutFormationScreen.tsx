@@ -41,6 +41,8 @@ const AjoutFormationScreen = ({ navigation, route }) => {
     autreAnneeConseillee: '',
     affiliationDIU: '',
     autreAffiliationDIU: '',
+    inscriptionStatus: '',
+    inscriptionURL: '',
     competencesAcquises: '',
     prerequis: '',
     instructions: '',
@@ -61,7 +63,11 @@ const AjoutFormationScreen = ({ navigation, route }) => {
   const [anneeOptions, setAnneeOptions] = useState([]);
   const [natureOptions, setNatureOptions] = useState([]);
   const [pdfUrl, setPdfUrl] = useState('');
-
+  const [selectedPdf, setSelectedPdf] = useState({
+    name: null,
+    uri: null
+  });
+  
   useEffect(() => {
     downloadFilterOptions();
     // ... (keep existing useEffect logic)
@@ -203,13 +209,20 @@ const AjoutFormationScreen = ({ navigation, route }) => {
   
   const pickPDF = async () => {
     try {
-      const downloadURL = await uploadPdfAsync();
-      setPdfUrl(downloadURL);
-      handleInputChange('pdfUrl', downloadURL);
-      Alert.alert('Success', downloadURL);
+      const result = await DocumentPicker.getDocumentAsync({
+        type: ['application/pdf'],
+        copyToCacheDirectory: true,
+        multiple: false
+      });
+  
+      if (!result.canceled) {
+        const { name, uri } = result.assets[0];
+        setSelectedPdf({ name, uri });
+        Alert.alert('Success', 'PDF selected successfully: '+selectedPdf.uri);
+      }
     } catch (error) {
-      console.error('Error uploading PDF:', error);
-      Alert.alert('Error', String(error));
+      console.error('Error picking PDF:', error);
+      Alert.alert('Error', 'Failed to select PDF file');
     }
   };
 
@@ -337,6 +350,46 @@ const uploadImageAsync = async (): Promise<any> => {
   }})
   
 }
+  const uploadPdfToFirebase = async () => {
+    if (!selectedPdf.uri) return null;
+    
+    try {
+      const response = await fetch(selectedPdf.uri);
+      const blob = await response.blob();
+      
+      const filename = `formations/${formData.id}_${Date.now()}_${selectedPdf.name}`;
+      const storageRef = ref_s(storage, filename);
+      
+      const uploadTask = uploadBytesResumable(storageRef, blob);
+      
+      return new Promise((resolve, reject) => {
+        uploadTask.on(
+          'state_changed',
+          (snapshot) => {
+            const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
+            console.log(`Upload is ${progress}% complete`);
+          },
+          (error) => {
+            console.error('Error uploading PDF:', error);
+            reject(error);
+          },
+          async () => {
+            try {
+              blob.close();
+            } catch (error) {
+              // Ignore blob close error on web
+            }
+            
+            const downloadURL = await getDownloadURL(storageRef);
+            resolve(downloadURL);
+          }
+        );
+      });
+    } catch (error) {
+      console.error('Error in uploadPdfToFirebase:', error);
+      throw error;
+    }
+  };
 
   const uploadImage = async () => {
     if (imageUri) {
@@ -371,7 +424,7 @@ const uploadImageAsync = async (): Promise<any> => {
     let newErrors = {};
 
     // Check required fields
-    const requiredFields = ['title', 'date', 'heureDebut', 'heureFin', 'lieu', 'region', 'nature', 'anneeConseillee', 'tarifEtudiant', 'tarifMedecin', 'domaine', 'affiliationDIU'];    
+    const requiredFields = ['title', 'date', 'heureDebut', 'heureFin', 'lieu', 'region', 'nature', 'anneeConseillee', 'tarifEtudiant', 'tarifMedecin', 'domaine', 'affiliationDIU', 'inscriptionStatus'];    
     requiredFields.forEach(field => {
       if (!formData[field]) {
         newErrors[field] = 'Ce champ est obligatoire';
@@ -402,6 +455,10 @@ const uploadImageAsync = async (): Promise<any> => {
     }
     if (formData.affiliationDIU === 'Autre' && !formData.autreAffiliationDIU) {
       newErrors.autreAffiliationDIU = 'Veuillez spécifier l\'Affiliation DIU';
+      isValid = false;
+    }
+    if (formData.inscriptionStatus === 'Externe' && !formData.inscriptionURL) {
+      newErrors.autreAffiliationDIU = 'Veuillez spécifier l\'URL du site dédié aux inscriptions à cette formation.'
       isValid = false;
     }
 
@@ -444,45 +501,50 @@ const uploadImageAsync = async (): Promise<any> => {
   };
 
   const uploadToFirebase = async () => {
-      if (validateForm()) {
-        try {
-          console.log('upload start');
-          const imageUrl = await uploadImageAsync();
-          console.log('upload now');
-          console.log(formData.pdf)
-          const formattedData = {
-            ...formData,
-            date: formData.date.toISOString().split('T')[0],
-            date_de_fin: formData.date_de_fin.toISOString().split('T')[0],
-            heureDebut: formData.heureDebut.toTimeString().split(' ')[0].slice(0, 5),
-            heureFin: formData.heureFin.toTimeString().split(' ')[0].slice(0, 5),
+    if (validateForm()) {
+      try {
+        console.log('Starting uploads');
+        
+        // Upload image and PDF in parallel
+        const [imageUrl, pdfUrl] = await Promise.all([
+          uploadImageAsync(),
+          uploadPdfToFirebase()
+        ]);
+        
+        const formattedData = {
+          ...formData,
+          date: formData.date.toISOString().split('T')[0],
+          date_de_fin: formData.date_de_fin.toISOString().split('T')[0],
+          heureDebut: formData.heureDebut.toTimeString().split(' ')[0].slice(0, 5),
+          heureFin: formData.heureFin.toTimeString().split(' ')[0].slice(0, 5),
+          domaine: formData.domaine === 'Autre' ? formData.autresDomaine : formData.domaine,
+          lieu: formData.lieu === 'Autre' ? formData.autreLieu : formData.lieu,
+          region: formData.region === 'Autre' ? formData.autreRegion : formData.region,
+          nature: formData.nature === 'Autre' ? formData.autreNature : formData.nature,
+          anneeConseillee: formData.anneeConseillee === 'Autre' ? formData.autreAnneeConseillee : formData.anneeConseillee,
+          affiliationDIU: formData.affiliationDIU === 'Autre' ? formData.autreAffiliationDIU : formData.affiliationDIU,
+          image: imageUrl || formData.image,
+          pdf: pdfUrl || formData.pdf,
+          inscriptionURL: formData.inscriptionURL || null,
+          inscriptionStatus: formData.inscriptionStatus
+        };
 
-            domaine: formData.domaine === 'Autre' ? formData.autresDomaine : formData.domaine,
-            lieu: formData.lieu === 'Autre' ? formData.autreLieu : formData.lieu,
-            region: formData.region === 'Autre' ? formData.autreRegion : formData.region,
-            nature: formData.nature === 'Autre' ? formData.autreNature : formData.nature,
-            anneeConseillee: formData.anneeConseillee === 'Autre' ? formData.autreAnneeConseillee : formData.anneeConseillee,
-            affiliationDIU: formData.affiliationDIU === 'Autre' ? formData.autreAffiliationDIU : formData.affiliationDIU,
-
-            image: imageUrl || formData.image,
-            pdf: pdfUrl || formData.pdf,//
-            // pdf: pdfUrl || '',//formData.pdf
-
-          };
-          console.log('upload now');
-          await set(ref_d(database, `formations/${formData.id}`), formattedData);
-          Alert.alert("Succès", route.params?.formation 
+        await set(ref_d(database, `formations/${formData.id}`), formattedData);
+        Alert.alert(
+          "Succès", 
+          route.params?.formation 
             ? "La formation a été modifiée avec succès."
-            : "La formation a été ajoutée avec succès.");
-          navigation.goBack();
-        } catch (error) {
-          Alert.alert("Erreur", "Une erreur s'est produite lors de l'opération.");
-          console.error(error);
-        }
-      } else {
-        Alert.alert("Erreur", "Veuillez remplir correctement tous les champs obligatoires.");
+            : "La formation a été ajoutée avec succès."
+        );
+        navigation.goBack();
+      } catch (error) {
+        Alert.alert("Erreur", "Une erreur s'est produite lors de l'opération.");
+        console.error(error);
       }
-    };
+    } else {
+      Alert.alert("Erreur", "Veuillez remplir correctement tous les champs obligatoires.");
+    }
+  };
   
 
   const renderInput = (label, name, placeholder, keyboardType = 'default', multiline = false) => (
@@ -566,7 +628,7 @@ const uploadImageAsync = async (): Promise<any> => {
         />
       )}
 
-<Text style={styles.label}>Type de V46 *</Text>
+<Text style={styles.label}>Type de Formation *</Text>
       <Picker
         selectedValue={formData.nature}
         style={[styles.picker, errors.nature && styles.inputError]}
@@ -632,6 +694,20 @@ const uploadImageAsync = async (): Promise<any> => {
       {errors.anneeConseillee && <Text style={styles.errorText}>{errors.anneeConseillee}</Text>}
       {formData.anneeConseillee === 'Autre' && renderInput('Spécifier l\'année d\'études conseillée', 'autreAnneeConseillee', 'Spécifier l\'année d\'études conseillée')}
 
+      <Text style={styles.label}>Type d'inscription *</Text>
+      <Picker
+        selectedValue={formData.inscriptionStatus}
+        style={[styles.picker, errors.inscriptionStatus && styles.inputError]}
+        onValueChange={(itemValue) => handleInputChange('inscriptionStatus', itemValue)}
+      >
+        <Picker.Item label="L'inscription est gérée par" value="" />
+          <Picker.Item key={1} label={"L'app Esculappl"} value={"en attente"} />
+          <Picker.Item key={2} label={"Un site dédié"} value={"Externe"} />
+        {/* <Picker.Item label="Autre" value="Autre" /> */}
+      </Picker>
+      {errors.inscriptionStatus && <Text style={styles.errorText}>{errors.inscriptionStatus}</Text>}
+      {formData.inscriptionStatus === 'Externe' && renderInput('Spécifier l\'URL de la page Inscriptions dédiée.', 'inscriptionURL', 'Spécifier l\'URL de la page Inscriptions dédiée.')}
+
 
       
       {renderInput('Tarif étudiant DIU', 'tarifEtudiant', 'Tarif étudiant DIU', 'numeric')}
@@ -686,13 +762,13 @@ const uploadImageAsync = async (): Promise<any> => {
 
 
       <Text style={styles.label}>Programme PDF de la formation</Text>
-      <Text style={styles.label}>[ Cette version n'est pas adaptée au format Android ]</Text>
-      {/* <TouchableOpacity style={styles.imagePicker} onPress={pickPDF}>
-        {pdfUrl ? (
+      {/* <Text style={styles.label}>[ Cette version n'est pas adaptée au format Android ]</Text> */}
+      <TouchableOpacity style={styles.imagePicker} onPress={pickPDF}>
+        {selectedPdf ? (
           <View style={styles.pdfContainer}>
             <RNPdf
               trustAllCerts={false}
-              source={{ uri: pdfUrl, cache: true }}
+              source={{ uri: selectedPdf.uri, cache: true }}
               style={styles.pdf}
               onLoadComplete={(numberOfPages, filePath) => {
                 console.log(`PDF loaded: ${numberOfPages} pages`);
@@ -700,7 +776,7 @@ const uploadImageAsync = async (): Promise<any> => {
               }}
               onError={(error) => {
                 console.log('PDF Error:', error);
-                Alert.alert('PDF Erreur');
+                Alert.alert('PDF Erreur', String(error));
               }}
               enablePaging={true}
               onPageChanged={(page, numberOfPages) => {
@@ -712,8 +788,8 @@ const uploadImageAsync = async (): Promise<any> => {
           </View>
         ) : (
           <Text style={styles.text}>Cliquer pour choisir un PDF</Text>
-        )}
-      </TouchableOpacity> */}
+        )} 
+      </TouchableOpacity>
       <TouchableOpacity style={styles.button} onPress={handleSubmit}>
         <Text style={styles.buttonText}>
           {route.params?.formationId ? "Modifier la formation" : "Ajouter la formation"}
