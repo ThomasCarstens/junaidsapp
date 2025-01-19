@@ -239,19 +239,35 @@ const RechercheFormationsScreen = (props, { route }) => {
   ]);
 
   const [monthOptions, setMonthOptions] = useState([
-    "Janvier",
-    "Février", 
-    "Mars",
-    "Avril",
-    "Mai",
-    "Juin",
-    "Juillet",
-    "Août",
-    "Septembre",
-    "Octobre",
-    "Novembre",
-    "Décembre"
+    "2025-01",
+    "2025-02", 
+    "2025-04",
+    "2025-05",
+    "2025-03",
+    "2025-06",
+    "2025-07",
+    "2025-08",
+    "2025-09",
+    "2025-10",
+    "2025-11",
+    "2025-12",
    ]);
+
+   const [activeFilters, setActiveFilters] = useState({
+    Domaine: '',
+    'Année conseillée': '',
+    Date: '',
+    Lieu: '',
+    Region: ''
+  });
+  
+  const filterOptions = {
+    Domaine: categoryOptions,
+    'Année conseillée': anneeOptions,
+    Date: monthOptions,
+    Lieu: lieuOptions,
+    Region: regionOptions
+  };
 
   const [isUpdateAvailable, setIsUpdateAvailable] = useState(false);
   // useEffect(() => {
@@ -538,78 +554,159 @@ const RechercheFormationsScreen = (props, { route }) => {
 
   };
 
-  const applyFilters = (tab) => {
-    let filtered = formations;
-    if (categoryFilter) {
-      filtered = filtered.filter(f => f.domaine === categoryFilter);
-    }
-    if (lieuFilter) {
-      filtered = filtered.filter(f => f.lieu === lieuFilter);
-    }
-    if (regionFilter) {
-      filtered = filtered.filter(f => f.region === regionFilter);
-    }
-    if (anneeFilter) {
-      filtered = filtered.filter(f => f.anneeConseillee === anneeFilter);
-    }
-    if (monthFilter) {
-      filtered = filtered.filter(f => {
-          // const startMonth = f.date.getMonth();
-          // const endMonth = f.date_de_fin.getMonth();
-          // return startMonth === monthFilter || endMonth === monthFilter;
-      });
-  }
-    if (tab === "J'y suis inscrit") {
-      filtered = filtered.filter(f => 
-        userDemandes[f.id] && userDemandes[f.id].admin === "Validée"
-      );
-    } else if (tab === 'Passées') {
-      // console.log("Passees: ::::::")
-      
-      filtered = filtered.filter(f => {
-        console.log(Date(f.date_de_fin) , Date.now())
-        f.date_de_fin < Date.now()
-    });
-    } else if (tab === 'Je propose') {
-      filtered = filtered.filter(f => (f.status === 'propose'));
-    } else if (tab === 'Cachées') {
-      filtered = filtered.filter(f => f.active === false);
-    } else {
-      // 'Disponibles' tab
-      filtered = filtered.filter(f => f.active === true);
-    }
-    setFilteredFormations(filtered);
-  };
+// Modify your applyFilters function:
+const applyFilters = (tab) => {
+  let filtered = formations;
   
-  const renderFilterButtons = (title, options, selectedValue, setSelectedValue) => (
-    <View style={styles.filterSection}>
-      <Text style={styles.filterTitle}>{title}</Text>
-      <View style={styles.filterButtonsContainer}>
+  if (activeFilters.Domaine) {
+    filtered = filtered.filter(f => f.domaine === activeFilters.Domaine);
+  }
+  if (activeFilters.Lieu) {
+    filtered = filtered.filter(f => f.lieu === activeFilters.Lieu);
+  }
+  if (activeFilters.Region) {
+    filtered = filtered.filter(f => f.region === activeFilters.Region);
+  }
+  if (activeFilters['Année conseillée']) {
+    filtered = filtered.filter(f => f.anneeConseillee === activeFilters['Année conseillée']);
+  }
+  if (activeFilters.Date) {
+    console.log('filter date is ', activeFilters.Date)
+    
+    filtered = filtered.filter(f => {
+      // Your date filtering logic
+      // console.log('start: ',f.date)
+      // console.log('end: ',f.date_de_fin)
+      return f.date.includes(activeFilters.Date) || f.date_de_fin.includes(activeFilters.Date)
+      
+      
+      
+
+    });
+  }
+
+  // Rest of your tab filtering logic...
+  setFilteredFormations(filtered);
+};
+
+const FilterTabs = ({ 
+  filters, 
+  activeFilters, 
+  onFilterChange,
+  onApplyFilters 
+}) => {
+  const [activeTab, setActiveTab] = useState('Domaine');
+  const filterTypes = Object.keys(filters);
+  const currentIndex = filterTypes.indexOf(activeTab);
+
+  const navigateTab = (direction) => {
+    const newIndex = currentIndex + direction;
+    if (newIndex >= 0 && newIndex < filterTypes.length) {
+      setActiveTab(filterTypes[newIndex]);
+    }
+  };
+
+  const renderFilterContent = (filterType) => {
+    const options = filters[filterType];
+    const selectedValue = activeFilters[filterType];
+
+    return (
+      <ScrollView 
+        contentContainerStyle={styles.filterOptionsContainer}
+        showsVerticalScrollIndicator={false}
+      >
         {options.map((option) => (
           <TouchableOpacity
             key={option}
             style={[
-              styles.filterButton,
-              selectedValue === option && styles.filterButtonSelected
+              styles.filterOption,
+              selectedValue === option && styles.filterOptionSelected
             ]}
             onPress={() => {
-              
-              setSelectedValue(selectedValue === option ? '' : option);
-              // applyFilters(activeTab); 
-              // toggleFilters();
-              }}
+              const newFilters = {
+                ...activeFilters,
+                [filterType]: selectedValue === option ? '' : option
+              };
+              onFilterChange(newFilters);
+            }}
           >
             <Text style={[
-              styles.filterButtonText,
-              selectedValue === option && styles.filterButtonTextSelected
+              styles.filterOptionText,
+              selectedValue === option && styles.filterOptionTextSelected
             ]}>
               {option}
             </Text>
           </TouchableOpacity>
         ))}
+      </ScrollView>
+    );
+  };
+
+  return (
+    <View style={styles.container}>
+      <View style={styles.header}>
+        <TouchableOpacity 
+          onPress={() => navigateTab(-1)}
+          disabled={currentIndex === 0}
+          style={styles.arrowButton}
+        >
+          <Ionicons 
+            name="chevron-back" 
+            size={24} 
+            color={currentIndex === 0 ? '#D1D5DB' : '#1a53ff'} 
+          />
+        </TouchableOpacity>
+
+        <ScrollView 
+          horizontal 
+          showsHorizontalScrollIndicator={false}
+          contentContainerStyle={styles.tabsContainer}
+        >
+          {filterTypes.map((filterType) => (
+            <TouchableOpacity
+              key={filterType}
+              style={[
+                styles.tab,
+                activeTab === filterType && styles.activeTab
+              ]}
+              onPress={() => setActiveTab(filterType)}
+            >
+              <Text style={[
+                styles.tabText,
+                activeTab === filterType && styles.activeTabText
+              ]}>
+                {filterType}
+              </Text>
+            </TouchableOpacity>
+          ))}
+        </ScrollView>
+
+        <TouchableOpacity 
+          onPress={() => navigateTab(1)}
+          disabled={currentIndex === filterTypes.length - 1}
+          style={styles.arrowButton}
+        >
+          <Ionicons 
+            name="chevron-forward" 
+            size={24} 
+            color={currentIndex === filterTypes.length - 1 ? '#D1D5DB' : '#1a53ff'} 
+          />
+        </TouchableOpacity>
       </View>
+
+      <View style={styles.filterContent}>
+        {renderFilterContent(activeTab)}
+      </View>
+
+      <TouchableOpacity 
+        style={styles.applyButton}
+        onPress={onApplyFilters}
+      >
+        <Text style={styles.applyButtonText}>Lancer ma recherche</Text>
+      </TouchableOpacity>
     </View>
   );
+};
 
   const renderFormationItem = ({ item }) => (
     <TouchableOpacity 
@@ -663,8 +760,8 @@ const RechercheFormationsScreen = (props, { route }) => {
     <View style={styles.container}> 
       {/* {renderTopButtons()} */}
 
-      <View style={styles.tabContainer}>
-        {(isFormateur?['Disponibles', "Passées", "J'y suis inscrit", 'Je propose', 'Cachées']
+      <View style={styles.topTabContainer}>
+        {(isFormateur?['Disponibles', "Passées", 'Cachées']
         :(isLoggedIn?['Disponibles', "Passées", "J'y suis inscrit"]:['Disponibles'])).map((tab) => (
           <TouchableOpacity
             key={tab}
@@ -684,7 +781,8 @@ const RechercheFormationsScreen = (props, { route }) => {
         <Ionicons name={showFilters ? "chevron-up" : "chevron-down"} size={24} color="white" />
       </TouchableOpacity>
 
-      <Animated.View style={[styles.filtersContainer, { height: filterHeight }]}>
+
+      {/* <Animated.View style={[styles.filtersContainer, { height: filterHeight }]}>
       <TouchableOpacity style={styles.applyFilterButton} onPress={() => { applyFilters(); toggleFilters(); }}>
             <Text style={styles.applyFilterButtonText}>Lancer ma recherche</Text>
           </TouchableOpacity>
@@ -700,6 +798,19 @@ const RechercheFormationsScreen = (props, { route }) => {
           
 
         </ScrollView>
+      </Animated.View> */}
+      <Animated.View style={[styles.filtersContainer, { height: filterHeight }]}>
+        <FilterTabs
+          filters={filterOptions}
+          activeFilters={activeFilters}
+          onFilterChange={(newFilters) => {
+            setActiveFilters(newFilters);
+          }}
+          onApplyFilters={() => {
+            applyFilters(activeTab);
+            toggleFilters();
+          }}
+        />
       </Animated.View>
 
       <FlatList
@@ -815,29 +926,31 @@ const styles = StyleSheet.create({
     color: 'white',
     fontSize: 16,
   },
-  container: {
-    flex: 1,
-    padding: 10,
-  },
-  tabContainer: {
+  // container: {
+  //   flex: 1,
+  //   padding: 10,
+  // },
+  
+  topTabContainer: {
+    // backgroundColor: '#e0e0e0',
     flexDirection: 'row',
     justifyContent: 'space-around',
     marginBottom: 10,
   },
-  tab: {
-    paddingVertical: 10,
-    paddingHorizontal: 20,
-    borderRadius: 5,
-  },
-  activeTab: {
-    backgroundColor: '#1a53ff',
-  },
-  tabText: {
-    color: '#333',
-  },
-  activeTabText: {
-    color: 'white',
-  },
+  // tab: {
+  //   paddingVertical: 10,
+  //   paddingHorizontal: 20,
+  //   borderRadius: 5,
+  // },
+  // activeTab: {
+  //   backgroundColor: '#1a53ff',
+  // },
+  // tabText: {
+  //   color: '#333',
+  // },
+  // activeTabText: {
+  //   color: 'white',
+  // },
   // filterButton: {
   //   flexDirection: 'row',
   //   justifyContent: 'space-between',
@@ -1025,7 +1138,99 @@ const styles = StyleSheet.create({
     color: 'white',
     fontWeight: 'bold',
     textAlign: 'center',
-  }
+  },
+  // filter tabs styling:
+  container: {
+    
+    flex: 1,
+    padding: 10,
+    borderRadius: 10,
+    overflow: 'hidden',
+    marginBottom: 10,
+  },
+  header: {
+    borderBottomWidth: 1,
+    borderBottomColor: '#e0e0e0',
+  },
+  header: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    borderBottomWidth: 1,
+    borderBottomColor: '#E5E7EB',
+    paddingVertical: 8,
+  },
+
+  tabsContainer: {
+    flexGrow: 1,
+    justifyContent: 'center',
+    paddingHorizontal: 8,
+  },
+  tab: {
+    paddingVertical: 8,
+    paddingHorizontal: 16,
+    marginHorizontal: 4,
+    borderRadius: 8,
+  },
+  activeTab: {
+    borderBottomWidth: 2,
+    borderBottomColor: '#1a53ff',
+  },
+  tabText: {
+    color: '#6B7280',
+    fontSize: 14,
+    fontWeight: '500',
+  },
+  activeTabText: {
+    color: '#1a53ff',
+    fontWeight: '600',
+  },
+  filterContent: {
+    flex: 1,
+    padding: 12,
+  },
+  filterOptionsContainer: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 8,
+    paddingBottom: 12,
+  },
+  filterOption: {
+    backgroundColor: 'white',
+    paddingVertical: 8,
+    paddingHorizontal: 16,
+    borderRadius: 20,
+    borderWidth: 1,
+    borderColor: '#1a53ff',
+    marginRight: 8,
+    marginBottom: 8,
+  },
+  filterOptionSelected: {
+    backgroundColor: '#1a53ff',
+  },
+  filterOptionText: {
+    color: '#1a53ff',
+    fontSize: 14,
+  },
+  filterOptionTextSelected: {
+    color: 'white',
+  },
+  applyButton: {
+    backgroundColor: 'black',
+    margin: 12,
+    padding: 12,
+    borderRadius: 20,
+    alignItems: 'center',
+  },
+  applyButtonText: {
+    color: 'white',
+    fontSize: 16,
+    fontWeight: '500',
+  },
+  arrowButton: {
+    padding: 8,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
 });
 
 export default RechercheFormationsScreen;

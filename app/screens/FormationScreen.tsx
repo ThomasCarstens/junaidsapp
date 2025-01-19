@@ -84,21 +84,6 @@ const FormationScreen = ({ route, navigation }) => {
     return () => unsubscribe();
   }, [formationId]);
 
-  // useEffect(() => {
-  //   // Add this new useEffect to fetch PDF URL from formation data
-    
-  //   if (formation.pdf) {
-      
-  //     setPdfUrl(formation.pdf);
-  //     Alert.alert("PDF Introuvable", formation.pdf);
-  //   } else {
-  //     Alert.alert("PDF Introuvable", formation);
-  //     setPdfUrl(`https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf`);
-  //     // Alert.alert("PDF Introuvable", "Pas de PDF");
-  //   }
-    
-  //   // setPdfUrl(`https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf`);
-  // }, [formation]);
 
 
   const checkDateValidity = (date) => {
@@ -239,7 +224,6 @@ const FormationScreen = ({ route, navigation }) => {
       </View>
     );
   }
-  const source = { uri: 'http://samples.leanpub.com/thereactnativebook-sample.pdf', cache: true };
 
 
   return (
@@ -310,8 +294,8 @@ const FormationScreen = ({ route, navigation }) => {
       <Text style={styles.info}>Tarif étudiant: {formation.tarifEtudiant} € / Tarif médecin: {formation.tarifMedecin} €</Text>
       
       <Text style={styles.sectionTitle}>Documentation PDF</Text>
-      {/* <Text style={styles.label}>[ Cette version n'est pas adaptée au format Android ]</Text> */}
-      {formation.pdf ? (
+      <Text style={styles.label}>[ Cette version n'est pas adaptée au format Android ]</Text>
+      {/* {formation.pdf ? (
         <View style={styles.pdfContainer}>
           <RNPdf trustAllCerts={false}
             source={{ uri: formation.pdf, cache: true }}
@@ -331,7 +315,7 @@ const FormationScreen = ({ route, navigation }) => {
         </View>
       ) : (
         <Text style={styles.text}>Aucun document PDF disponible</Text>
-      )}
+      )} */}
 
       <Text style={styles.sectionTitle}>Année conseillée</Text>
       <Text style={styles.text}>{formation.anneeConseillee}</Text>
