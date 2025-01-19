@@ -686,6 +686,7 @@ const uploadImageAsync = async (): Promise<any> => {
 
 
       <Text style={styles.label}>Programme PDF de la formation</Text>
+      <Text style={styles.label}>[ Cette version n'est pas adaptée au format Android ]</Text>
       {/* <TouchableOpacity style={styles.imagePicker} onPress={pickPDF}>
         {pdfUrl ? (
           <View style={styles.pdfContainer}>

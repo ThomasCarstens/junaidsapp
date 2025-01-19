@@ -289,33 +289,8 @@ const FormationScreen = ({ route, navigation }) => {
 
       <Text style={styles.info}>Tarif étudiant: {formation.tarifEtudiant} € / Tarif médecin: {formation.tarifMedecin} €</Text>
       
-      <Text style={styles.sectionTitle}>Programme</Text>
-      <Image source={ require("../../assets/images/exemple_presentation.jpg") } style={styles.programmeImage} />
-
-      <Text style={styles.sectionTitle}>Année conseillée</Text>
-      <Text style={styles.text}>{formation.anneeConseillee}</Text>
-            
-      <Text style={styles.sectionTitle}>Prérequis</Text>
-      <Text style={styles.text}>{formation.prerequis}</Text>
-
-      <Text style={styles.sectionTitle}>À savoir</Text>
-      <Text style={styles.text}>{formation.instructions}</Text>
-
-      <Image source={ require("../../assets/images/exemple_programme-pdf.jpg") } style={styles.programmeImage} />
-
-
-      
-      <Text style={styles.sectionTitle}>Compétences acquises</Text>
-      <Text style={styles.text}>{formation.competencesAcquises || "Non spécifié"}</Text>
-      
-
-      {/* <Text style={styles.sectionTitle}>Autres domaines</Text>
-      <Text style={styles.text}>{formation.autresDomaine || "Non spécifié"}</Text> */}
-      
-      <Text style={styles.sectionTitle}>Affiliation DIU</Text>
-      <Text style={styles.text}>{formation.affiliationDIU}</Text>
-      
       <Text style={styles.sectionTitle}>Documentation PDF</Text>
+      <Text style={styles.label}>[ Cette version n'est pas adaptée au format Android ]</Text>
       {/* {pdfUrl ? (
         <View style={styles.pdfContainer}>
           <RNPdf trustAllCerts={false}
@@ -337,6 +312,31 @@ const FormationScreen = ({ route, navigation }) => {
       ) : (
         <Text style={styles.text}>Aucun document PDF disponible</Text>
       )} */}
+
+      <Text style={styles.sectionTitle}>Année conseillée</Text>
+      <Text style={styles.text}>{formation.anneeConseillee}</Text>
+            
+      <Text style={styles.sectionTitle}>Prérequis</Text>
+      <Text style={styles.text}>{formation.prerequis}</Text>
+
+      <Text style={styles.sectionTitle}>À savoir</Text>
+      <Text style={styles.text}>{formation.instructions}</Text>
+
+      {/* <Image source={ require("../../assets/images/exemple_programme-pdf.jpg") } style={styles.programmeImage} /> */}
+
+
+      
+      <Text style={styles.sectionTitle}>Compétences acquises</Text>
+      <Text style={styles.text}>{formation.competencesAcquises || "Non spécifié"}</Text>
+      
+
+      {/* <Text style={styles.sectionTitle}>Autres domaines</Text>
+      <Text style={styles.text}>{formation.autresDomaine || "Non spécifié"}</Text> */}
+      
+      <Text style={styles.sectionTitle}>Affiliation DIU</Text>
+      <Text style={styles.text}>{formation.affiliationDIU}</Text>
+      
+
       <View style={styles.bottomSpacer} />
     </ScrollView>
   );
