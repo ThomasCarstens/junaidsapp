@@ -105,7 +105,7 @@ const RechercheFormationsScreen = (props, { route }) => {
   const [UidPushTokenList, setUidPushTokenList] = useState({});
   const [participantCounts, setParticipantCounts] = useState({});
   const [allDemandes, setAllDemandes] = useState({});
-
+  
 
   const fetchParticipantCounts = () => {
     const counts = {};
@@ -268,7 +268,7 @@ const RechercheFormationsScreen = (props, { route }) => {
     Lieu: lieuOptions,
     Region: regionOptions
   };
-
+  const [activeFilterTab, setActiveFilterTab] = useState(Object.keys(filterOptions)[0]);
   const [isUpdateAvailable, setIsUpdateAvailable] = useState(false);
   // useEffect(() => {
   //   console.log(route)
@@ -601,19 +601,22 @@ const applyFilters = (tab) => {
 const FilterTabs = ({ 
   filters, 
   activeFilters, 
+  activeTab = Object.keys(filters)[0], // Default to first filter type
+  onTabChange = () => {}, // No-op default function
   onFilterChange,
   onApplyFilters 
 }) => {
-  const [activeTab, setActiveTab] = useState('Domaine');
+  // Remove the state for activeTab and instead keep it as a prop or derive it from the filterTypes
   const filterTypes = Object.keys(filters);
   const currentIndex = filterTypes.indexOf(activeTab);
 
   const navigateTab = (direction) => {
     const newIndex = currentIndex + direction;
     if (newIndex >= 0 && newIndex < filterTypes.length) {
-      setActiveTab(filterTypes[newIndex]);
+      onTabChange(filterTypes[newIndex]);
     }
   };
+
 
   const renderFilterContent = (filterType) => {
     const options = filters[filterType];
@@ -656,13 +659,13 @@ const FilterTabs = ({
       <View style={styles.header}>
         <TouchableOpacity 
           onPress={() => navigateTab(-1)}
-          disabled={currentIndex === 0}
+          disabled={filterTypes.indexOf(activeTab) === 0}
           style={styles.arrowButton}
         >
           <Ionicons 
             name="chevron-back" 
             size={24} 
-            color={currentIndex === 0 ? '#D1D5DB' : '#1a53ff'} 
+            color={filterTypes.indexOf(activeTab) === 0 ? '#D1D5DB' : '#1a53ff'} 
           />
         </TouchableOpacity>
 
@@ -672,13 +675,13 @@ const FilterTabs = ({
 
         <TouchableOpacity 
           onPress={() => navigateTab(1)}
-          disabled={currentIndex === filterTypes.length - 1}
+          disabled={filterTypes.indexOf(activeTab) === filterTypes.length - 1}
           style={styles.arrowButton}
         >
           <Ionicons 
             name="chevron-forward" 
             size={24} 
-            color={currentIndex === filterTypes.length - 1 ? '#D1D5DB' : '#1a53ff'} 
+            color={filterTypes.indexOf(activeTab) === filterTypes.length - 1 ? '#D1D5DB' : '#1a53ff'} 
           />
         </TouchableOpacity>
       </View>
@@ -788,18 +791,20 @@ const FilterTabs = ({
         </ScrollView>
       </Animated.View> */}
       <Animated.View style={[styles.filtersContainer, { height: filterHeight }]}>
-        <FilterTabs
-          filters={filterOptions}
-          activeFilters={activeFilters}
-          onFilterChange={(newFilters) => {
-            setActiveFilters(newFilters);
-          }}
-          onApplyFilters={() => {
-            applyFilters(activeTab);
-            toggleFilters();
-          }}
-        />
-      </Animated.View>
+      <FilterTabs
+        filters={filterOptions}
+        activeFilters={activeFilters}
+        onFilterChange={(newFilters) => {
+          setActiveFilters(newFilters);
+        }}
+        onApplyFilters={() => {
+          applyFilters(activeTab);
+          toggleFilters();
+        }}
+        activeTab={activeFilterTab}
+        onTabChange={setActiveFilterTab}
+      />
+    </Animated.View>
 
       <FlatList
         data={filteredFormations}
