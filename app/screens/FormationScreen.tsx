@@ -104,9 +104,9 @@ const FormationScreen = ({ route, navigation }) => {
       Alert.alert("Erreur", "Vous devez être connecté pour vous inscrire.");
       return;
     }
-    
-    if (inscriptionStatus) {
-      Alert.alert(`Inscription ${inscriptionStatus}`, "Nous ne permettons qu'une inscription par formation. Pour plus d'informations sur votre inscription, contactez notre email d'assistance: contact.esculappl@gmail.com");
+    console.log('inscriptionStatus__ in handleSignup(): ', inscriptionStatus)
+    if (inscriptionStatus == 'en attente') {
+      Alert.alert(`Inscription ${inscriptionStatus}`, "Nous avons déjà une inscription de votre part. Pour plus d'informations sur votre inscription, contactez notre email d'assistance: contact.esculappl@gmail.com");
       return;
     }
     
@@ -166,12 +166,25 @@ const FormationScreen = ({ route, navigation }) => {
       ]
     );
   };
-
   const handleExternalLink = () => {
-    
-    Linking.openURL(inscriptionURL).catch(err => {
-      Alert.alert('Erreur', "Impossible d'ouvrir le lien: \n"+ inscriptionURL);
-    });
+    Alert.alert(
+      'Site d\'inscription',
+      `Vous allez être redirigé vers le site ${inscriptionURL}. Souhaitez-vous continuer ?`,
+      [
+        {
+          text: 'Annuler',
+          style: 'cancel'
+        },
+        { 
+          text: 'OK',
+          onPress: () => {
+            Linking.openURL(inscriptionURL).catch(err => {
+              Alert.alert('Erreur', "Impossible d'ouvrir le lien: \n" + inscriptionURL);
+            });
+          }
+        }
+      ]
+    );
   };
 
   const getButtonStyle = () => {
@@ -252,7 +265,7 @@ const FormationScreen = ({ route, navigation }) => {
            <TouchableOpacity 
              style={getButtonStyle()}
              onPress={handleButtonPress}
-             disabled={inscriptionStatus === "en attente" || inscriptionStatus === "Rejetée"}
+            //  disabled={inscriptionStatus === "en attente"}
            >
              <Text style={[
                styles.signUpButtonText, 

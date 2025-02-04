@@ -241,9 +241,9 @@ const RechercheFormationsScreen = (props, { route }) => {
   const [monthOptions, setMonthOptions] = useState([
     "2025-01",
     "2025-02", 
+    "2025-03",
     "2025-04",
     "2025-05",
-    "2025-03",
     "2025-06",
     "2025-07",
     "2025-08",
@@ -301,6 +301,7 @@ const RechercheFormationsScreen = (props, { route }) => {
       setLieuOptions(parameters.lieuOptions);
       setRegionOptions(parameters.regionOptions);
       setAnneeOptions(parameters.anneeOptions);
+      setMonthOptions(parameters.monthOptions);
       // TBD: monthOptions
       // console.log(categoryOptions)
       // const [lieuOptions, setLieuOptions] = useState([]);
@@ -570,8 +571,15 @@ const applyFilters = (tab) => {
   if (activeFilters['Année conseillée']) {
     filtered = filtered.filter(f => f.anneeConseillee === activeFilters['Année conseillée']);
   }
-  if (activeFilters.Date) {    
-    filtered = filtered.filter(f => f.date.includes(activeFilters.Date) || f.date_de_fin.includes(activeFilters.Date));
+  if (activeFilters.Date) {
+    const [filterYear, filterMonth] = activeFilters.Date.split('-');
+    filtered = filtered.filter(f => {
+      const startDate = new Date(f.date);
+      const endDate = new Date(f.date_de_fin);
+      const filterDate = new Date(`${filterYear}-${filterMonth}-01`);
+      
+      return filterDate >= startDate && filterDate <= endDate;
+    });
   }
 
   if (tab === "J'y suis inscrit") {
@@ -590,7 +598,6 @@ const applyFilters = (tab) => {
   }
     setFilteredFormations(filtered);
 };
-
 const FilterTabs = ({ 
   filters, 
   activeFilters, 
@@ -659,29 +666,9 @@ const FilterTabs = ({
           />
         </TouchableOpacity>
 
-        <ScrollView 
-          horizontal 
-          showsHorizontalScrollIndicator={false}
-          contentContainerStyle={styles.tabsContainer}
-        >
-          {filterTypes.map((filterType) => (
-            <TouchableOpacity
-              key={filterType}
-              style={[
-                styles.tab,
-                activeTab === filterType && styles.activeTab
-              ]}
-              onPress={() => setActiveTab(filterType)}
-            >
-              <Text style={[
-                styles.tabText,
-                activeTab === filterType && styles.activeTabText
-              ]}>
-                {filterType}
-              </Text>
-            </TouchableOpacity>
-          ))}
-        </ScrollView>
+        <View style={styles.tabContainer}>
+          <Text style={styles.tabText}>{activeTab}</Text>
+        </View>
 
         <TouchableOpacity 
           onPress={() => navigateTab(1)}
@@ -709,7 +696,6 @@ const FilterTabs = ({
     </View>
   );
 };
-
   const renderFormationItem = ({ item }) => (
     <TouchableOpacity 
       style={styles.formationItem} 
@@ -1150,17 +1136,7 @@ const styles = StyleSheet.create({
     overflow: 'hidden',
     marginBottom: 10,
   },
-  header: {
-    borderBottomWidth: 1,
-    borderBottomColor: '#e0e0e0',
-  },
-  header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    borderBottomWidth: 1,
-    borderBottomColor: '#E5E7EB',
-    paddingVertical: 8,
-  },
+
 
   tabsContainer: {
     flexGrow: 1,
@@ -1177,11 +1153,7 @@ const styles = StyleSheet.create({
     borderBottomWidth: 2,
     borderBottomColor: '#1a53ff',
   },
-  tabText: {
-    color: '#6B7280',
-    fontSize: 14,
-    fontWeight: '500',
-  },
+
   activeTabText: {
     color: '#1a53ff',
     fontWeight: '600',
@@ -1228,10 +1200,72 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: '500',
   },
+
+  // header: {
+  //   borderBottomWidth: 1,
+  //   borderBottomColor: '#e0e0e0',
+  // },
+  // header: {
+  //   flexDirection: 'row',
+  //   alignItems: 'center',
+  //   borderBottomWidth: 1,
+  //   borderBottomColor: '#E5E7EB',
+  //   paddingVertical: 8,
+  // },
+  header: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    borderBottomWidth: 1,
+    borderBottomColor: '#E5E7EB',
+    paddingVertical: 0,
+    paddingHorizontal: 8,
+  },
+
+  tabContainer: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  // tabText: {
+  //   color: '#6B7280',
+  //   fontSize: 14,
+  //   fontWeight: '500',
+  // },
+  tabText: {
+    color: '#1a53ff',
+    fontSize: 16,
+    fontWeight: '600',
+  },
+  // arrowButton: {
+  //   padding: 8,
+  //   justifyContent: 'center',
+  //   alignItems: 'center',
+  // },
   arrowButton: {
     padding: 8,
+    width: 40,
     justifyContent: 'center',
     alignItems: 'center',
+  },
+  datePickerContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginVertical: 10,
+  },
+  dateDisplayButton: {
+    backgroundColor: 'white',
+    paddingVertical: 10,
+    paddingHorizontal: 20,
+    borderRadius: 20,
+    borderWidth: 1,
+    borderColor: '#1a53ff',
+  },
+  dateDisplayText: {
+    color: '#1a53ff',
+    fontSize: 16,
+    fontWeight: '500',
   },
 });
 
