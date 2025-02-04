@@ -12,7 +12,8 @@ const FormationScreen = ({ route, navigation }) => {
   const [hasConsent, setHasConsent] = useState(false);
   const [isDateValid, setIsDateValid] = useState(true);
   const [pdfUrl, setPdfUrl] = useState(null);
-
+  const [inscriptionFormat, setInscriptionFormat] = useState(null);
+  const [inscriptionURL, setinscriptionURL] = useState('');
   useEffect(() => {
     navigation.setOptions({
       headerShown: true,
@@ -44,6 +45,10 @@ const FormationScreen = ({ route, navigation }) => {
       console.log(data)
       if (data) {
         setFormation(data);
+        setInscriptionFormat(data.inscriptionStatus)
+        if (data.inscriptionStatus === "Externe"){
+          setinscriptionURL(data.inscriptionURL)
+        }
         checkDateValidity(data.date);
       } else {
         Alert.alert("Erreur", "Formation non trouvée");
@@ -163,8 +168,9 @@ const FormationScreen = ({ route, navigation }) => {
   };
 
   const handleExternalLink = () => {
-    Linking.openURL('https://www.google.com').catch(err => {
-      Alert.alert('Erreur', "Impossible d'ouvrir le lien. Info developpeur: "+ err);
+    
+    Linking.openURL(inscriptionURL).catch(err => {
+      Alert.alert('Erreur', "Impossible d'ouvrir le lien: \n"+ inscriptionURL);
     });
   };
 
@@ -174,27 +180,35 @@ const FormationScreen = ({ route, navigation }) => {
   };
 
   const getButtonText = () => {
-    switch (inscriptionStatus) {
-      case "en attente": return "Inscription en attente";
-      case "Rejetée": return "Inscription rejetée";
-      case "Validée": return "Se désinscrire";
-      case "Externe": return "Site d'inscriptions"
-      default: return "S'inscrire";
-    }
+    if (inscriptionFormat !== "Externe"){
+       switch (inscriptionStatus) {
+          case "en attente": return "Inscription en attente";
+          case "Rejetée": return "Inscription rejetée";
+          case "Validée": return "Se désinscrire";
+          // case "Externe": return "Site d'inscriptions"
+          default: return "S'inscrire";
+      }
+    } else { return "S\'inscrire en ligne" }
+   
   };
 
   const handleButtonPress = () => {
     console.log('inscriptionStatus: ', inscriptionStatus)
     console.log('hasConsent: ', hasConsent)
-    if (inscriptionStatus === "Validée") {
-      
+    console.log('inscription Format: ', inscriptionFormat)
+
+    if (inscriptionFormat=== "Externe"){
+      handleExternalLink() 
+    } else if (inscriptionStatus === "Validée") {
       handleUnsubscribe();
-    } else if (!inscriptionStatus ||inscriptionStatus=== "Rejetée" ||  inscriptionStatus === "désinscrit") {
+    } else if (!inscriptionStatus || inscriptionStatus=== "Rejetée" ||  inscriptionStatus === "désinscrit") {
       handleSignUp();
       
-    } else if (inscriptionStatus=== "Externe")
-      handleExternalLink()
+    } 
   };
+
+
+
   const handleDelete = () => {
     let toggleAction = (formation.active) ? "Désactiver" : "Réactiver";
     Alert.alert(
@@ -234,7 +248,7 @@ const FormationScreen = ({ route, navigation }) => {
 
       {(role.isAdmin === true) ? (
          <View style={styles.buttonContainer}>
-         {formation.active && (
+         {/* {formation.active && ( */}
            <TouchableOpacity 
              style={getButtonStyle()}
              onPress={handleButtonPress}
@@ -247,7 +261,7 @@ const FormationScreen = ({ route, navigation }) => {
                {getButtonText()}
              </Text>
            </TouchableOpacity>
-         )}
+         {/* )} */}
          {role.isAdmin === true && (
            <>
              <TouchableOpacity 

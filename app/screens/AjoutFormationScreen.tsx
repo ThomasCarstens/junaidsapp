@@ -525,7 +525,7 @@ const uploadImageAsync = async (): Promise<any> => {
           affiliationDIU: formData.affiliationDIU === 'Autre' ? formData.autreAffiliationDIU : formData.affiliationDIU,
           image: imageUrl || formData.image,
           pdf: pdfUrl || formData.pdf,
-          inscriptionURL: formData.inscriptionURL || null,
+          inscriptionURL: (!formData.inscriptionURL.startsWith("http://") && !formData.inscriptionURL.startsWith("https://"))? "http://" + formData.inscriptionURL: formData.inscriptionURL || null,
           inscriptionStatus: formData.inscriptionStatus
         };
 
@@ -558,11 +558,11 @@ const uploadImageAsync = async (): Promise<any> => {
         keyboardType={keyboardType}
         multiline={multiline}
       />
-      {errors[name] && <Text style={styles.errorText}>{errors[name]}</Text>}
+      {errors[name] && <Text style={styles.errorSummaryText}>{errors[name]}</Text>}
     </View>
   );
 
-  const requiredFields = ['title', 'date', 'date_de_fin', 'heureDebut', 'heureFin', 'lieu', 'nature', 'anneeConseillee', 'tarifEtudiant', 'tarifMedecin', 'domaine', 'affiliationDIU'];
+  const requiredFields = ['title', 'date', 'date_de_fin', 'heureDebut', 'heureFin', 'lieu', 'nature', 'anneeConseillee', 'tarifEtudiant', 'tarifMedecin', 'domaine', 'affiliationDIU', 'inscriptionStatus'];
 
   return (
     <ScrollView style={styles.container}>
@@ -701,12 +701,12 @@ const uploadImageAsync = async (): Promise<any> => {
         onValueChange={(itemValue) => handleInputChange('inscriptionStatus', itemValue)}
       >
         <Picker.Item label="L'inscription est gérée par" value="" />
-          <Picker.Item key={1} label={"L'app Esculappl"} value={"en attente"} />
+          <Picker.Item key={1} label={"L'app Esculappl"} value={"Interne"} />
           <Picker.Item key={2} label={"Un site dédié"} value={"Externe"} />
         {/* <Picker.Item label="Autre" value="Autre" /> */}
       </Picker>
       {errors.inscriptionStatus && <Text style={styles.errorText}>{errors.inscriptionStatus}</Text>}
-      {formData.inscriptionStatus === 'Externe' && renderInput('Spécifier l\'URL de la page Inscriptions dédiée.', 'inscriptionURL', 'Spécifier l\'URL de la page Inscriptions dédiée.')}
+      {formData.inscriptionStatus === 'Externe' && renderInput('Spécifier l\'URL de la page Inscriptions dédiée.*', 'inscriptionURL', 'Spécifier l\'URL de la page Inscriptions dédiée.')}
 
 
       
@@ -790,18 +790,23 @@ const uploadImageAsync = async (): Promise<any> => {
           <Text style={styles.text}>Cliquer pour choisir un PDF</Text>
         )} 
       </TouchableOpacity> */}
+      {Object.keys(errors).length > 0 && (
+      <View style={styles.errorSummary}>
+        <Text style={styles.errorSummaryText}>
+          Veuillez corriger les erreurs ci-dessus avant de soumettre le formulaire.
+        </Text>
+      </View>
+    )}
+
+    <View style={styles.buttonContainer}>
       <TouchableOpacity style={styles.button} onPress={handleSubmit}>
         <Text style={styles.buttonText}>
           {route.params?.formationId ? "Modifier la formation" : "Ajouter la formation"}
         </Text>
       </TouchableOpacity>
-
-      {Object.keys(errors).length > 0 && (
-        <Text style={styles.errorSummary}>
-          Veuillez corriger les erreurs ci-dessus avant de soumettre le formulaire.
-        </Text>
-      )}
+    </View>
     </ScrollView>
+
   );
 };
 
@@ -810,6 +815,8 @@ const styles = StyleSheet.create({
     flex: 1,
     padding: 20,
     backgroundColor: '#fff',
+    // marginBottom: 100,
+
   },
   title: {
     fontSize: 24,
@@ -832,6 +839,12 @@ const styles = StyleSheet.create({
   },
   inputError: {
     borderColor: 'red',
+  },
+  errorText: {
+    color: 'red',
+  },
+  errorSummary: {
+    color: 'red',
   },
   multilineInput: {
     height: 100,
@@ -885,6 +898,43 @@ const styles = StyleSheet.create({
     marginTop: 10,
     color: 'green',
     textAlign: 'center',
+  },
+  errorText: {
+    color: '#dc2626', // Tailwind red-600
+    fontSize: 14,
+    marginTop: 2,
+    marginBottom: 8,
+    paddingHorizontal: 4,
+  },
+  errorSummary: {
+    backgroundColor: '#fee2e2', // Tailwind red-100
+    borderColor: '#ef4444', // Tailwind red-500
+    borderWidth: 1,
+    borderRadius: 8,
+    padding: 16,
+    marginVertical: 20,
+    marginHorizontal: 4,
+  },
+  errorSummaryText: {
+    color: '#991b1b', // Tailwind red-800
+    fontSize: 16,
+    textAlign: 'center',
+    lineHeight: 24,
+  },
+  buttonContainer: {
+    paddingHorizontal: 16,
+    paddingVertical: 24,
+  },
+  button: {
+    backgroundColor: '#1a53ff',
+    padding: 15,
+    borderRadius: 8,
+    alignItems: 'center',
+  },
+  buttonText: {
+    color: '#fff',
+    fontSize: 18,
+    fontWeight: 'bold',
   },
 });
 

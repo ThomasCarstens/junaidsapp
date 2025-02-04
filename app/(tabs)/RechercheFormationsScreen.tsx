@@ -570,23 +570,25 @@ const applyFilters = (tab) => {
   if (activeFilters['Année conseillée']) {
     filtered = filtered.filter(f => f.anneeConseillee === activeFilters['Année conseillée']);
   }
-  if (activeFilters.Date) {
-    console.log('filter date is ', activeFilters.Date)
-    
-    filtered = filtered.filter(f => {
-      // Your date filtering logic
-      // console.log('start: ',f.date)
-      // console.log('end: ',f.date_de_fin)
-      return f.date.includes(activeFilters.Date) || f.date_de_fin.includes(activeFilters.Date)
-      
-      
-      
-
-    });
+  if (activeFilters.Date) {    
+    filtered = filtered.filter(f => f.date.includes(activeFilters.Date) || f.date_de_fin.includes(activeFilters.Date));
   }
 
-  // Rest of your tab filtering logic...
-  setFilteredFormations(filtered);
+  if (tab === "J'y suis inscrit") {
+    filtered = filtered.filter(f => 
+      userDemandes[f.id] && userDemandes[f.id].admin === "Validée"
+    );
+  } else if (tab === 'Passées') {
+    filtered = filtered.filter(f => (new Date(f.date_de_fin) < new Date() && f.active === false));
+  } else if (tab === 'Je propose') {
+    filtered = filtered.filter(f => (f.status === 'propose'));
+  } else if (tab === 'Cachées') {
+    filtered = filtered.filter(f => f.active === false);
+  } else {
+    // 'Visibles' and every other tab must hide the Cachees 
+    filtered = filtered.filter(f => (new Date(f.date) > new Date() && f.active === true) );
+  }
+    setFilteredFormations(filtered);
 };
 
 const FilterTabs = ({ 
