@@ -569,7 +569,7 @@ const applyFilters = (tab) => {
     filtered = filtered.filter(f => f.region === activeFilters.Region);
   }
   if (activeFilters['Année conseillée']) {
-    filtered = filtered.filter(f => f.anneeConseillee === activeFilters['Année conseillée']);
+    filtered = filtered.filter(f => f.anneeConseillee.includes(activeFilters['Année conseillée']));
   }
   if (activeFilters.Date) {
     const [filterYear, filterMonth] = activeFilters.Date.split('-');

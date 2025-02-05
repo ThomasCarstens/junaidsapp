@@ -30,7 +30,7 @@ const AjoutFormationScreen = ({ navigation, route }) => {
     heureDebut: new Date(),
     heureFin: new Date(),
     nature: '',
-    anneeConseillee: '',
+    anneeConseillee: [], // Changed to array to store multiple selections
     tarifEtudiant: '',
     tarifMedecin: '',
     domaine: '',
@@ -449,8 +449,13 @@ const uploadImageAsync = async (): Promise<any> => {
       newErrors.autreNature = 'Veuillez spécifier la nature de la formation';
       isValid = false;
     }
-    if (formData.anneeConseillee === 'Autre' && !formData.autreAnneeConseillee) {
-      newErrors.autreAnneeConseillee = 'Veuillez spécifier l\'année conseillée';
+    // Validate anneeConseillee (must select at least one)
+    if (!formData.anneeConseillee || formData.anneeConseillee.length === 0) {
+      newErrors.anneeConseillee = 'Veuillez sélectionner au moins une année d\'études';
+      isValid = false;
+    }
+  if (formData.anneeConseillee.includes('Autre') && !formData.autreAnneeConseillee) {
+      newErrors.autreAnneeConseillee = 'Veuillez spécifier l\'option Autre d\'année d\'études';
       isValid = false;
     }
     if (formData.affiliationDIU === 'Autre' && !formData.autreAffiliationDIU) {
@@ -521,11 +526,12 @@ const uploadImageAsync = async (): Promise<any> => {
           lieu: formData.lieu === 'Autre' ? formData.autreLieu : formData.lieu,
           region: formData.region === 'Autre' ? formData.autreRegion : formData.region,
           nature: formData.nature === 'Autre' ? formData.autreNature : formData.nature,
-          anneeConseillee: formData.anneeConseillee === 'Autre' ? formData.autreAnneeConseillee : formData.anneeConseillee,
+          anneeConseillee: formData.anneeConseillee.includes('Autre') ? formData.anneeConseillee.concat([formData.autreAnneeConseillee]) : 
+          formData.autreAnneeConseillee ? formData.anneeConseillee.filter(e => e !== formData.autreAnneeConseillee) : formData.anneeConseillee,
           affiliationDIU: formData.affiliationDIU === 'Autre' ? formData.autreAffiliationDIU : formData.affiliationDIU,
           image: imageUrl || formData.image,
           pdf: pdfUrl || formData.pdf,
-          inscriptionURL: (!formData.inscriptionURL.startsWith("http://") && !formData.inscriptionURL.startsWith("https://"))? "http://" + formData.inscriptionURL: formData.inscriptionURL || null,
+          inscriptionURL: formData.inscriptionURL && (!formData.inscriptionURL.startsWith("http://") && !formData.inscriptionURL.startsWith("https://"))? "http://" + formData.inscriptionURL: formData.inscriptionURL || null,
           inscriptionStatus: formData.inscriptionStatus
         };
 
@@ -563,6 +569,73 @@ const uploadImageAsync = async (): Promise<any> => {
   );
 
   const requiredFields = ['title', 'date', 'date_de_fin', 'heureDebut', 'heureFin', 'lieu', 'nature', 'anneeConseillee', 'tarifEtudiant', 'tarifMedecin', 'domaine', 'affiliationDIU', 'inscriptionStatus'];
+  
+  const handleAnneeSelection = (annee) => {
+    setFormData(prevState => {
+      // Ensure we're working with an array
+      const currentSelection = Array.isArray(prevState.anneeConseillee) 
+        ? [...prevState.anneeConseillee]
+        : prevState.anneeConseillee ? [prevState.anneeConseillee] : [];
+      
+      const index = currentSelection.indexOf(annee);
+      
+      if (index === -1) {
+        // Add the year if not already selected
+        currentSelection.push(annee);
+      } else {
+        // Remove the year if already selected
+        currentSelection.splice(index, 1);
+      }
+      
+      // Clear any errors when user makes a selection
+      if (errors.anneeConseillee) {
+        setErrors(prev => ({
+          ...prev,
+          anneeConseillee: null
+        }));
+      }
+
+      console.log('Previous selection:', prevState.anneeConseillee);
+      console.log('New selection:', currentSelection);
+      
+      return {
+        ...prevState,
+        anneeConseillee: currentSelection
+      };
+    });
+  };
+
+  const CheckboxOption = ({ label, checked, onPress }) => (
+    <TouchableOpacity 
+      style={styles.checkboxContainer} 
+      onPress={onPress}
+    >
+      <View style={[styles.checkbox, checked && styles.checkboxChecked]}>
+        {checked && <Text style={styles.checkmark}>✓</Text>}
+      </View>
+      <Text style={styles.checkboxLabel}>{label}</Text>
+    </TouchableOpacity>
+  );
+
+
+  // Replace the anneeConseillee Picker with checkboxes in the render section
+  const renderAnneeConseillee = () => (
+    <View style={styles.anneeContainer}>
+      {/* <Text style={styles.label}>Année d'études conseillée *</Text> */}
+      {anneeOptions.map((annee) => (
+        <CheckboxOption
+          key={annee}
+          label={annee}
+          checked={formData.anneeConseillee?.includes(annee)}
+          onPress={() => handleAnneeSelection(annee)}
+        />
+      ))}
+      {errors.anneeConseillee && (
+        <Text style={styles.errorText}>{errors.anneeConseillee}</Text>
+      )}
+    </View>
+  );
+
 
   return (
     <ScrollView style={styles.container}>
@@ -680,7 +753,7 @@ const uploadImageAsync = async (): Promise<any> => {
 
 
       <Text style={styles.label}>Année d'études conseillée *</Text>
-      <Picker
+      {/* <Picker
         selectedValue={formData.anneeConseillee}
         style={[styles.picker, errors.anneeConseillee && styles.inputError]}
         onValueChange={(itemValue) => handleInputChange('anneeConseillee', itemValue)}
@@ -689,10 +762,10 @@ const uploadImageAsync = async (): Promise<any> => {
         {anneeOptions.map((annee, index) => (
           <Picker.Item key={index} label={annee} value={annee} />
         ))}
-        {/* <Picker.Item label="Autre" value="Autre" /> */}
-      </Picker>
+      </Picker> */}
+      {renderAnneeConseillee()}
       {errors.anneeConseillee && <Text style={styles.errorText}>{errors.anneeConseillee}</Text>}
-      {formData.anneeConseillee === 'Autre' && renderInput('Spécifier l\'année d\'études conseillée', 'autreAnneeConseillee', 'Spécifier l\'année d\'études conseillée')}
+      {formData.anneeConseillee.includes('Autre') && renderInput('Spécifier l\'option Autre', 'autreAnneeConseillee', 'Spécifier l\'option Autre')}
 
       <Text style={styles.label}>Type d'inscription *</Text>
       <Picker
@@ -936,6 +1009,37 @@ const styles = StyleSheet.create({
     fontSize: 18,
     fontWeight: 'bold',
   },
+  anneeContainer: {
+    marginBottom: 15,
+  },
+  checkboxContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginVertical: 5,
+    paddingVertical: 8,
+  },
+  checkbox: {
+    width: 24,
+    height: 24,
+    borderWidth: 2,
+    borderColor: '#1a53ff',
+    borderRadius: 4,
+    marginRight: 10,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  checkboxChecked: {
+    backgroundColor: '#1a53ff',
+  },
+  checkmark: {
+    color: 'white',
+    fontSize: 16,
+    fontWeight: 'bold',
+  },
+  checkboxLabel: {
+    fontSize: 16,
+  },
+  
 });
 
 export default AjoutFormationScreen;
