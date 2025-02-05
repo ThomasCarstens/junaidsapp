@@ -576,9 +576,13 @@ const applyFilters = (tab) => {
     filtered = filtered.filter(f => {
       const startDate = new Date(f.date);
       const endDate = new Date(f.date_de_fin);
-      const filterDate = new Date(`${filterYear}-${filterMonth}-01`);
       
-      return filterDate >= startDate && filterDate <= endDate;
+      // Create date objects that only consider year and month
+      const filterYearMonth = new Date(filterYear, parseInt(filterMonth) - 1); // Months are 0-based
+      const startYearMonth = new Date(startDate.getFullYear(), startDate.getMonth());
+      const endYearMonth = new Date(endDate.getFullYear(), endDate.getMonth());
+      
+      return filterYearMonth >= startYearMonth && filterYearMonth <= endYearMonth;
     });
   }
 

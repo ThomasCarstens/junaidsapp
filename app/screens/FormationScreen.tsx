@@ -345,13 +345,23 @@ const FormationScreen = ({ route, navigation }) => {
       )} */}
 
       <Text style={styles.sectionTitle}>Année conseillée</Text>
-      <Text style={styles.text}>{formation.anneeConseillee}</Text>
+      {Array.isArray(formation.anneeConseillee) ? (
+        <View style={styles.yearsList}>
+          {formation.anneeConseillee.map((year, index) => (
+            <Text key={index} style={styles.yearItem}>
+              • {year}
+            </Text>
+          ))}
+        </View>
+      ) : (
+        <Text style={styles.text}>{formation.anneeConseillee}</Text>
+      )}
             
       <Text style={styles.sectionTitle}>Prérequis</Text>
-      <Text style={styles.text}>{formation.prerequis}</Text>
+      <Text style={styles.text}>{formation.prerequis || "Non spécifié"}</Text>
 
       <Text style={styles.sectionTitle}>À savoir</Text>
-      <Text style={styles.text}>{formation.instructions}</Text>
+      <Text style={styles.text}>{formation.instructions || "Non spécifié"}</Text>
 
       {/* <Image source={ require("../../assets/images/exemple_programme-pdf.jpg") } style={styles.programmeImage} /> */}
 
@@ -579,6 +589,16 @@ const styles = StyleSheet.create({
     width: '100%',
     height: '100%',
     backgroundColor: '#f8f9fa',
+  },
+  yearsList: {
+    paddingLeft: 10,
+    marginTop: 5,
+  },
+  yearItem: {
+    fontSize: 16,
+    color: '#333',
+    marginVertical: 3,
+    lineHeight: 22,
   },
 });
 
