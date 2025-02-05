@@ -259,13 +259,12 @@ const FormationScreen = ({ route, navigation }) => {
       <Text style={styles.title}>{formation.title}</Text>
       <Text style={styles.sectionTitle}>{formation.nature} de {formation.domaine}</Text>
 
-      {(role.isAdmin === true) ? (
+      {/* {(role.isAdmin === true) ? (
          <View style={styles.buttonContainer}>
-         {/* {formation.active && ( */}
+         {formation.active && (
            <TouchableOpacity 
              style={getButtonStyle()}
              onPress={handleButtonPress}
-            //  disabled={inscriptionStatus === "en attente"}
            >
              <Text style={[
                styles.signUpButtonText, 
@@ -274,7 +273,7 @@ const FormationScreen = ({ route, navigation }) => {
                {getButtonText()}
              </Text>
            </TouchableOpacity>
-         {/* )} */}
+          )} 
          {role.isAdmin === true && (
            <>
              <TouchableOpacity 
@@ -292,7 +291,7 @@ const FormationScreen = ({ route, navigation }) => {
            </>
          )}
        </View>
-      ) : (
+      ) : ( */}
         <View style={styles.buttonContainer}>
          {formation.active && (
            <TouchableOpacity 
@@ -312,7 +311,7 @@ const FormationScreen = ({ route, navigation }) => {
 
 
         </View>
-      )}
+      {/* )} */}
 
       <Text style={styles.info}>Date: {new Date(formation.date).toLocaleDateString('fr-FR')} au {new Date(formation.date_de_fin).toLocaleDateString('fr-FR')}</Text>
       <Text style={styles.info}>Horaires: {formation.heureDebut} à {formation.heureFin}</Text>

@@ -68,12 +68,12 @@ const LoginScreen = ({ navigation }) => {
         console.log('Userdata downloaded:', data);
         
         // Tabs According to Roles -- pre-app split.
-        if (data.role.isAdmin === true){
-          navigation.navigate('AdminTabs', { userRoles: data, formateur: true, validated: 'true' });
-        } else {
+        // if (data.role.isAdmin === true){
+        //   navigation.navigate('AdminTabs', { userRoles: data, formateur: true, validated: 'true' });
+        // } else {
           navigation.navigate('UserTabs', { userRoles: data, formateur: true, validated: 'true' });
           
-        }
+        // }
         
       } else {
         // No user data found, log out and show login screen
@@ -138,8 +138,8 @@ const LoginScreen = ({ navigation }) => {
         {/* <Image source={require('../../assets/images/logoEsculappl.png')} style={styles.logo} /> */}
         <Image source={require('../../assets/images/logoEsculappl2.png')} style={styles.logo2} />
         <View style={styles.titleContainer}>
-          <Text style={styles.appTitle}>Esculappl Admin</Text>
-          <Text style={styles.appSlogan}>Backend de l'Appli de Formations de Médecine Manuelle</Text>
+        <Text style={styles.appTitle}>Esculappl</Text>
+        <Text style={styles.appSlogan}>Appli de Formations de Médecine Manuelle</Text>
         </View>
         <Text style={styles.inputLabel}>Email</Text>
         <View style={styles.formContainer}>
