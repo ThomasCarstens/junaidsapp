@@ -1,0 +1,15 @@
+[debug] [2025-02-14T17:25:42.999Z] ----------------------------------------------------------------------
+[debug] [2025-02-14T17:25:43.001Z] Command:       /home/txa/.nvm/versions/node/v18.15.0/bin/node /home/txa/.nvm/versions/node/v18.15.0/bin/firebase deploy
+[debug] [2025-02-14T17:25:43.001Z] CLI Version:   13.24.2
+[debug] [2025-02-14T17:25:43.001Z] Platform:      linux
+[debug] [2025-02-14T17:25:43.001Z] Node Version:  v18.15.0
+[debug] [2025-02-14T17:25:43.002Z] Time:          Fri Feb 14 2025 19:25:43 GMT+0200 (Central Africa Time)
+[debug] [2025-02-14T17:25:43.002Z] ----------------------------------------------------------------------
+[debug] 
+[debug] [2025-02-14T17:25:43.004Z] >>> [apiv2][query] GET https://firebase-public.firebaseio.com/cli.json [none]
+[debug] [2025-02-14T17:25:48.046Z] Error: Timed out.
+    at Timeout._onTimeout (/home/txa/.nvm/versions/node/v18.15.0/lib/node_modules/firebase-tools/lib/utils.js:268:49)
+    at listOnTimeout (node:internal/timers:569:17)
+    at process.processTimers (node:internal/timers:512:7)
+[error] 
+[error] Error: An unexpected error has occurred.

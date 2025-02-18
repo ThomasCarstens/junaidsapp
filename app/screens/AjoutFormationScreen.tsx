@@ -862,14 +862,14 @@ const uploadImageAsync = async (): Promise<any> => {
         ) : (
           <Text style={styles.text}>Cliquer pour choisir un PDF</Text>
         )} 
-      </TouchableOpacity> */}
+      </TouchableOpacity>
       {Object.keys(errors).length > 0 && (
       <View style={styles.errorSummary}>
         <Text style={styles.errorSummaryText}>
           Veuillez corriger les erreurs ci-dessus avant de soumettre le formulaire.
         </Text>
       </View>
-    )}
+    )} */}
 
     <View style={styles.buttonContainer}>
       <TouchableOpacity style={styles.button} onPress={handleSubmit}>
