@@ -72,7 +72,7 @@ const SignupScreen = ({ navigation }) => {
         keyboardShouldPersistTaps="handled"
       >
         <Image
-          source={require('../../assets/images/logoEsculappl.png')}
+          source={require('../../assets/images/logo_placeholder.png')}
           style={styles.logo}
         />
         <Text style={styles.title}>Esculappl</Text>

@@ -77,7 +77,7 @@ const sampleEvents = [
     time: '4:30 PM',
     date: 'May 28th',
     distance: '1.2km away',
-    image: 'https://images.unsplash.com/photo-1520637836862-4d197d17c13a?w=400&h=600&fit=crop',
+    image: 'https://images.unsplash.com/photo-1441974231531-c6227db76b6e?w=400&h=600&fit=crop',
     details: {
       location: 'Sutro Baths Ruins, San Francisco',
       fullDate: 'May 28th, 4:30 PM',
@@ -539,7 +539,7 @@ const styles = StyleSheet.create({
   },
   header: {
     paddingHorizontal: 20,
-    paddingTop: 25,
+    paddingTop: 35,
   },
   headerTop: {
     flexDirection: 'row',
