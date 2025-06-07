@@ -10,12 +10,13 @@ import Ionicons from '@expo/vector-icons/Ionicons'; //https://ionic.io/ionicons/
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 // Import your screen components
+import HomeScreen from './(tabs)/HomeScreen';
+
 import LoginScreen from './screens/LoginScreen';
 import SignupScreen from './screens/SignupScreen';
 import PasswordResetScreen from './screens/PasswordResetScreen';
 import BackgroundInfoScreen from './screens/BackgroundInfoScreen';
 import InscriptionScreen from './(tabs)/InscriptionScreen';
-import HomeScreen from './(tabs)/HomeScreen';
 import NotifsScreen from './(tabs)/NotifsScreen';
 import AjoutFormationScreen from './screens/AjoutFormationScreen';
 
@@ -31,6 +32,10 @@ import AccountDeletionScreen from './screens/AccountDeletionScreen';
 // import HomeScreen from './(tabs)';
 import SchedulesScreen from './(tabs)/SchedulesScreen';
 import RechercheFormationsScreen from './(tabs)/HomeScreen';
+import EventScreen from './screens/EventScreen';
+import ScheduleNewEvent from './screens/ScheduleEventScreen';
+import ScheduleEvent from './screens/ScheduleEventScreen';
+import ProfileScreen from './screens/ProfileScreen';
 
 // import ProfilScreen from './(tabs)/ProfilScreen';
 // import DemandesFormationsScreen from './(tabs)/DemandesFormationsScreen';
@@ -153,28 +158,30 @@ function App() {
     return (
       <Tab.Navigator screenOptions={({ route }) => ({
         tabBarStyle:  {
-          backgroundColor: '#1a53ff',
+          backgroundColor: 'white',
       },
         tabBarIcon: ({ focused, color, size }) => {
           let iconName;
   
           if (route.name === 'HomeScreen') {
-            iconName = focused ? 'search' : 'search';
+            iconName = focused ? 'albums' : 'albums';
           } else if (route.name === 'Notifications') {
-            iconName = focused ? 'notifications' : 'notifications';
+            iconName = focused ? 'grid' : 'grid';
           } else if (route.name === 'Schedules') {
-            iconName = focused ? 'information-circle-outline' : 'information-circle-outline';
+            iconName = focused ? 'time' : 'time';
+          } else if (route.name === 'Messages') {
+            iconName = focused ? 'chatbubble-ellipses' : 'chatbubble-ellipses';
           }
           // You can return any component that you like here!
           return <Ionicons name={iconName} size={size} color={color} />;
         },
-        tabBarActiveTintColor: 'white',
-        tabBarInactiveTintColor: 'black',
+        tabBarActiveTintColor: 'black',
+        tabBarInactiveTintColor: 'gray',
       })}>
         <Tab.Screen name="HomeScreen" component={HomeScreen} initialParams={{spoofLoggedIn: true, spoofFormateur: false, spoofAdmin: false, spoofValidated: true}}/>
         <Tab.Screen name="Notifications" component={NotifsScreen} initialParams={{"gameFileContext": gameFileContext}}/>
         <Tab.Screen name="Schedules" component={SchedulesScreen} initialParams={{"gameFileContext": gameFileContext}}/>
-        {/* <Tab.Screen name="Messages" component={MessagesScreen} initialParams={{"gameFileContext": gameFileContext}}/> */}
+        <Tab.Screen name="Messages" component={UnderConstructionScreen} initialParams={{"gameFileContext": gameFileContext}}/>
       </Tab.Navigator>
     );
   }
@@ -251,6 +258,9 @@ function App() {
   return (
     <NavigationContainer independent={true}>
       <Stack.Navigator>
+        {/* tabs if ETUDIANT */}
+        <Stack.Screen name="UserTabs" component={UserTabs} options={{ headerShown: false }}  />
+
 
         <Stack.Screen name="Login"          component={LoginScreen} options={{headerShown: false}} initialParams={{"gameFileContext": gameFileContext}}  />
         <Stack.Screen name="Signup"         component={SignupScreen} />
@@ -260,13 +270,17 @@ function App() {
         <Stack.Screen name="RGPD" component={RGPDScreen} />
         <Stack.Screen name="NotifsScreenSkeleton" component={NotifsScreenSkeleton} />
         
+        <Stack.Screen name="Profile" component={ProfileScreen} />
+
         <Stack.Screen name="NotificationExplanation" component={NotificationExplanationScreen} />
         <Stack.Screen name="AccountDeletion" component={AccountDeletionScreen} />
 
         {/* <Stack.Screen name="HomeScreen" component={HomeScreen} initialParams={{spoofLoggedIn: true, spoofFormateur: false, spoofAdmin: false, spoofValidated: true}}/>
         <Stack.Screen name="Notifications" component={NotifsScreen} initialParams={{"gameFileContext": gameFileContext}}/>
         <Stack.Screen name="Schedules" component={SchedulesScreen} initialParams={{"gameFileContext": gameFileContext}}/> */}
-        
+        <Stack.Screen name="Event"       component={EventScreen} />
+        <Stack.Screen name="ScheduleEvent"       component={ScheduleEvent} />
+
         <Stack.Screen name="Formation"       component={FormationScreen} />
         <Stack.Screen name="RechercheFormations"  component={HomeScreen} options={{ headerShown: true, headerBackTitleVisible: true }}/>
         <Stack.Screen name="InscriptionFormation" component={InscriptionFormationScreen} />
@@ -281,8 +295,7 @@ function App() {
         {/* tabs if NEW */}
         {/* <Stack.Screen name="NewUserTabs" component={NewUserTabs} options={{ headerShown: false }} /> */}
 
-        {/* tabs if ETUDIANT */}
-        <Stack.Screen name="UserTabs" component={UserTabs} options={{ headerShown: false }}  />
+
 
         {/* tabs if FORMATEUR */}
         {/* <Stack.Screen name="FormateurTabs" component={FormateurTabs} options={{ headerShown: false }}  /> */}

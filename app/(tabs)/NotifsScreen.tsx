@@ -1,273 +1,311 @@
-import React, { useState, useEffect } from 'react';
-import { View, Text, FlatList, TouchableOpacity, StyleSheet, Switch, Animated, ScrollView } from 'react-native';
-import { ref as ref_d, onValue, update } from 'firebase/database';
-import { database, auth } from '../../firebase';
-import { useNavigation } from '@react-navigation/native';
-import { Ionicons } from '@expo/vector-icons';
-import AsyncStorage from '@react-native-async-storage/async-storage';
+import React, { useState } from 'react';
+import {
+  View,
+  Text,
+  StyleSheet,
+  TouchableOpacity,
+  ScrollView,
+  SafeAreaView,
+  StatusBar,
+  Image,
+} from 'react-native';
 
-const NotificationList = ({ isAdmin, isFormateur }) => {
-  const [notifications, setNotifications] = useState([]);
-  const [isSubscribed, setIsSubscribed] = useState(true);
-  const [showFilters, setShowFilters] = useState(false);
-  // const [id, setId] = useState('');
-  const filterHeight = useState(new Animated.Value(0))[0];
+const NotifsScreen = () => {
+  const [activeTab, setActiveTab] = useState('All');
 
-  const navigation = useNavigation();
-
-  useEffect(() => {
-    const userId = auth.currentUser?.uid;
-    console.log(userId);
-    const notificationsRef = ref_d(database, '/notification-panel/');
-    
-    const unsubscribe = onValue(notificationsRef, (snapshot) => {
-      const data = snapshot.val();
-      if (data) {
-        const filteredNotifications = Object.entries(data)
-          .filter(([_, notification]) => {
-            console.log(notification);
-            return notification.received && notification.received[userId];
-          })
-          .map(([id, notification]) => ({
-            id,
-
-            ...notification,
-            // formationId: notification.body.match(/\d+/)?.[0] || null,
-            formationId: notification.id,
-          }))
-          .sort((a, b) => b.timestamp - a.timestamp);
-        console.log(filteredNotifications)
-        setNotifications(filteredNotifications);
-      }
-    });
-
-    // Set up the navigation options
-
-    
-    navigation.setOptions({
-      headerShown: true,
-      title: 'Mes notifications',
-      headerStyle: {
-        backgroundColor: '#1a53ff',
-      },
-      headerTintColor: '#fff',
-      headerTitleStyle: {
-        fontWeight: 'bold',
-      },
-      headerRight: () => (
-        <TouchableOpacity onPress={()=>handleLogout()} style={styles.logoutButton}>
-          <Text style={styles.logoutButtonText}>Se déconnecter</Text>
-        </TouchableOpacity>
-      ),
-    });
-
-    return () => unsubscribe();
-  }, [navigation]);
-
-  const handleLogout = async () => {
-    try {
-      await auth.signOut();
-      await AsyncStorage.removeItem('userUid');
-      navigation.navigate('Login');
-    } catch (error) {
-      console.error('Error logging out:', error);
+  const notifications = [
+    {
+      id: 1,
+      type: 'join',
+      user: 'Tommy H.',
+      additionalInfo: 'and 2 others',
+      action: 'Joined the backpackers',
+      time: '2h ago',
+      avatar: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=50&h=50&fit=crop&crop=face',
+      category: 'update'
+    },
+    {
+      id: 2,
+      type: 'request',
+      user: 'Sarah J.',
+      action: 'requests to join',
+      details: 'for tennis match',
+      time: '4h ago',
+      avatar: 'https://images.unsplash.com/photo-1494790108755-2616b612b786?w=50&h=50&fit=crop&crop=face',
+      category: 'request',
+      hasActions: true
+    },
+    {
+      id: 3,
+      type: 'invite',
+      user: 'Riya Sharma',
+      action: 'wants to join your event',
+      details: 'Weekend Hike to Savandurga',
+      time: '4h ago',
+      avatar: 'https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=50&h=50&fit=crop&crop=face',
+      category: 'request',
+      hasActions: true
+    },
+    {
+      id: 4,
+      type: 'success',
+      user: 'Yayy',
+      action: 'Pool Bash 2025 successfully completed',
+      time: '1d ago',
+      avatar: 'https://images.unsplash.com/photo-1530103862676-de8c9debad1d?w=50&h=50&fit=crop&crop=face',
+      category: 'thisWeek'
+    },
+    {
+      id: 5,
+      type: 'success',
+      user: 'Yayy',
+      action: 'walk at marine drive successfully completed',
+      time: '2d ago',
+      avatar: 'https://images.unsplash.com/photo-1530103862676-de8c9debad1d?w=50&h=50&fit=crop&crop=face',
+      category: 'thisWeek'
+    },
+    {
+      id: 6,
+      type: 'accepted',
+      user: 'Tommy H.',
+      action: 'accepted to join',
+      details: 'for walk at marine drive',
+      time: '2d ago',
+      avatar: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=50&h=50&fit=crop&crop=face',
+      category: 'thisWeek'
     }
-  };
+  ];
 
+  const tabs = ['All', 'Requests', 'Updates'];
 
-  const handleNotificationPress = (item) => {
-    console.log(item)
-    if (item.data) {
-      navigation.navigate('Formation', {formationId: item.data, role: { isAdmin, isFormateur }});
-    // } else if (item.id) {
-    //   navigation.navigate('Formation', {formationId: item.id, role: { isAdmin, isFormateur }});
+  const filterNotifications = () => {
+    if (activeTab === 'Requests') {
+      return notifications.filter(notif => notif.category === 'request');
     }
-
+    if (activeTab === 'Updates') {
+      return notifications.filter(notif => notif.category === 'update' || notif.category === 'thisWeek');
+    }
+    return notifications;
   };
 
-  const toggleFilters = () => {
-    setShowFilters(!showFilters);
-    Animated.timing(filterHeight, {
-      toValue: showFilters ? 0 : 300,
-      duration: 300,
-      useNativeDriver: false,
-    }).start();
-  };
-  
-  const toggleSubscription = () => {
-    setIsSubscribed(!isSubscribed);
-    // Here you would typically update the user's subscription status in the database
-    // For example:
-    // const userId = auth.currentUser?.uid;
-    // update(ref_d(database, `users/${userId}`), { isSubscribed: !isSubscribed });
-  };
-
-  const renderNotification = ({ item }) => (
-    <TouchableOpacity
-      style={styles.notificationItem}
-      onPress={() => handleNotificationPress(item)}
-    >
-      <Ionicons 
-        name={!item.body.includes('inscription') ? 'school-outline' : 'clipboard-outline'} 
-        size={24} 
-        color="#007AFF" 
-        style={styles.icon} 
-      />
-      <View style={styles.notificationContent}>
-      <View style={styles.timeContainer}>
-          <Text style={styles.notificationTime}>
-            {new Date(item.timestamp).toLocaleString()}
-          </Text>
+  const renderNotificationItem = (notification) => {
+    return (
+      <View key={notification.id} style={styles.notificationItem}>
+        <View style={styles.avatarContainer}>
+          <View style={styles.avatarPlaceholder}>
+            <Text style={styles.avatarText}>
+              {notification.user.charAt(0)}
+            </Text>
+          </View>
         </View>
-        <Text style={styles.notificationTitle}>{item.title}</Text>
-        <Text style={styles.notificationBody}>{item.body}</Text>
         
+        <View style={styles.notificationContent}>
+          <View style={styles.notificationHeader}>
+            <Text style={styles.notificationText}>
+              <Text style={styles.userName}>{notification.user}</Text>
+              {notification.additionalInfo && (
+                <Text style={styles.additionalInfo}> {notification.additionalInfo}</Text>
+              )}
+            </Text>
+            <Text style={styles.timeText}>{notification.time}</Text>
+          </View>
+          
+          <Text style={styles.actionText}>
+            {notification.action}
+            {notification.details && (
+              <Text style={styles.detailsText}> {notification.details}</Text>
+            )}
+          </Text>
+          
+          {notification.hasActions && (
+            <View style={styles.actionButtons}>
+              <TouchableOpacity style={styles.acceptButton}>
+                <Text style={styles.acceptButtonText}>Accept</Text>
+              </TouchableOpacity>
+              <TouchableOpacity style={styles.detailsButton}>
+                <Text style={styles.detailsButtonText}>
+                  {notification.type === 'invite' ? 'Decline' : 'Details'}
+                </Text>
+              </TouchableOpacity>
+            </View>
+          )}
+        </View>
       </View>
-    </TouchableOpacity>
-  );
+    );
+  };
+
+  const renderSection = (title, items) => {
+    if (items.length === 0) return null;
+    
+    return (
+      <View style={styles.section}>
+        {title && <Text style={styles.sectionTitle}>{title}</Text>}
+        {items.map(renderNotificationItem)}
+      </View>
+    );
+  };
+
+  const filteredNotifications = filterNotifications();
+  const recentNotifications = filteredNotifications.filter(n => n.category !== 'thisWeek');
+  const thisWeekNotifications = filteredNotifications.filter(n => n.category === 'thisWeek');
 
   return (
-    <View style={styles.container}>
-
-      {/* <TouchableOpacity style={styles.filterToggleButton } onPress={toggleFilters} >
-        <Text style={styles.filterToggleButtonText}>Paramètres de notifications</Text>
-        <Ionicons name={showFilters ? "chevron-up" : "chevron-down"} size={24} color="white" />
-      </TouchableOpacity> */}
-
-      <Animated.View style={[styles.filtersContainer, { height: filterHeight }]}>
- 
-        <ScrollView>
-        <View style={styles.filterContainer}>
-        <Text style={styles.filterText}>Recevoir des notifications</Text>
-        <Switch
-          value={isSubscribed}
-          onValueChange={toggleSubscription}
-          trackColor={{ false: "#767577", true: "#81b0ff" }}
-          thumbColor={isSubscribed ? "#f5dd4b" : "#f4f3f4"}
-        />
-      </View>
-          
-
-        </ScrollView>
-      </Animated.View>
-
-
+    <SafeAreaView style={styles.container}>
+      <StatusBar barStyle="dark-content" backgroundColor="#fff" />
       
-      <FlatList
-        data={notifications}
-        renderItem={renderNotification}
-        keyExtractor={(item) => item.id}
-        style={styles.listContainer}
-      />
-    </View>
+      {/* Header Tabs */}
+      <View style={styles.tabContainer}>
+        {tabs.map((tab) => (
+          <TouchableOpacity
+            key={tab}
+            style={[styles.tab, activeTab === tab && styles.activeTab]}
+            onPress={() => setActiveTab(tab)}
+          >
+            <Text style={[styles.tabText, activeTab === tab && styles.activeTabText]}>
+              {tab}
+            </Text>
+          </TouchableOpacity>
+        ))}
+      </View>
+
+      {/* Notifications List */}
+      <ScrollView style={styles.scrollContainer} showsVerticalScrollIndicator={false}>
+        {renderSection(null, recentNotifications)}
+        {thisWeekNotifications.length > 0 && renderSection('This week', thisWeekNotifications)}
+      </ScrollView>
+    </SafeAreaView>
   );
 };
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f0f0f0',
+    backgroundColor: '#fff',
   },
-  filterContainer: {
+  tabContainer: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    padding: 16,
-    backgroundColor: 'white',
+    paddingHorizontal: 20,
+    paddingVertical: 15,
     borderBottomWidth: 1,
-    borderBottomColor: '#e0e0e0',
+    borderBottomColor: '#f0f0f0',
   },
-  filterText: {
+  tab: {
+    paddingVertical: 8,
+    paddingHorizontal: 16,
+    marginRight: 30,
+  },
+  activeTab: {
+    borderBottomWidth: 2,
+    borderBottomColor: '#000',
+  },
+  tabText: {
     fontSize: 16,
-    fontWeight: 'bold',
+    color: '#999',
+    fontWeight: '400',
   },
-  listContainer: {
+  activeTabText: {
+    color: '#000',
+    fontWeight: '600',
+  },
+  scrollContainer: {
     flex: 1,
+  },
+  section: {
+    paddingHorizontal: 20,
+  },
+  sectionTitle: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#999',
+    marginTop: 25,
+    marginBottom: 15,
   },
   notificationItem: {
     flexDirection: 'row',
+    paddingVertical: 15,
+    borderBottomWidth: 1,
+    borderBottomColor: '#f8f8f8',
+  },
+  avatarContainer: {
+    marginRight: 12,
+  },
+  avatarPlaceholder: {
+    width: 45,
+    height: 45,
+    borderRadius: 22.5,
+    backgroundColor: '#e0e0e0',
     alignItems: 'center',
-    backgroundColor: 'white',
-    padding: 16,
-    marginTop: 28,
-    marginHorizontal: 50,
-    borderRadius: 8,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.2,
-    shadowRadius: 2,
-    elevation: 2,
+    justifyContent: 'center',
+  },
+  avatarText: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#666',
   },
   notificationContent: {
     flex: 1,
   },
-  notificationTitle: {
-    fontSize: 16,
-    fontWeight: 'bold',
+  notificationHeader: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    justifyContent: 'space-between',
     marginBottom: 4,
   },
-  notificationBody: {
+  notificationText: {
+    flex: 1,
+    fontSize: 15,
+    fontWeight: '600',
+    color: '#000',
+  },
+  userName: {
+    fontWeight: '600',
+    color: '#000',
+  },
+  additionalInfo: {
+    fontWeight: '400',
+    color: '#666',
+  },
+  timeText: {
+    fontSize: 13,
+    color: '#999',
+    marginLeft: 8,
+  },
+  actionText: {
     fontSize: 14,
-    color: '#333',
-    marginBottom: 8,
+    color: '#666',
+    marginBottom: 12,
+    lineHeight: 18,
   },
-  timeContainer: {
+  detailsText: {
+    color: '#000',
+    fontWeight: '500',
+  },
+  actionButtons: {
     flexDirection: 'row',
-    alignItems: 'center',
+    gap: 12,
   },
-  notificationTime: {
-    fontSize: 12,
-    color: '#888',
-    marginLeft: -40,
+  acceptButton: {
+    backgroundColor: '#FFE5E5',
+    paddingHorizontal: 20,
+    paddingVertical: 8,
+    borderRadius: 20,
   },
-  icon: {
-    marginRight: 16,
+  acceptButtonText: {
+    color: '#FF6B6B',
+    fontSize: 14,
+    fontWeight: '600',
   },
-  logoutButton: {
-    marginRight: 10,
+  detailsButton: {
+    backgroundColor: '#f8f8f8',
+    paddingHorizontal: 20,
+    paddingVertical: 8,
+    borderRadius: 20,
   },
-  logoutButtonText: {
-    color: '#fff',
-    fontSize: 16,
-  },
-
-
-  filterToggleButton: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    backgroundColor: '#1a53ff',
-    padding: 10,
-    borderRadius: 5,
-    marginBottom: 10,
-    marginTop:10,
-  },
-  filterToggleButtonText: {
-    color: 'white',
-    fontSize: 16,
-  },
-  
-  filterSection: {
-    marginBottom: 15,
-    paddingHorizontal: 10,
-  },
-  filterTitle: {
-    fontSize: 16,
-    fontWeight: 'bold',
-    marginBottom: 5,
-  },
-  filterButtonsContainer: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-  },
-
-  filterButtonSelected: {
-    backgroundColor: '#1a53ff',
-  },
-
-  filterButtonTextSelected: {
-    color: 'white',
+  detailsButtonText: {
+    color: '#666',
+    fontSize: 14,
+    fontWeight: '600',
   },
 });
 
-export default NotificationList;
+export default NotifsScreen;

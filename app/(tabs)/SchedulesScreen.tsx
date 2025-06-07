@@ -1,273 +1,359 @@
-import React, { useState, useEffect } from 'react';
-import { View, Text, FlatList, TouchableOpacity, StyleSheet, Switch, Animated, ScrollView } from 'react-native';
-import { ref as ref_d, onValue, update } from 'firebase/database';
-import { database, auth } from '../../firebase';
-import { useNavigation } from '@react-navigation/native';
-import { Ionicons } from '@expo/vector-icons';
-import AsyncStorage from '@react-native-async-storage/async-storage';
+import React from 'react';
+import {
+  View,
+  Text,
+  StyleSheet,
+  ScrollView,
+  TouchableOpacity,
+  Image,
+  SafeAreaView,
+  StatusBar,
+} from 'react-native';
 
-const NotificationList = ({ isAdmin, isFormateur }) => {
-  const [notifications, setNotifications] = useState([]);
-  const [isSubscribed, setIsSubscribed] = useState(true);
-  const [showFilters, setShowFilters] = useState(false);
-  // const [id, setId] = useState('');
-  const filterHeight = useState(new Animated.Value(0))[0];
+const SchedulesScreen = ({ navigation }) => {
+  const upcomingEvents = [
+    {
+      id: 1,
+      title: 'Golf with Jay',
+      location: 'National Golf Court (5km away)',
+      time: 'Today, 5:43 PM',
+      host: 'Jay Prichette',
+      hostRole: 'Golf Professional',
+      image: 'https://images.unsplash.com/photo-1551698618-1dfe5d97d256?w=100&h=100&fit=crop&crop=face',
+      status: 'Accepted',
+      messageAction: 'Message Jay!',
+      backgroundColor: '#FFE8E8',
+    },
+    {
+      id: 2,
+      title: 'Magicians meet',
+      location: '39 LA Street (8km away)',
+      time: '9 Jan, 6:00 PM',
+      host: 'Phil',
+      hostRole: 'Magician',
+      image: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=100&h=100&fit=crop&crop=face',
+      joined: 35,
+      additionalText: 'Sara, +35 others are coming',
+      backgroundColor: '#FFF0E8',
+    },
+  ];
 
-  const navigation = useNavigation();
-
-  useEffect(() => {
-    const userId = auth.currentUser?.uid;
-    console.log(userId);
-    const notificationsRef = ref_d(database, '/notification-panel/');
-    
-    const unsubscribe = onValue(notificationsRef, (snapshot) => {
-      const data = snapshot.val();
-      if (data) {
-        const filteredNotifications = Object.entries(data)
-          .filter(([_, notification]) => {
-            console.log(notification);
-            return notification.received && notification.received[userId];
-          })
-          .map(([id, notification]) => ({
-            id,
-
-            ...notification,
-            // formationId: notification.body.match(/\d+/)?.[0] || null,
-            formationId: notification.id,
-          }))
-          .sort((a, b) => b.timestamp - a.timestamp);
-        console.log(filteredNotifications)
-        setNotifications(filteredNotifications);
-      }
-    });
-
-    // Set up the navigation options
-
-    
-    navigation.setOptions({
-      headerShown: true,
-      title: 'Mes notifications',
-      headerStyle: {
-        backgroundColor: '#1a53ff',
-      },
-      headerTintColor: '#fff',
-      headerTitleStyle: {
-        fontWeight: 'bold',
-      },
-      headerRight: () => (
-        <TouchableOpacity onPress={()=>handleLogout()} style={styles.logoutButton}>
-          <Text style={styles.logoutButtonText}>Se déconnecter</Text>
-        </TouchableOpacity>
-      ),
-    });
-
-    return () => unsubscribe();
-  }, [navigation]);
-
-  const handleLogout = async () => {
-    try {
-      await auth.signOut();
-      await AsyncStorage.removeItem('userUid');
-      navigation.navigate('Login');
-    } catch (error) {
-      console.error('Error logging out:', error);
-    }
+  const navigateToEvent = (event) => {
+    navigation.navigate('Event', { event });
   };
 
-
-  const handleNotificationPress = (item) => {
-    console.log(item)
-    if (item.data) {
-      navigation.navigate('Formation', {formationId: item.data, role: { isAdmin, isFormateur }});
-    // } else if (item.id) {
-    //   navigation.navigate('Formation', {formationId: item.id, role: { isAdmin, isFormateur }});
-    }
-
-  };
-
-  const toggleFilters = () => {
-    setShowFilters(!showFilters);
-    Animated.timing(filterHeight, {
-      toValue: showFilters ? 0 : 300,
-      duration: 300,
-      useNativeDriver: false,
-    }).start();
-  };
-  
-  const toggleSubscription = () => {
-    setIsSubscribed(!isSubscribed);
-    // Here you would typically update the user's subscription status in the database
-    // For example:
-    // const userId = auth.currentUser?.uid;
-    // update(ref_d(database, `users/${userId}`), { isSubscribed: !isSubscribed });
-  };
-
-  const renderNotification = ({ item }) => (
+  const renderEventCard = (event) => (
     <TouchableOpacity
-      style={styles.notificationItem}
-      onPress={() => handleNotificationPress(item)}
+      key={event.id}
+      style={[styles.eventCard, { backgroundColor: event.backgroundColor }]}
+      onPress={() => navigateToEvent(event)}
+      activeOpacity={0.7}
     >
-      <Ionicons 
-        name={!item.body.includes('inscription') ? 'school-outline' : 'clipboard-outline'} 
-        size={24} 
-        color="#007AFF" 
-        style={styles.icon} 
-      />
-      <View style={styles.notificationContent}>
-      <View style={styles.timeContainer}>
-          <Text style={styles.notificationTime}>
-            {new Date(item.timestamp).toLocaleString()}
+      <View style={styles.eventContent}>
+        <Image source={{ uri: event.image }} style={styles.hostImage} />
+        <View style={styles.eventDetails}>
+          <Text style={styles.eventTitle}>{event.title}</Text>
+          <View style={styles.locationRow}>
+            <Text style={styles.locationIcon}>📍</Text>
+            <Text style={styles.locationText}>{event.location}</Text>
+          </View>
+          <View style={styles.timeRow}>
+            <Text style={styles.timeIcon}>🕐</Text>
+            <Text style={styles.timeText}>{event.time}</Text>
+          </View>
+          
+          <Text style={styles.hostInfo}>
+            Hosted by{'\n'}
+            <Text style={styles.hostName}>{event.host}</Text>
           </Text>
+
+          {event.status && (
+            <View style={styles.statusContainer}>
+              <View style={styles.statusBadge}>
+                <Text style={styles.statusText}>{event.status}</Text>
+              </View>
+              {event.joined && (
+                <View style={styles.joinedContainer}>
+                  <View style={styles.avatarGroup}>
+                    <View style={styles.avatar} />
+                    <View style={styles.avatar} />
+                    <View style={styles.avatar} />
+                  </View>
+                  <Text style={styles.joinedText}>{event.joined} joined</Text>
+                </View>
+              )}
+            </View>
+          )}
+
+          {event.messageAction && (
+            <TouchableOpacity style={styles.messageButton}>
+              <Text style={styles.messageButtonText}>{event.messageAction}</Text>
+            </TouchableOpacity>
+          )}
+
+          {event.additionalText && (
+            <Text style={styles.additionalText}>{event.additionalText}</Text>
+          )}
         </View>
-        <Text style={styles.notificationTitle}>{item.title}</Text>
-        <Text style={styles.notificationBody}>{item.body}</Text>
-        
+      </View>
+      <View style={styles.arrowContainer}>
+        <Text style={styles.arrow}>↗</Text>
       </View>
     </TouchableOpacity>
   );
 
   return (
-    <View style={styles.container}>
-
-      {/* <TouchableOpacity style={styles.filterToggleButton } onPress={toggleFilters} >
-        <Text style={styles.filterToggleButtonText}>Paramètres de notifications</Text>
-        <Ionicons name={showFilters ? "chevron-up" : "chevron-down"} size={24} color="white" />
-      </TouchableOpacity> */}
-
-      <Animated.View style={[styles.filtersContainer, { height: filterHeight }]}>
- 
-        <ScrollView>
-        <View style={styles.filterContainer}>
-        <Text style={styles.filterText}>Recevoir des notifications</Text>
-        <Switch
-          value={isSubscribed}
-          onValueChange={toggleSubscription}
-          trackColor={{ false: "#767577", true: "#81b0ff" }}
-          thumbColor={isSubscribed ? "#f5dd4b" : "#f4f3f4"}
-        />
-      </View>
-          
-
-        </ScrollView>
-      </Animated.View>
-
-
+    <SafeAreaView style={styles.container}>
+      <StatusBar barStyle="dark-content" backgroundColor="#FFFFFF" />
       
-      <FlatList
-        data={notifications}
-        renderItem={renderNotification}
-        keyExtractor={(item) => item.id}
-        style={styles.listContainer}
-      />
-    </View>
+      {/* Header */}
+      <View style={styles.header}>
+        <Text style={styles.headerTitle}>Schedules</Text>
+        <TouchableOpacity style={styles.searchButton}>
+          <Text style={styles.searchIcon}>🔍</Text>
+        </TouchableOpacity>
+      </View>
+
+      {/* Schedule New Event Button */}
+      <TouchableOpacity style={styles.scheduleButton} onPress={() => navigation.navigate('ScheduleEvent')}>
+        <Text style={styles.scheduleButtonIcon}>+</Text>
+        <Text style={styles.scheduleButtonText}>Schedule new event</Text>
+      </TouchableOpacity>
+
+      <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
+        {/* Upcoming Section */}
+        <View style={styles.sectionHeader}>
+          <Text style={styles.sectionTitle}>Upcoming</Text>
+          <View style={styles.calendarIcon}>
+            <Text style={styles.calendarText}>📅</Text>
+          </View>
+        </View>
+
+        {/* Event Cards */}
+        <View style={styles.eventsContainer}>
+          {upcomingEvents.map(renderEventCard)}
+        </View>
+      </ScrollView>
+
+    </SafeAreaView>
   );
 };
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f0f0f0',
+    backgroundColor: '#FFFFFF',
   },
-  filterContainer: {
+  header: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    padding: 16,
-    backgroundColor: 'white',
-    borderBottomWidth: 1,
-    borderBottomColor: '#e0e0e0',
+    paddingHorizontal: 20,
+    paddingVertical: 15,
+    backgroundColor: '#FFFFFF',
   },
-  filterText: {
-    fontSize: 16,
+  headerTitle: {
+    fontSize: 28,
     fontWeight: 'bold',
+    color: '#000000',
   },
-  listContainer: {
-    flex: 1,
+  searchButton: {
+    padding: 8,
   },
-  notificationItem: {
+  searchIcon: {
+    fontSize: 20,
+  },
+  scheduleButton: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: 'white',
-    padding: 16,
-    marginTop: 28,
-    marginHorizontal: 50,
-    borderRadius: 8,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.2,
-    shadowRadius: 2,
-    elevation: 2,
+    backgroundColor: '#FF6B6B',
+    marginHorizontal: 20,
+    marginVertical: 10,
+    paddingVertical: 15,
+    paddingHorizontal: 20,
+    borderRadius: 25,
+    justifyContent: 'center',
   },
-  notificationContent: {
+  scheduleButtonIcon: {
+    color: '#FFFFFF',
+    fontSize: 20,
+    fontWeight: 'bold',
+    marginRight: 8,
+  },
+  scheduleButtonText: {
+    color: '#FFFFFF',
+    fontSize: 16,
+    fontWeight: '600',
+  },
+  content: {
+    flex: 1,
+    paddingHorizontal: 20,
+  },
+  sectionHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginVertical: 15,
+  },
+  sectionTitle: {
+    fontSize: 18,
+    fontWeight: '600',
+    color: '#666666',
+  },
+  calendarIcon: {
+    padding: 5,
+  },
+  calendarText: {
+    fontSize: 16,
+  },
+  eventsContainer: {
+    marginBottom: 100,
+  },
+  eventCard: {
+    borderRadius: 20,
+    padding: 20,
+    marginBottom: 15,
+    position: 'relative',
+  },
+  eventContent: {
+    flexDirection: 'row',
+  },
+  hostImage: {
+    width: 50,
+    height: 50,
+    borderRadius: 25,
+    marginRight: 15,
+  },
+  eventDetails: {
     flex: 1,
   },
-  notificationTitle: {
-    fontSize: 16,
+  eventTitle: {
+    fontSize: 20,
     fontWeight: 'bold',
-    marginBottom: 4,
-  },
-  notificationBody: {
-    fontSize: 14,
-    color: '#333',
+    color: '#000000',
     marginBottom: 8,
   },
-  timeContainer: {
+  locationRow: {
     flexDirection: 'row',
     alignItems: 'center',
-  },
-  notificationTime: {
-    fontSize: 12,
-    color: '#888',
-    marginLeft: -40,
-  },
-  icon: {
-    marginRight: 16,
-  },
-  logoutButton: {
-    marginRight: 10,
-  },
-  logoutButtonText: {
-    color: '#fff',
-    fontSize: 16,
-  },
-
-
-  filterToggleButton: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    backgroundColor: '#1a53ff',
-    padding: 10,
-    borderRadius: 5,
-    marginBottom: 10,
-    marginTop:10,
-  },
-  filterToggleButtonText: {
-    color: 'white',
-    fontSize: 16,
-  },
-  
-  filterSection: {
-    marginBottom: 15,
-    paddingHorizontal: 10,
-  },
-  filterTitle: {
-    fontSize: 16,
-    fontWeight: 'bold',
     marginBottom: 5,
   },
-  filterButtonsContainer: {
+  locationIcon: {
+    fontSize: 12,
+    marginRight: 5,
+  },
+  locationText: {
+    fontSize: 14,
+    color: '#666666',
+  },
+  timeRow: {
     flexDirection: 'row',
-    flexWrap: 'wrap',
+    alignItems: 'center',
+    marginBottom: 10,
   },
-
-  filterButtonSelected: {
-    backgroundColor: '#1a53ff',
+  timeIcon: {
+    fontSize: 12,
+    marginRight: 5,
   },
-
-  filterButtonTextSelected: {
-    color: 'white',
+  timeText: {
+    fontSize: 14,
+    color: '#666666',
+  },
+  hostInfo: {
+    fontSize: 12,
+    color: '#999999',
+    marginBottom: 10,
+  },
+  hostName: {
+    fontWeight: 'bold',
+    color: '#000000',
+  },
+  statusContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 10,
+  },
+  statusBadge: {
+    backgroundColor: '#4CAF50',
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+    borderRadius: 12,
+    marginRight: 10,
+  },
+  statusText: {
+    color: '#FFFFFF',
+    fontSize: 12,
+    fontWeight: '600',
+  },
+  joinedContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  avatarGroup: {
+    flexDirection: 'row',
+    marginRight: 8,
+  },
+  avatar: {
+    width: 20,
+    height: 20,
+    borderRadius: 10,
+    backgroundColor: '#DDD',
+    marginLeft: -5,
+    borderWidth: 1,
+    borderColor: '#FFF',
+  },
+  joinedText: {
+    fontSize: 12,
+    color: '#666666',
+  },
+  messageButton: {
+    backgroundColor: '#FF9999',
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 15,
+    alignSelf: 'flex-start',
+  },
+  messageButtonText: {
+    color: '#FFFFFF',
+    fontSize: 12,
+    fontWeight: '600',
+  },
+  additionalText: {
+    fontSize: 12,
+    color: '#666666',
+    marginTop: 8,
+  },
+  arrowContainer: {
+    position: 'absolute',
+    top: 20,
+    right: 20,
+  },
+  arrow: {
+    fontSize: 20,
+    color: '#000000',
+    fontWeight: 'bold',
+  },
+  bottomTabBar: {
+    flexDirection: 'row',
+    backgroundColor: '#FFFFFF',
+    paddingVertical: 10,
+    paddingHorizontal: 20,
+    borderTopWidth: 1,
+    borderTopColor: '#E0E0E0',
+    position: 'absolute',
+    bottom: 0,
+    left: 0,
+    right: 0,
+  },
+  tabItem: {
+    flex: 1,
+    alignItems: 'center',
+    paddingVertical: 8,
+  },
+  tabIcon: {
+    fontSize: 20,
+    opacity: 0.6,
   },
 });
 
-export default NotificationList;
+export default SchedulesScreen;
