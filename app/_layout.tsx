@@ -259,7 +259,7 @@ function App() {
     <NavigationContainer independent={true}>
       <Stack.Navigator>
         {/* tabs if ETUDIANT */}
-        <Stack.Screen name="UserTabs" component={UserTabs} options={{ headerShown: false }}  />
+        
 
 
         <Stack.Screen name="Login"          component={LoginScreen} options={{headerShown: false}} initialParams={{"gameFileContext": gameFileContext}}  />
@@ -274,7 +274,7 @@ function App() {
 
         <Stack.Screen name="NotificationExplanation" component={NotificationExplanationScreen} />
         <Stack.Screen name="AccountDeletion" component={AccountDeletionScreen} />
-
+        <Stack.Screen name="UserTabs" component={UserTabs} options={{ headerShown: false }}  />
         {/* <Stack.Screen name="HomeScreen" component={HomeScreen} initialParams={{spoofLoggedIn: true, spoofFormateur: false, spoofAdmin: false, spoofValidated: true}}/>
         <Stack.Screen name="Notifications" component={NotifsScreen} initialParams={{"gameFileContext": gameFileContext}}/>
         <Stack.Screen name="Schedules" component={SchedulesScreen} initialParams={{"gameFileContext": gameFileContext}}/> */}
