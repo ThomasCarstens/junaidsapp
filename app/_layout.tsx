@@ -15,7 +15,7 @@ import SignupScreen from './screens/SignupScreen';
 import PasswordResetScreen from './screens/PasswordResetScreen';
 import BackgroundInfoScreen from './screens/BackgroundInfoScreen';
 import InscriptionScreen from './(tabs)/InscriptionScreen';
-import RechercheFormationsScreen from './(tabs)/RechercheFormationsScreen';
+import HomeScreen from './(tabs)/HomeScreen';
 import NotifsScreen from './(tabs)/NotifsScreen';
 import AjoutFormationScreen from './screens/AjoutFormationScreen';
 
@@ -28,6 +28,9 @@ import RGPDScreen from './screens/RGPDScreen';
 import NotifsScreenSkeleton from './skeleton/NotifsScreenSkeleton';
 import NotificationExplanationScreen from './screens/NotificationExplanationScreen';
 import AccountDeletionScreen from './screens/AccountDeletionScreen';
+// import HomeScreen from './(tabs)';
+import SchedulesScreen from './(tabs)/SchedulesScreen';
+import RechercheFormationsScreen from './(tabs)/HomeScreen';
 
 // import ProfilScreen from './(tabs)/ProfilScreen';
 // import DemandesFormationsScreen from './(tabs)/DemandesFormationsScreen';
@@ -155,11 +158,11 @@ function App() {
         tabBarIcon: ({ focused, color, size }) => {
           let iconName;
   
-          if (route.name === 'RechercheFormations') {
+          if (route.name === 'HomeScreen') {
             iconName = focused ? 'search' : 'search';
           } else if (route.name === 'Notifications') {
             iconName = focused ? 'notifications' : 'notifications';
-          } else if (route.name === 'OrganizationsPartenaires') {
+          } else if (route.name === 'Schedules') {
             iconName = focused ? 'information-circle-outline' : 'information-circle-outline';
           }
           // You can return any component that you like here!
@@ -168,9 +171,10 @@ function App() {
         tabBarActiveTintColor: 'white',
         tabBarInactiveTintColor: 'black',
       })}>
-        <Tab.Screen name="RechercheFormations" component={RechercheFormationsScreen} initialParams={{spoofLoggedIn: true, spoofFormateur: false, spoofAdmin: false, spoofValidated: true}}/>
+        <Tab.Screen name="HomeScreen" component={HomeScreen} initialParams={{spoofLoggedIn: true, spoofFormateur: false, spoofAdmin: false, spoofValidated: true}}/>
         <Tab.Screen name="Notifications" component={NotifsScreen} initialParams={{"gameFileContext": gameFileContext}}/>
-        <Tab.Screen name="OrganizationsPartenaires" component={OrganizationsPartenairesScreen} initialParams={{"gameFileContext": gameFileContext}}/>
+        <Tab.Screen name="Schedules" component={SchedulesScreen} initialParams={{"gameFileContext": gameFileContext}}/>
+        {/* <Tab.Screen name="Messages" component={MessagesScreen} initialParams={{"gameFileContext": gameFileContext}}/> */}
       </Tab.Navigator>
     );
   }
@@ -252,16 +256,19 @@ function App() {
         <Stack.Screen name="Signup"         component={SignupScreen} />
         <Stack.Screen name="PasswordReset"  component={PasswordResetScreen} />
         <Stack.Screen name="OrganizationsPartenaires" component={OrganizationsPartenairesScreen} />
+
         <Stack.Screen name="RGPD" component={RGPDScreen} />
         <Stack.Screen name="NotifsScreenSkeleton" component={NotifsScreenSkeleton} />
         
         <Stack.Screen name="NotificationExplanation" component={NotificationExplanationScreen} />
         <Stack.Screen name="AccountDeletion" component={AccountDeletionScreen} />
 
-        
+        {/* <Stack.Screen name="HomeScreen" component={HomeScreen} initialParams={{spoofLoggedIn: true, spoofFormateur: false, spoofAdmin: false, spoofValidated: true}}/>
+        <Stack.Screen name="Notifications" component={NotifsScreen} initialParams={{"gameFileContext": gameFileContext}}/>
+        <Stack.Screen name="Schedules" component={SchedulesScreen} initialParams={{"gameFileContext": gameFileContext}}/> */}
         
         <Stack.Screen name="Formation"       component={FormationScreen} />
-        <Stack.Screen name="RechercheFormations"  component={RechercheFormationsScreen} options={{ headerShown: true, headerBackTitleVisible: true }}/>
+        <Stack.Screen name="RechercheFormations"  component={HomeScreen} options={{ headerShown: true, headerBackTitleVisible: true }}/>
         <Stack.Screen name="InscriptionFormation" component={InscriptionFormationScreen} />
 
         {/* tabs if ADMIN */}
