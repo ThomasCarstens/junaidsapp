@@ -1,5 +1,3 @@
-Hey, this one's gonna be big.
+List of commands to reuse later
 
-Intentionally built this in public,
-
-TXA
+sudo systemctl start mongodb

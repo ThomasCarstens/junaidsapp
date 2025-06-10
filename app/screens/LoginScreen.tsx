@@ -269,7 +269,7 @@ const ModernLoginScreen = ({ navigation }) => {
         <View style={styles.bottomSection}>
           <Text style={styles.accountText}>
             Don't have an account?{' '}
-            <TouchableOpacity>
+            <TouchableOpacity onPress={() => navigation.navigate('Signup')}>
               <Text style={styles.signUpText}>Sign Up</Text>
             </TouchableOpacity>
           </Text>
