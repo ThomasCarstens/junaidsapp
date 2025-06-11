@@ -1,276 +1,305 @@
-import React, { useEffect, useState } from 'react';
-import { View, Text, TextInput, Switch, ScrollView, StyleSheet, TouchableOpacity } from 'react-native';
-import { Picker } from '@react-native-picker/picker';
-import { useNavigation } from '@react-navigation/native';
+import React from 'react';
+import {
+  View,
+  Text,
+  Image,
+  StyleSheet,
+  SafeAreaView,
+  ScrollView,
+  TouchableOpacity,
+  Dimensions,
+} from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
 
-const TABS = ['Etudiant', 'Formateur', 'Rejete par l\'admin'];
+const { width, height } = Dimensions.get('window');
 
-const ProfileScreen = () => {
-  const [activeTab, setActiveTab] = useState('Etudiant');
-  const [isEditing, setIsEditing] = useState(false);
-  const [profile, setProfile] = useState({
-    medecinDiplome: false,
-    anneeDiplome: '',
-    faculte: '',
-    fonctionEnseignant: '',
-    email: '',
-    telephone: '',
-    etudiantDIU: false,
-    anneeDIU: '',
-  });
+const ProfileScreen = ({ navigation }) => {
+  const handleBackPress = () => {
+    navigation.goBack();
+  };
 
-  const navigation = useNavigation();
+  const handleEditProfile = () => {
+    // Navigate to edit profile screen
+    navigation.navigate('EditProfile');
+  };
 
-  useEffect(() => {
-    navigation.setOptions({
-      headerShown: true,
-      title: 'Mon profil',
-      headerStyle: { backgroundColor: '#1a53ff' },
-      headerTintColor: '#fff',
-      headerTitleStyle: { fontWeight: 'bold' },
-      headerLeft: () => (
-        <TouchableOpacity onPress={() => navigation.navigate('Login')}>
-          <Text style={styles.headerButton}>{'< Retour'}</Text>
-        </TouchableOpacity>
-      ),
-    });
-  }, [navigation]);
-
-  const handleProfileChange = (key, value) => {
-    if (isEditing) {
-      setProfile(prevProfile => ({ ...prevProfile, [key]: value }));
+  const profileData = {
+    name: 'Aliana',
+    age: 21,
+    profileImage: 'https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=400&h=600&fit=crop',
+    stats: {
+      activity: 8,
+      eventCount: 2,
+      rating: 4.8
+    },
+    aboutMe: "Fun-loving and always up for an adventure, coffee, concerts, and spontaneous road trips.",
+    gender: "Woman",
+    hometown: "Bay area",
+    relationshipStatus: "Single (Open to date)",
+    occupation: "Tech assistant",
+    hobbiesAndInterests: {
+      friends: ["One Piece"],
+      activities: ["Mocktail", "Coffee", "Eminem", "Indie music", "Beach trip"],
+      interests: ["Tech", "Football", "Golf"]
     }
   };
 
-  const renderTabs = () => (
-    <View style={styles.tabContainer}>
-      {TABS.map((tab) => (
-        <TouchableOpacity
-          key={tab}
-          style={[styles.tab, activeTab === tab && styles.activeTab]}
-          onPress={() => setActiveTab(tab)}
-        >
-          <Text style={styles.tabText}>{tab}</Text>
-        </TouchableOpacity>
-      ))}
+  const renderInterestTag = (interest, bgColor = '#E8F4FD') => (
+    <View key={interest} style={[styles.interestTag, { backgroundColor: bgColor }]}>
+      <Text style={styles.interestText}>{interest}</Text>
     </View>
-  );
-
-  const renderRejectedContent = () => (
-    <View style={styles.rejectedContainer}>
-      <Text style={styles.rejectedText}>
-        Votre demande a été rejetée pour la raison suivante : 
-        {"\n\n"}
-        [Insérer la raison du rejet ici]
-        {"\n\n"}
-        Pour toute correspondance ultérieure, veuillez contacter contact.esculappl@gmail.com
-      </Text>
-    </View>
-  );
-
-  const renderStudentMessage = () => (
-    <View style={styles.studentMessageContainer}>
-      <Text style={styles.studentMessageText}>
-        Les étudiants n'ont pas de profil spécifique dans notre système. Vos informations sont recueillies lors de votre inscription à une formation.
-        {"\n\n"}
-        Pour vous inscrire à une formation ou consulter les formations disponibles, veuillez utiliser les options correspondantes dans le menu principal.
-      </Text>
-    </View>
-  );
-
-  const renderFormField = (label, key, type = 'text') => {
-    const props = {
-      style: [styles.input, !isEditing && styles.disabledInput],
-      value: profile[key],
-      onChangeText: (text) => handleProfileChange(key, text),
-      editable: isEditing,
-    };
-
-    if (type === 'switch') {
-      return (
-        <View style={styles.inputGroup}>
-          <Text style={styles.label}>{label}</Text>
-          <Switch
-            value={profile[key]}
-            onValueChange={(value) => handleProfileChange(key, value)}
-            disabled={!isEditing}
-          />
-        </View>
-      );
-    }
-
-    if (type === 'picker') {
-      return (
-        <View style={styles.inputGroup}>
-          <Text style={styles.label}>{label}</Text>
-          <Picker
-            selectedValue={profile[key]}
-            onValueChange={(itemValue) => handleProfileChange(key, itemValue)}
-            style={[styles.picker, !isEditing && styles.disabledPicker]}
-            enabled={isEditing}
-          >
-            <Picker.Item label="Sélectionnez une année" value="" />
-            <Picker.Item label="1ère année" value="1" />
-            <Picker.Item label="2ème année" value="2" />
-            <Picker.Item label="3ème année" value="3" />
-          </Picker>
-        </View>
-      );
-    }
-
-    return (
-      <View style={styles.inputGroup}>
-        <Text style={styles.label}>{label}</Text>
-        <TextInput {...props} keyboardType={type === 'number' ? 'numeric' : 'default'} />
-      </View>
-    );
-  };
-
-  const renderProfileForm = () => (
-    <ScrollView style={styles.formContainer}>
-      {renderFormField('Médecin Diplômé', 'medecinDiplome', 'switch')}
-      {profile.medecinDiplome && (
-        <>
-          {renderFormField('Année de diplôme', 'anneeDiplome', 'number')}
-          {renderFormField('Faculté', 'faculte')}
-        </>
-      )}
-      {renderFormField('Fonction Enseignant', 'fonctionEnseignant')}
-      {renderFormField('Email', 'email')}
-      {renderFormField('Numéro de téléphone', 'telephone')}
-      {renderFormField('Étudiant DIU', 'etudiantDIU', 'switch')}
-      {profile.etudiantDIU && renderFormField('Année DIU', 'anneeDIU', 'picker')}
-
-      <TouchableOpacity
-        style={styles.modifyButton}
-        onPress={() => setIsEditing(!isEditing)}
-      >
-        <Text style={styles.modifyButtonText}>
-          {isEditing ? 'Sauvegarder' : 'Modifier'}
-        </Text>
-      </TouchableOpacity>
-
-      <Text style={styles.confidentialText}>
-        Ces informations restent confidentielles.
-      </Text>
-    </ScrollView>
-
-
   );
 
   return (
-    <View style={styles.container}>
-      {renderTabs()}
-      {activeTab === 'Etudiant' && renderStudentMessage()}
-      {activeTab === 'Formateur' && renderProfileForm()}
-      {activeTab === 'Rejete par l\'admin' && renderRejectedContent()}
-    </View>
+    <SafeAreaView style={styles.container}>
+      {/* Header */}
+      <View style={styles.header}>
+        <TouchableOpacity onPress={handleBackPress} style={styles.backButton}>
+          <Ionicons name="chevron-back" size={24} color="#000" />
+        </TouchableOpacity>
+        <Text style={styles.headerTitle}>{profileData.name}, {profileData.age}</Text>
+        <TouchableOpacity onPress={handleEditProfile} style={styles.editButton}>
+          <Ionicons name="create-outline" size={24} color="#000" />
+        </TouchableOpacity>
+      </View>
+
+      <ScrollView style={styles.scrollView} showsVerticalScrollIndicator={false}>
+        {/* Profile Image */}
+        <View style={styles.imageContainer}>
+          <Image 
+            source={{ uri: profileData.profileImage }}
+            style={styles.profileImage}
+          />
+        </View>
+
+        {/* Stats Section */}
+        <View style={styles.statsContainer}>
+          <View style={styles.statItem}>
+            <View style={styles.statIcon}>
+              <Ionicons name="flash" size={20} color="#FFD700" />
+            </View>
+            <Text style={styles.statNumber}>{profileData.stats.activity}</Text>
+            <Text style={styles.statLabel}>Activity</Text>
+          </View>
+          
+          <View style={styles.statItem}>
+            <View style={styles.statIcon}>
+              <Ionicons name="eye" size={20} color="#666" />
+            </View>
+            <Text style={styles.statNumber}>{profileData.stats.eventCount}</Text>
+            <Text style={styles.statLabel}>Events Hosted</Text>
+          </View>
+          
+          <View style={styles.statItem}>
+            <View style={styles.statIcon}>
+              <Ionicons name="star" size={20} color="#FFD700" />
+            </View>
+            <Text style={styles.statNumber}>{profileData.stats.rating}</Text>
+            <Text style={styles.statLabel}>Rating</Text>
+          </View>
+        </View>
+
+        {/* Profile Details */}
+        <View style={styles.detailsContainer}>
+          {/* About Me */}
+          <View style={styles.section}>
+            <Text style={styles.sectionTitle}>About me</Text>
+            <Text style={styles.aboutText}>{profileData.aboutMe}</Text>
+          </View>
+
+          {/* Gender */}
+          <View style={styles.section}>
+            <Text style={styles.sectionTitle}>Gender</Text>
+            <View style={styles.infoRow}>
+              <Ionicons name="person" size={16} color="#FF69B4" />
+              <Text style={styles.infoText}>{profileData.gender}</Text>
+            </View>
+          </View>
+
+          {/* Hometown */}
+          <View style={styles.section}>
+            <Text style={styles.sectionTitle}>Hometown</Text>
+            <View style={styles.infoRow}>
+              <Ionicons name="location" size={16} color="#FF6B6B" />
+              <Text style={styles.infoText}>{profileData.hometown}</Text>
+            </View>
+          </View>
+
+          {/* Relationship Status */}
+          <View style={styles.section}>
+            <Text style={styles.sectionTitle}>Relationship status</Text>
+            <View style={styles.infoRow}>
+              <Ionicons name="heart" size={16} color="#4ECDC4" />
+              <Text style={styles.infoText}>{profileData.relationshipStatus}</Text>
+            </View>
+          </View>
+
+          {/* Occupation */}
+          <View style={styles.section}>
+            <Text style={styles.sectionTitle}>Occupation</Text>
+            <View style={styles.infoRow}>
+              <Ionicons name="briefcase" size={16} color="#4A90E2" />
+              <Text style={styles.infoText}>{profileData.occupation}</Text>
+            </View>
+          </View>
+
+          {/* Hobbies & Interests */}
+          <View style={styles.section}>
+            <Text style={styles.sectionTitle}>Hobbies & Interests</Text>
+            
+            {/* FRIENDS */}
+            <View style={styles.subsection}>
+              <View style={styles.subsectionHeader}>
+                <Ionicons name="people" size={16} color="#666" />
+                <Text style={styles.subsectionTitle}>F R I E N D S</Text>
+              </View>
+              <View style={styles.tagsContainer}>
+                {profileData.hobbiesAndInterests.friends.map(friend => 
+                  renderInterestTag(friend, '#FFF0E6')
+                )}
+              </View>
+            </View>
+
+            {/* Activities */}
+            <View style={styles.tagsContainer}>
+              {profileData.hobbiesAndInterests.activities.map(activity => 
+                renderInterestTag(activity)
+              )}
+            </View>
+
+            {/* Other Interests */}
+            <View style={styles.tagsContainer}>
+              {profileData.hobbiesAndInterests.interests.map(interest => 
+                renderInterestTag(interest, '#F0F8FF')
+              )}
+            </View>
+          </View>
+        </View>
+      </ScrollView>
+    </SafeAreaView>
   );
 };
 
 const styles = StyleSheet.create({
-
-  headerButton: {
-    color: 'white',
-    fontSize: 16,
-    marginLeft: 10,
-  },
   container: {
     flex: 1,
-    backgroundColor: '#f5f5f5',
+    backgroundColor: '#FFFFFF',
   },
-  tabContainer: {
+  header: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingHorizontal: 20,
+    paddingVertical: 15,
+    borderBottomWidth: 1,
+    borderBottomColor: '#F0F0F0',
+  },
+  backButton: {
+    padding: 5,
+  },
+  headerTitle: {
+    fontSize: 18,
+    fontWeight: '600',
+    color: '#000',
+  },
+  editButton: {
+    padding: 5,
+  },
+  scrollView: {
+    flex: 1,
+  },
+  imageContainer: {
+    alignItems: 'center',
+    paddingVertical: 20,
+  },
+  profileImage: {
+    width: width * 0.6,
+    height: width * 0.8,
+    borderRadius: 20,
+  },
+  statsContainer: {
     flexDirection: 'row',
     justifyContent: 'space-around',
-    backgroundColor: '#fff',
+    paddingVertical: 20,
+    paddingHorizontal: 40,
     borderBottomWidth: 1,
-    borderBottomColor: '#e0e0e0',
+    borderBottomColor: '#F0F0F0',
   },
-  tab: {
-    paddingVertical: 15,
-    paddingHorizontal: 20,
+  statItem: {
+    alignItems: 'center',
   },
-  activeTab: {
-    borderBottomWidth: 2,
-    borderBottomColor: '#007bff',
+  statIcon: {
+    marginBottom: 8,
   },
-  tabText: {
-    fontSize: 16,
-    color: '#333',
+  statNumber: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    color: '#000',
+    marginBottom: 4,
   },
-  formContainer: {
+  statLabel: {
+    fontSize: 12,
+    color: '#666',
+  },
+  detailsContainer: {
     padding: 20,
   },
-  inputGroup: {
-    marginBottom: 20,
+  section: {
+    marginBottom: 25,
   },
-  label: {
+  sectionTitle: {
     fontSize: 16,
-    marginBottom: 5,
-    color: '#333',
+    fontWeight: '600',
+    color: '#000',
+    marginBottom: 10,
   },
-  input: {
-    borderWidth: 1,
-    borderColor: '#ccc',
-    borderRadius: 5,
-    padding: 10,
-    fontSize: 16,
-  },
-  disabledInput: {
-    backgroundColor: '#f0f0f0',
-    color: '#666',
-  },
-  picker: {
-    borderWidth: 1,
-    borderColor: '#ccc',
-    borderRadius: 5,
-  },
-  disabledPicker: {
-    backgroundColor: '#f0f0f0',
-    color: '#666',
-  },
-  confidentialText: {
-    marginTop: 20,
+  aboutText: {
     fontSize: 14,
     color: '#666',
-    fontStyle: 'italic',
-    textAlign: 'center',
+    lineHeight: 20,
   },
-  rejectedContainer: {
-    flex: 1,
-    justifyContent: 'center',
+  infoRow: {
+    flexDirection: 'row',
     alignItems: 'center',
-    padding: 20,
   },
-  rejectedText: {
-    fontSize: 16,
-    textAlign: 'center',
+  infoText: {
+    fontSize: 14,
+    color: '#666',
+    marginLeft: 8,
+  },
+  subsection: {
+    marginBottom: 15,
+  },
+  subsectionHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 10,
+  },
+  subsectionTitle: {
+    fontSize: 12,
+    fontWeight: '600',
+    color: '#666',
+    letterSpacing: 1,
+    marginLeft: 8,
+  },
+  tagsContainer: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 8,
+    marginBottom: 15,
+  },
+  interestTag: {
+    backgroundColor: '#E8F4FD',
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 15,
+    marginRight: 8,
+    marginBottom: 8,
+  },
+  interestText: {
+    fontSize: 12,
     color: '#333',
-  },
-  modifyButton: {
-    backgroundColor: '#007bff',
-    padding: 15,
-    borderRadius: 5,
-    alignItems: 'center',
-    marginTop: 20,
-  },
-  modifyButtonText: {
-    color: '#fff',
-    fontSize: 16,
-    fontWeight: 'bold',
-  },
-  studentMessageContainer: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    padding: 20,
-    backgroundColor: '#f0f8ff', // Light blue background
-  },
-  studentMessageText: {
-    fontSize: 16,
-    textAlign: 'center',
-    color: '#333',
-    lineHeight: 24,
+    fontWeight: '500',
   },
 });
 

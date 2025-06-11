@@ -11,6 +11,8 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 
 // Import your screen components
 import HomeScreen from './(tabs)/HomeScreen';
+import HubScreen from './(tabs)/HubScreen';
+
 
 import LoginScreen from './screens/LoginScreen';
 import SignupScreen from './screens/SignupScreen';
@@ -36,6 +38,9 @@ import EventScreen from './screens/EventScreen';
 import ScheduleNewEvent from './screens/ScheduleEventScreen';
 import ScheduleEvent from './screens/ScheduleEventScreen';
 import ProfileScreen from './screens/ProfileScreen';
+import ExploreScreen from './screens/ExploreScreen';
+import CommunitiesScreen from './screens/CommunitiesScreen';
+import CommunityScreen from './screens/CommunityScreen';
 
 // import ProfilScreen from './(tabs)/ProfilScreen';
 // import DemandesFormationsScreen from './(tabs)/DemandesFormationsScreen';
@@ -165,7 +170,7 @@ function App() {
   
           if (route.name === 'HomeScreen') {
             iconName = focused ? 'albums' : 'albums';
-          } else if (route.name === 'Notifications') {
+          } else if (route.name === 'Hub') {
             iconName = focused ? 'grid' : 'grid';
           } else if (route.name === 'Schedules') {
             iconName = focused ? 'time' : 'time';
@@ -179,7 +184,8 @@ function App() {
         tabBarInactiveTintColor: 'gray',
       })}>
         <Tab.Screen name="HomeScreen" component={HomeScreen} initialParams={{spoofLoggedIn: true, spoofFormateur: false, spoofAdmin: false, spoofValidated: true}}/>
-        <Tab.Screen name="Notifications" component={NotifsScreen} initialParams={{"gameFileContext": gameFileContext}}/>
+        {/* <Tab.Screen name="Notifications" component={NotifsScreen} initialParams={{"gameFileContext": gameFileContext}}/> */}
+        <Tab.Screen name="Hub" component={HubScreen} initialParams={{"gameFileContext": gameFileContext}}/>
         <Tab.Screen name="Schedules" component={SchedulesScreen} initialParams={{"gameFileContext": gameFileContext}}/>
         <Tab.Screen name="Messages" component={UnderConstructionScreen} initialParams={{"gameFileContext": gameFileContext}}/>
       </Tab.Navigator>
@@ -260,6 +266,7 @@ function App() {
       <Stack.Navigator>
         {/* tabs if ETUDIANT */}
         
+        <Stack.Screen name="UserTabs" component={UserTabs} options={{ headerShown: false }}  />
 
         <Stack.Screen name="Login"          component={LoginScreen} options={{headerShown: false}} initialParams={{"gameFileContext": gameFileContext}}  />
         <Stack.Screen name="Signup"         component={SignupScreen} />
@@ -273,13 +280,17 @@ function App() {
 
         <Stack.Screen name="NotificationExplanation" component={NotificationExplanationScreen} />
         <Stack.Screen name="AccountDeletion" component={AccountDeletionScreen} />
-        <Stack.Screen name="UserTabs" component={UserTabs} options={{ headerShown: false }}  />
         
         {/* <Stack.Screen name="HomeScreen" component={HomeScreen} initialParams={{spoofLoggedIn: true, spoofFormateur: false, spoofAdmin: false, spoofValidated: true}}/>
         <Stack.Screen name="Notifications" component={NotifsScreen} initialParams={{"gameFileContext": gameFileContext}}/>
         <Stack.Screen name="Schedules" component={SchedulesScreen} initialParams={{"gameFileContext": gameFileContext}}/> */}
         <Stack.Screen name="Event"       component={EventScreen} />
         <Stack.Screen name="ScheduleEvent"       component={ScheduleEvent} />
+
+        <Stack.Screen name="Explore"       component={ExploreScreen} />
+        <Stack.Screen name="Communities"       component={CommunitiesScreen} />
+        <Stack.Screen name="Community"       component={CommunityScreen} />
+
 
         <Stack.Screen name="Formation"       component={FormationScreen} />
         <Stack.Screen name="RechercheFormations"  component={HomeScreen} options={{ headerShown: true, headerBackTitleVisible: true }}/>

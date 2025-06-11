@@ -496,7 +496,7 @@ const HomeScreen = () => {
         </View>
         
         <View style={styles.tabContainer}>
-          {['All', 'People', 'Events', 'The Backpack'].map((tab) => (
+          {['All', 'People', 'Events', 'Community1'].map((tab) => (
             <TouchableOpacity
               key={tab}
               style={[styles.tab, activeTab === tab && styles.activeTab]}
