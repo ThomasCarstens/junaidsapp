@@ -120,7 +120,8 @@ const SignupScreen = () => {
       if (data.success) {
         await AsyncStorage.setItem('authToken', data.token);
         await AsyncStorage.setItem('userId', data.updatedUser.id.toString());
-        
+        console.log('OTP verified successfully:', data);
+        console.log(`Bearer ${data.token ? data.token.substring(0, 20) + '...' : 'null'}`)
         if (data.isOnboardingComplete) {
           Alert.alert('Success', 'Login successful!');
           // Navigate to main app
@@ -147,6 +148,7 @@ const SignupScreen = () => {
     setLoading(true);
     try {
       const token = await AsyncStorage.getItem('authToken');
+      const userId = await AsyncStorage.getItem('userId');
       
       const response = await fetch(`${API_BASE_URL}/auth/update-profile`, {
         method: 'POST',

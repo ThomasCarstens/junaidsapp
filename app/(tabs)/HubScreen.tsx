@@ -254,7 +254,7 @@ const HubScreen = () => {
               {mapLocations.map(renderMapPin)}
               
               {/* Open Map Button */}
-              <TouchableOpacity style={styles.openMapButton}>
+              <TouchableOpacity style={styles.openMapButton} onPress={() => navigation.navigate('UnderConstruction')}>
                 <Text style={styles.openMapText}>Open the Map</Text>
               </TouchableOpacity>
             </View>
@@ -283,11 +283,11 @@ const HubScreen = () => {
               <Text style={styles.joinCreateSubtitle}>exclusive private communities</Text>
               
               <View style={styles.joinCreateButtons}>
-                <TouchableOpacity style={styles.joinButton}>
+                <TouchableOpacity style={styles.joinButton} onPress={() => navigation.navigate('UnderConstruction')}>
                   <Ionicons name="log-in-outline" size={16} color="#000" />
                   <Text style={styles.joinButtonText}>Join</Text>
                 </TouchableOpacity>
-                <TouchableOpacity style={styles.createButton}>
+                <TouchableOpacity style={styles.createButton} onPress={() => navigation.navigate('CommunityCreation')}>
                   <Text style={styles.createButtonText}>Create New</Text>
                 </TouchableOpacity>
               </View>

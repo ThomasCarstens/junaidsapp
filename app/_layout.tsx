@@ -41,6 +41,7 @@ import ProfileScreen from './screens/ProfileScreen';
 import ExploreScreen from './screens/ExploreScreen';
 import CommunitiesScreen from './screens/CommunitiesScreen';
 import CommunityScreen from './screens/CommunityScreen';
+import CommunityCreationScreen from './screens/CommunityCreationScreen';
 
 // import ProfilScreen from './(tabs)/ProfilScreen';
 // import DemandesFormationsScreen from './(tabs)/DemandesFormationsScreen';
@@ -265,11 +266,12 @@ function App() {
     <NavigationContainer independent={true}>
       <Stack.Navigator>
         {/* tabs if ETUDIANT */}
-        
         <Stack.Screen name="UserTabs" component={UserTabs} options={{ headerShown: false }}  />
 
-        <Stack.Screen name="Login"          component={LoginScreen} options={{headerShown: false}} initialParams={{"gameFileContext": gameFileContext}}  />
         <Stack.Screen name="Signup"         component={SignupScreen} />
+
+
+        <Stack.Screen name="Login"          component={LoginScreen} options={{headerShown: false}} initialParams={{"gameFileContext": gameFileContext}}  />
         <Stack.Screen name="PasswordReset"  component={PasswordResetScreen} />
         <Stack.Screen name="OrganizationsPartenaires" component={OrganizationsPartenairesScreen} />
 
@@ -290,7 +292,9 @@ function App() {
         <Stack.Screen name="Explore"       component={ExploreScreen} />
         <Stack.Screen name="Communities"       component={CommunitiesScreen} />
         <Stack.Screen name="Community"       component={CommunityScreen} />
+        <Stack.Screen name="CommunityCreation"       component={CommunityCreationScreen} />
 
+        <Stack.Screen name="AnnouncementDetail"       component={UnderConstructionScreen} />
 
         <Stack.Screen name="Formation"       component={FormationScreen} />
         <Stack.Screen name="RechercheFormations"  component={HomeScreen} options={{ headerShown: true, headerBackTitleVisible: true }}/>
